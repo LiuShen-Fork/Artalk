@@ -50,36 +50,49 @@ func (c *KeywordsChecker) Check(p *CheckerParams) (bool, error) {
 		return false, err
 	}
 
-	isContains := false
-	content := p.Content
+	if c.conf.Mode != KwCheckerModeBlock && c.conf.Mode != KwCheckerModeReplace {
+		return false, fmt.Errorf("unknown mode: %d", c.conf.Mode)
+	}
 
+	matchedContentKeywords := []string{}
 	for _, keyword := range *c.keywords {
-		if strings.Contains(p.Content, keyword) {
-			isContains = true
-
-			if c.conf.Mode == KwCheckerModeReplace {
-				content = strings.Replace(content, keyword,
-					strings.Repeat(c.conf.ReplaceTo, len([]rune(keyword))), -1)
-			}
+		if strings.Contains(p.UserName, keyword) {
+			return false, nil
+		}
+		if strings.Contains(p.ReviewContent, keyword) {
+			matchedContentKeywords = append(matchedContentKeywords, keyword)
 		}
 	}
 
-	switch c.conf.Mode {
-	case KwCheckerModeReplace:
-		if isContains {
-			log.Info(LOG_TAG, fmt.Sprintf("keyword replace comment id=%d original=%s processed=%s",
-				p.CommentID, strconv.Quote(p.Content), strconv.Quote(content)))
+	if len(matchedContentKeywords) == 0 {
+		return true, nil
+	}
 
-			// 更新评论
-			if c.conf.OnUpdateComment != nil {
-				c.conf.OnUpdateComment(p.CommentID, content)
+	switch c.conf.Mode {
+	case KwCheckerModeBlock:
+		return false, nil
+
+	case KwCheckerModeReplace:
+		for _, keyword := range matchedContentKeywords {
+			if !strings.Contains(p.RawContent, keyword) {
+				return false, nil
 			}
 		}
 
-		return true, nil
+		content := p.RawContent
+		for _, keyword := range matchedContentKeywords {
+			content = strings.ReplaceAll(content, keyword,
+				strings.Repeat(c.conf.ReplaceTo, len([]rune(keyword))))
+		}
 
-	case KwCheckerModeBlock:
-		return !isContains, nil
+		log.Info(LOG_TAG, fmt.Sprintf("keyword replace comment id=%d original=%s processed=%s",
+			p.CommentID, strconv.Quote(p.RawContent), strconv.Quote(content)))
+
+		if c.conf.OnUpdateComment != nil {
+			c.conf.OnUpdateComment(p.CommentID, content)
+		}
+
+		return true, nil
 	}
 
 	return false, fmt.Errorf("unknown mode: %d", c.conf.Mode)

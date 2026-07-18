@@ -79,8 +79,9 @@ func TestAntiSpam(t *testing.T) {
 			antiSpam := NewAntiSpam(conf)
 
 			antiSpam.CheckAndBlock(&CheckerParams{
-				CommentID: 1000,
-				Content:   "---\n关键词B\n---",
+				CommentID:     1000,
+				RawContent:    "---\n关键词B\n---",
+				ReviewContent: "---\n关键词B\n---",
 			})
 
 			assert.Equal(t, 1000, blockedID)
@@ -106,8 +107,9 @@ func TestAntiSpam(t *testing.T) {
 			antiSpam := NewAntiSpam(conf)
 
 			antiSpam.CheckAndBlock(&CheckerParams{
-				CommentID: 1000,
-				Content:   "---\n关键词B\n---",
+				CommentID:     1000,
+				RawContent:    "---\n关键词B\n---",
+				ReviewContent: "---\n关键词B\n---",
 			})
 
 			assert.Equal(t, 0, blockedID, "should not block")
