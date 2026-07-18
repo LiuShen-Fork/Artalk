@@ -3,9 +3,11 @@ package core
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/artalkjs/artalk/v2/internal/anti_spam"
 	"github.com/artalkjs/artalk/v2/internal/entity"
+	"github.com/artalkjs/artalk/v2/internal/log"
 )
 
 var _ Service = (*AntiSpamService)(nil)
@@ -79,11 +81,19 @@ func (s *AntiSpamService) payload2CheckerParams(payload *AntiSpamCheckPayload) *
 		}
 	}
 
+	reviewContent, err := anti_spam.NormalizeReviewContent(payload.Comment.Content)
+	if err != nil {
+		log.Errorf("[AntiSpam] normalize comment=%d review text failed: %v", payload.Comment.ID, err)
+		reviewContent = strings.Join(strings.Fields(payload.Comment.Content), " ")
+	}
+
 	return &anti_spam.CheckerParams{
 		BlogURL: siteURL,
 
-		Content:   payload.Comment.Content,
-		CommentID: payload.Comment.ID,
+		CommentID:     payload.Comment.ID,
+		RawContent:    payload.Comment.Content,
+		ReviewContent: reviewContent,
+		ReviewText:    anti_spam.BuildReviewText(user.Name, reviewContent),
 
 		UserName:  user.Name,
 		UserEmail: user.Email,

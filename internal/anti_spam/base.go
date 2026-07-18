@@ -68,7 +68,7 @@ func (as AntiSpam) checkerTrigger(checker Checker, params *CheckerParams) bool {
 		}
 
 		log.Debug(LOG_TAG, fmt.Sprintf("[%s] Successful blocking of comments ID=%d CONT=%s",
-			checker.Name(), params.CommentID, strconv.Quote(params.Content)))
+			checker.Name(), params.CommentID, strconv.Quote(params.RawContent)))
 	}
 
 	return pass
@@ -133,8 +133,10 @@ func (as AntiSpam) getEnabledCheckers() []Checker {
 type CheckerParams struct {
 	BlogURL string
 
-	Content   string
-	CommentID uint
+	CommentID     uint
+	RawContent    string
+	ReviewContent string
+	ReviewText    string
 
 	UserName  string
 	UserEmail string
