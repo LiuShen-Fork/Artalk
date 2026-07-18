@@ -127,6 +127,7 @@ type ModeratorConf struct {
 	AkismetKey     string               `koanf:"akismet_key" json:"akismet_key"`
 	Tencent        TencentAntispamConf  `koanf:"tencent" json:"tencent"`
 	Aliyun         AliyunAntispamConf   `koanf:"aliyun" json:"aliyun"`
+	AI             AIAntispamConf       `koanf:"ai" json:"ai"`
 	Keywords       KeyWordsAntispamConf `koanf:"keywords" json:"keywords"`
 }
 
@@ -144,6 +145,23 @@ type AliyunAntispamConf struct {
 	AccessKeyID     string `koanf:"access_key_id" json:"access_key_id"`
 	AccessKeySecret string `koanf:"access_key_secret" json:"access_key_secret"`
 	Region          string `koanf:"region" json:"region"`
+}
+
+type AIAPIType string
+
+const (
+	AIAPITypeResponses       AIAPIType = "responses"
+	AIAPITypeChatCompletions AIAPIType = "chat_completions"
+)
+
+// AI 内容审核
+type AIAntispamConf struct {
+	Enabled bool      `koanf:"enabled" json:"enabled"`
+	APIType AIAPIType `koanf:"api_type" json:"api_type"`
+	BaseURL string    `koanf:"base_url" json:"base_url"`
+	APIKey  string    `koanf:"api_key" json:"api_key"`
+	Model   string    `koanf:"model" json:"model"`
+	Prompt  string    `koanf:"prompt" json:"prompt"`
 }
 
 // 关键词词库过滤
@@ -468,7 +486,7 @@ type AuthConf struct {
 }
 
 type AuthSSOConf struct {
-	Enabled bool   `koanf:"enabled" json:"enabled"`
+	Enabled bool `koanf:"enabled" json:"enabled"`
 	// Issuer is the OIDC issuer URL — e.g. "tenant.auth0.com" or
 	// "https://tenant.auth0.com". /userinfo is called against this host.
 	Issuer string `koanf:"issuer" json:"issuer"`
