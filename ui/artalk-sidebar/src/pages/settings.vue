@@ -161,10 +161,11 @@ function save() {
 
   :deep(input[type='text']),
   :deep(input[type='password']),
+  :deep(textarea),
   :deep(select) {
     font-size: 17px;
     width: 100%;
-    height: 35px;
+    min-height: 35px;
     padding: 3px 5px;
     border: 0;
     border-bottom: 1px solid var(--at-color-border);
@@ -176,6 +177,11 @@ function save() {
     &:focus {
       border-bottom-color: var(--at-color-main);
     }
+  }
+  :deep(textarea) {
+    resize: vertical;
+    line-height: 1.5;
+    min-height: 140px;
   }
 }
 </style>

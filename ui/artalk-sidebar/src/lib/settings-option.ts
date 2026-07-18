@@ -10,10 +10,22 @@ export interface OptionNode {
   type: 'string' | 'number' | 'boolean' | 'object' | 'array'
   title: string
   subTitle?: string
+  control?: 'input' | 'textarea'
+  placeholder?: string
   items?: OptionNode[]
 }
 
 export const KEYWORD_FILE_SEPARATOR_PATH = 'moderator.keywords.file_sep'
+
+const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placeholder'>> = {
+  'moderator.ai.base_url': {
+    control: 'input',
+    placeholder: 'https://xxx.xxx.com/v1',
+  },
+  'moderator.ai.prompt': {
+    control: 'textarea',
+  },
+}
 
 function extractItemComment(item: Pair, index: number, parentPair?: Pair): string {
   return index === 0 && parentPair
@@ -68,6 +80,7 @@ export function getTree(yamlObj: YAML.Document.Parsed): OptionNode {
         ...extractComment(key, comment),
         default: defaultValue,
         type: type as any,
+        ...optionPresentation[path.join('.')],
       }
 
       // traverse children

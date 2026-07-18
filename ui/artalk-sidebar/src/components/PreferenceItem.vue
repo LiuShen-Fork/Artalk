@@ -79,6 +79,17 @@ function toggleSensitiveHidden() {
         <input v-model="value" type="checkbox" :disabled="disabled" @change="onChange" />
       </template>
 
+      <!-- Textarea -->
+      <template v-else-if="node.control === 'textarea'">
+        <textarea
+          v-model="value"
+          :disabled="disabled"
+          :placeholder="node.placeholder"
+          rows="7"
+          @change="onChange"
+        />
+      </template>
+
       <!-- Text -->
       <template v-else>
         <input
@@ -87,6 +98,7 @@ function toggleSensitiveHidden() {
           :list="separatorListId"
           :required="isKeywordFileSeparator"
           :disabled="disabled"
+          :placeholder="node.placeholder"
           @change="onChange"
         />
         <datalist v-if="separatorListId" :id="separatorListId">
