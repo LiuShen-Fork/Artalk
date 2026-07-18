@@ -63,12 +63,24 @@ function toggleSensitiveHidden() {
         <input v-model="value" type="checkbox" :disabled="disabled" @change="onChange" />
       </template>
 
+      <!-- Textarea -->
+      <template v-else-if="node.control === 'textarea'">
+        <textarea
+          v-model="value"
+          :disabled="disabled"
+          :placeholder="node.placeholder"
+          rows="7"
+          @change="onChange"
+        />
+      </template>
+
       <!-- Text -->
       <template v-else>
         <input
           v-model="value"
           :type="!isSensitive || !sensitiveHidden ? 'text' : 'password'"
           :disabled="disabled"
+          :placeholder="node.placeholder"
           @change="onChange"
         />
         <div v-if="isSensitive" class="input-suffix">
