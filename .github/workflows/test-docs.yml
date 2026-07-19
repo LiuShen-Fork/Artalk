@@ -1,13 +1,7 @@
 name: Test Docs
 
 on:
-  push:
-    paths: ["docs/**"]
-    branches-ignore: ["release/*", "nightly"]
-    tags-ignore: ["v*"]
-  pull_request:
-    paths: ["docs/**"]
-    branches-ignore: ["release/*", "nightly"]
+  workflow_dispatch:
 
 permissions:
   contents: read

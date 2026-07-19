@@ -1,251 +1,30 @@
-name: 0x📦 Release New Version
-run-name: 📦 Release ${{ inputs.semver }} by @${{ github.actor }} ${{ inputs.dry_run && '(🧪 Dry-Run)' || '' }}
+name: Release
+run-name: Release ${{ inputs.version }} ${{ inputs.dry_run && '(Dry-Run)' || '' }}
 
 on:
   workflow_dispatch:
     inputs:
-      semver:
-        type: choice
-        description: Which version you want to increment?
-        options:
-          - patch
-          - minor
-          - major
-        required: true
-      custom_version:
-        description: Manual Custom Version (Special Purpose, v*)
+      version:
+        description: "Release version, e.g. v1.0.0"
         type: string
-        required: false
+        required: true
       dry_run:
-        description: "Dry run?"
+        description: "Dry run"
         type: boolean
         default: false
+      build_items:
+        description: "Build items: app,docker or ui,app,docker"
+        type: string
+        default: "app,docker"
 
 permissions:
-  contents: read
-
-concurrency:
-  group: prepare-release
-  cancel-in-progress: false
+  contents: write
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: master
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Handle Version Number
-        env:
-          CUSTOM_VERSION: ${{ inputs.custom_version }}
-          GH_TOKEN: ${{ github.token }}
-          SEMVER_INCREMENT: ${{ inputs.semver }}
-        run: |
-          PREV_VERSION="$(git describe --tags --abbrev=0 --match 'v*')"
-          if [[ ! "$PREV_VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            echo "Invalid previous version: $PREV_VERSION"
-            exit 1
-          fi
-
-          if ! git merge-base --is-ancestor "$PREV_VERSION" HEAD; then
-            echo "Latest release tag $PREV_VERSION is not an ancestor of master."
-            exit 1
-          fi
-
-          CURRENT_APP_VERSION="$(
-            sed -n 's/^var Version = "\(v[0-9][0-9.]*\)"$/\1/p' internal/config/version.go
-          )"
-          CURRENT_UI_VERSION="$(jq -r '.version' ui/artalk/package.json)"
-          CURRENT_DOCS_VERSION="$(jq -r '.latest' docs/docs/code/ArtalkVersion.json)"
-          CURRENT_PACKAGE_VERSION="${CURRENT_APP_VERSION#v}"
-
-          if [[ -z "$CURRENT_APP_VERSION" ||
-                "$CURRENT_UI_VERSION" != "$CURRENT_PACKAGE_VERSION" ||
-                "$CURRENT_DOCS_VERSION" != "$CURRENT_PACKAGE_VERSION" ]]; then
-            echo "Release versions are inconsistent: app=$CURRENT_APP_VERSION ui=$CURRENT_UI_VERSION docs=$CURRENT_DOCS_VERSION."
-            exit 1
-          fi
-
-          if [[ "$CURRENT_APP_VERSION" != "$PREV_VERSION" ]]; then
-            echo "Source version $CURRENT_APP_VERSION does not match the latest release tag $PREV_VERSION."
-            echo "If the release PR was already merged, recover it with Build and Publish instead of preparing the release again."
-            exit 1
-          fi
-
-          if [[ -n "$CUSTOM_VERSION" ]]; then
-            NEXT_VERSION="$CUSTOM_VERSION"
-          else
-            major="${BASH_REMATCH[1]}"
-            minor="${BASH_REMATCH[2]}"
-            patch="${BASH_REMATCH[3]}"
-            case "$SEMVER_INCREMENT" in
-              major) NEXT_VERSION="v$((major + 1)).0.0" ;;
-              minor) NEXT_VERSION="v${major}.$((minor + 1)).0" ;;
-              patch) NEXT_VERSION="v${major}.${minor}.$((patch + 1))" ;;
-              *) echo "Invalid version increment: $SEMVER_INCREMENT"; exit 1 ;;
-            esac
-          fi
-
-          if [[ ! "$NEXT_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Invalid version: $NEXT_VERSION"
-            exit 1
-          fi
-
-          version_is_greater() {
-            local next_version="${1#v}"
-            local previous_version="${2#v}"
-            local -a next_parts previous_parts
-            local index next_part previous_part
-
-            IFS='.' read -r -a next_parts <<< "$next_version"
-            IFS='.' read -r -a previous_parts <<< "$previous_version"
-            for index in 0 1 2; do
-              next_part=$((10#${next_parts[$index]}))
-              previous_part=$((10#${previous_parts[$index]}))
-              if (( next_part > previous_part )); then
-                return 0
-              fi
-              if (( next_part < previous_part )); then
-                return 1
-              fi
-            done
-            return 1
-          }
-
-          if ! version_is_greater "$NEXT_VERSION" "$PREV_VERSION"; then
-            echo "Release version $NEXT_VERSION must be greater than $PREV_VERSION."
-            exit 1
-          fi
-
-          if git show-ref --verify --quiet "refs/tags/$NEXT_VERSION"; then
-            echo "Release tag $NEXT_VERSION already exists."
-            exit 1
-          fi
-
-          release_branch="release/$NEXT_VERSION"
-          existing_pr="$(
-            gh pr list \
-              --repo "$GITHUB_REPOSITORY" \
-              --head "$release_branch" \
-              --base master \
-              --state open \
-              --json number,url \
-              --jq 'if length == 0 then "" else "#\(.[0].number) \(.[0].url)" end'
-          )"
-          if [[ -n "$existing_pr" ]]; then
-            echo "Release pull request $existing_pr already exists for $NEXT_VERSION."
-            exit 1
-          fi
-
-          echo "PREV_VERSION=${PREV_VERSION}" >> "$GITHUB_ENV"
-          echo "VERSION=${NEXT_VERSION}" >> "$GITHUB_ENV"
-
-      - name: Print Next Version
-        run: echo "${VERSION}"
-
-      - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: go.mod
-          cache: false
-
-      - name: Setup git-chglog
-        run: |
-          GOBIN="$RUNNER_TEMP/bin" go install github.com/git-chglog/git-chglog/cmd/git-chglog@v0.15.4
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-          go version -m "$RUNNER_TEMP/bin/git-chglog"
-
-      - name: Version Changelog
-        run: |
-          # prepend changelog
-          changelog="$(git-chglog --config .github/chglog/config.yml --next-tag "$VERSION" "$VERSION")"
-          temp_file="$(mktemp CHANGELOG.md.XXXXXX)"
-          printf '%s\n\n' "$changelog" | cat - CHANGELOG.md > "$temp_file"
-          mv "$temp_file" CHANGELOG.md
-
-          # modify the version for `internal/config/version.go`
-          perl -i -pe 's/var Version = ".*?"/var Version = "$ENV{VERSION}"/g' internal/config/version.go
-
-          # modify the version for `package.json`
-          PACKAGE_VERSION="${VERSION#v}"
-          PACKAGE_VERSION="$PACKAGE_VERSION" perl -i -pe \
-            's/"version": ".*?"/"version": "$ENV{PACKAGE_VERSION}"/g' ui/artalk/package.json
-
-          # modify the version in docs
-          PACKAGE_VERSION="$PACKAGE_VERSION" perl -pi -e \
-            's#"latest"(\W+)?:(\W+)?".*?"#"latest": "$ENV{PACKAGE_VERSION}"#g' docs/docs/code/ArtalkVersion.json
-
-      - name: Validate Release Changes
-        run: |
-          PACKAGE_VERSION="${VERSION#v}"
-          APP_VERSION="$(
-            sed -n 's/^var Version = "\(v[0-9][0-9.]*\)"$/\1/p' internal/config/version.go
-          )"
-          UI_VERSION="$(jq -r '.version' ui/artalk/package.json)"
-          DOCS_VERSION="$(jq -r '.latest' docs/docs/code/ArtalkVersion.json)"
-
-          if [[ "$APP_VERSION" != "$VERSION" ||
-                "$UI_VERSION" != "$PACKAGE_VERSION" ||
-                "$DOCS_VERSION" != "$PACKAGE_VERSION" ]]; then
-            echo "Generated release versions are inconsistent: app=$APP_VERSION ui=$UI_VERSION docs=$DOCS_VERSION."
-            exit 1
-          fi
-
-          changelog_entries="$(grep -cF "## [$VERSION]" CHANGELOG.md || true)"
-          if [[ "$changelog_entries" != "1" ]]; then
-            echo "Expected one CHANGELOG entry for $VERSION, found $changelog_entries."
-            exit 1
-          fi
-
-          first_changelog_version="$(
-            sed -n 's/^## \[\(v[0-9][^]]*\)\].*/\1/p' CHANGELOG.md | head -n 1
-          )"
-          if [[ "$first_changelog_version" != "$VERSION" ]]; then
-            echo "The first CHANGELOG release is $first_changelog_version, expected $VERSION."
-            exit 1
-          fi
-
-          expected_changes="$(
-            printf '%s\n' \
-              CHANGELOG.md \
-              docs/docs/code/ArtalkVersion.json \
-              internal/config/version.go \
-              ui/artalk/package.json |
-              sort
-          )"
-          actual_changes="$(git diff --name-only | sort)"
-          if [[ "$actual_changes" != "$expected_changes" ]]; then
-            echo "Unexpected release file set:"
-            git diff --name-only
-            exit 1
-          fi
-
-          git diff --check
-
-      - name: Print Git Diff
-        run: git diff
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        if: ${{ !inputs.dry_run }}
-        with:
-          branch: "release/${{ env.VERSION }}"
-          commit-message: "chore: release ${{ env.VERSION }}"
-          title: "chore: release ${{ env.VERSION }}"
-          labels: release
-          body: |
-            ## Release ${{ env.VERSION }} 📦🚀
-
-            This PR is auto-generated, please check the changelog and confirm the release. 😀
-
-            The build workflow will be triggered after the PR is merged.
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          assignees: ${{ github.actor }}
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ inputs.version }}
+      dry_run: ${{ inputs.dry_run || false }}
+      build_items: ${{ inputs.build_items }}
+    secrets: inherit
