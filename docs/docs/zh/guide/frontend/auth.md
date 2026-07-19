@@ -98,18 +98,13 @@ auth:
     scopes:
       - profile
       - email
-    user_id_path: "data.user.id"
-    user_name_path: "data.user.name"
-    user_email_path: "data.user.email"
-    user_avatar_path: "data.user.avatar_url"
-    user_link_path: "data.user.profile_url"
 ```
 
-`label` 是该登录方式在登录方式选择弹窗中的显示名称。OIDC 兼容服务也使用这个通用 OAuth 入口，因此可以将它设置为“公司账号登录”“统一身份认证”等名称。
+`label` 是该登录方式在登录方式选择弹窗中的显示名称。
 
-五个 `user_*_path` 配置用于从用户信息接口的 JSON 响应中映射字段，支持点号路径和数组下标，例如 `sub`、`data.user.id` 或 `users.0.id`。`user_id_path` 必填，可映射字符串或数字；昵称、邮箱、头像和主页地址均为可选。未取得邮箱时，Artalk 会根据 OAuth 身份生成一个位于 `.invalid` 保留域名下的稳定私有占位邮箱；该地址不可投递，也不代表真实邮箱。
+Artalk 会自动从用户信息 JSON 中识别常见字段，包括 GitHub 风格的 `id`、`login`、`email`、`avatar_url`、`html_url`，以及常见的 `sub`、`name`、`picture` 字段和 `data.user`、`data.account` 包装。未取得邮箱时会生成不可投递的私有占位邮箱。
 
-如果接入的是兼容 OpenID Connect 的服务，常见映射为 `sub`、`name`、`email`、`picture`，常见 scopes 为 `openid`、`profile`、`email`。
+普通 OAuth 2.0 登录只需要配置 `auth.generic`，不需要配置下面的 `auth.sso`。SSO 是仓库原有的另一套“复用外部登录态”功能，和登录方式弹窗中的 OAuth 入口无关。
 
 ## SSO 令牌交换
 

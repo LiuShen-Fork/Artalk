@@ -122,18 +122,13 @@ func GetProviders(conf *config.Config) []goth.Provider {
 	// Generic OAuth 2.0 Authorization Code provider.
 	if genericConf := conf.Auth.Generic; genericConf.Enabled {
 		provider, err := generic.New(generic.Options{
-			ClientID:       genericConf.ClientID,
-			ClientSecret:   genericConf.ClientSecret,
-			CallbackURL:    callbackURL(generic.ProviderName),
-			AuthorizeURL:   genericConf.AuthorizeURL,
-			TokenURL:       genericConf.TokenURL,
-			UserInfoURL:    genericConf.UserInfoURL,
-			Scopes:         genericConf.Scopes,
-			UserIDPath:     genericConf.UserIDPath,
-			UserNamePath:   genericConf.UserNamePath,
-			UserEmailPath:  genericConf.UserEmailPath,
-			UserAvatarPath: genericConf.UserAvatarPath,
-			UserLinkPath:   genericConf.UserLinkPath,
+			ClientID:     genericConf.ClientID,
+			ClientSecret: genericConf.ClientSecret,
+			CallbackURL:  callbackURL(generic.ProviderName),
+			AuthorizeURL: genericConf.AuthorizeURL,
+			TokenURL:     genericConf.TokenURL,
+			UserInfoURL:  genericConf.UserInfoURL,
+			Scopes:       genericConf.Scopes,
 		})
 		if err != nil {
 			log.Errorf("[SocialLogin] Invalid generic OAuth configuration: %v", err)

@@ -425,16 +425,6 @@ auth:
     user_info_url: ""
     # OAuth scopes requested during authorization
     scopes: []
-    # User ID JSON field path (dot notation, e.g. "sub" or "data.user.id")
-    user_id_path: "id"
-    # Display name JSON field path
-    user_name_path: "name"
-    # Email JSON field path (optional; a private placeholder email is generated when empty)
-    user_email_path: "email"
-    # Avatar URL JSON field path (optional)
-    user_avatar_path: "avatar_url"
-    # Profile or website URL JSON field path (optional)
-    user_link_path: ""
   # SSO (Exchange external OIDC access tokens for Artalk login sessions, verified via the IdP's /userinfo endpoint)
   # -- Use this when the embedding app already runs OIDC and you want Artalk to inherit that session without its own popup login UI. --
   sso:

@@ -12,18 +12,13 @@ import (
 
 func validOptions(baseURL string) Options {
 	return Options{
-		ClientID:       "client-id",
-		ClientSecret:   "client-secret",
-		CallbackURL:    "https://artalk.example.com/api/v2/auth/generic/callback",
-		AuthorizeURL:   baseURL + "/authorize",
-		TokenURL:       baseURL + "/token",
-		UserInfoURL:    baseURL + "/userinfo",
-		Scopes:         []string{" openid ", "profile", "email", "email", ""},
-		UserIDPath:     "data.account.id",
-		UserNamePath:   "data.account.name",
-		UserEmailPath:  "data.account.email",
-		UserAvatarPath: "data.account.avatar.url",
-		UserLinkPath:   "data.account.profile_url",
+		ClientID:     "client-id",
+		ClientSecret: "client-secret",
+		CallbackURL:  "https://artalk.example.com/api/v2/auth/generic/callback",
+		AuthorizeURL: baseURL + "/authorize",
+		TokenURL:     baseURL + "/token",
+		UserInfoURL:  baseURL + "/userinfo",
+		Scopes:       []string{" openid ", "profile", "email", "email", ""},
 	}
 }
 
@@ -35,7 +30,6 @@ func TestNewValidatesRequiredOptions(t *testing.T) {
 	}{
 		{name: "client ID", mutate: func(o *Options) { o.ClientID = "" }, want: "client ID is required"},
 		{name: "client secret", mutate: func(o *Options) { o.ClientSecret = "" }, want: "client secret is required"},
-		{name: "user ID path", mutate: func(o *Options) { o.UserIDPath = "" }, want: "user ID path is required"},
 		{name: "authorize URL", mutate: func(o *Options) { o.AuthorizeURL = "ftp://example.com/auth" }, want: "invalid authorize URL"},
 		{name: "token URL", mutate: func(o *Options) { o.TokenURL = "/token" }, want: "invalid token URL"},
 		{name: "user info URL", mutate: func(o *Options) { o.UserInfoURL = "" }, want: "invalid user info URL"},
@@ -198,11 +192,7 @@ func TestFetchUserNameFallbackDoesNotExposeEmail(t *testing.T) {
 				_, _ = w.Write([]byte(tt.response))
 			}))
 			defer server.Close()
-			options := validOptions(server.URL)
-			options.UserIDPath = "id"
-			options.UserNamePath = "name"
-			options.UserEmailPath = "email"
-			provider, err := New(options)
+			provider, err := New(validOptions(server.URL))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -212,6 +202,57 @@ func TestFetchUserNameFallbackDoesNotExposeEmail(t *testing.T) {
 			}
 			if user.Name != tt.wantName {
 				t.Fatalf("Name = %q, want %q", user.Name, tt.wantName)
+			}
+		})
+	}
+}
+
+func TestFetchUserRecognizesCommonResponseFormats(t *testing.T) {
+	tests := []struct {
+		name       string
+		response   string
+		wantID     string
+		wantName   string
+		wantAvatar string
+		wantLink   string
+	}{
+		{
+			name:       "GitHub style",
+			response:   `{"id":123,"login":"alice","email":"alice@example.com","avatar_url":"https://cdn.example.com/alice.png","html_url":"https://example.com/alice"}`,
+			wantID:     "123",
+			wantName:   "alice",
+			wantAvatar: "https://cdn.example.com/alice.png",
+			wantLink:   "https://example.com/alice",
+		},
+		{
+			name:       "OIDC style",
+			response:   `{"sub":"user-456","name":"Alice","email":"alice@example.com","picture":"https://cdn.example.com/alice.jpg"}`,
+			wantID:     "user-456",
+			wantName:   "Alice",
+			wantAvatar: "https://cdn.example.com/alice.jpg",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, _ = w.Write([]byte(tt.response))
+			}))
+			defer server.Close()
+
+			provider, err := New(validOptions(server.URL))
+			if err != nil {
+				t.Fatal(err)
+			}
+			user, err := provider.FetchUser(&Session{AccessToken: "token"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if user.UserID != tt.wantID || user.Name != tt.wantName || user.AvatarURL != tt.wantAvatar {
+				t.Fatalf("user = %#v", user)
+			}
+			if got, _ := user.RawData[RawDataUserLinkKey].(string); got != tt.wantLink {
+				t.Fatalf("link = %q, want %q", got, tt.wantLink)
 			}
 		})
 	}
@@ -227,7 +268,7 @@ func TestFetchUserErrors(t *testing.T) {
 		{name: "non success", statusCode: http.StatusUnauthorized, body: `{}`, want: "status 401"},
 		{name: "invalid JSON", statusCode: http.StatusOK, body: `{`, want: "decode generic user information"},
 		{name: "multiple JSON values", statusCode: http.StatusOK, body: `{"data":{}} {}`, want: "multiple JSON values"},
-		{name: "missing ID", statusCode: http.StatusOK, body: `{"data":{"account":{"name":"Alice"}}}`, want: "does not contain a value at ID path"},
+		{name: "missing ID", statusCode: http.StatusOK, body: `{"data":{"account":{"name":"Alice"}}}`, want: "does not contain a recognized user ID field"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

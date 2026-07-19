@@ -23,8 +23,7 @@ const (
 	maxUserInfoBodySize = 4 << 20
 )
 
-// Options describes a standard OAuth 2.0 Authorization Code provider and how
-// fields from its user-info JSON response map to an Artalk user.
+// Options describes a standard OAuth 2.0 Authorization Code provider.
 type Options struct {
 	ClientID     string
 	ClientSecret string
@@ -33,26 +32,17 @@ type Options struct {
 	TokenURL     string
 	UserInfoURL  string
 	Scopes       []string
-
-	UserIDPath     string
-	UserNamePath   string
-	UserEmailPath  string
-	UserAvatarPath string
-	UserLinkPath   string
 }
 
 // Provider implements goth.Provider for a configurable OAuth 2.0 service.
 type Provider struct {
-	userInfoURL    string
-	userIDPath     string
-	userNamePath   string
-	userEmailPath  string
-	userAvatarPath string
-	userLinkPath   string
-	providerName   string
-	config         *oauth2.Config
-	HTTPClient     *http.Client
+	userInfoURL  string
+	providerName string
+	config       *oauth2.Config
+	HTTPClient   *http.Client
 }
+
+var commonUserInfoContainers = []string{"", "user", "data", "data.user", "account", "data.account", "profile", "data.profile"}
 
 var _ goth.Provider = (*Provider)(nil)
 
@@ -63,7 +53,6 @@ func New(options Options) (*Provider, error) {
 	options.AuthorizeURL = strings.TrimSpace(options.AuthorizeURL)
 	options.TokenURL = strings.TrimSpace(options.TokenURL)
 	options.UserInfoURL = strings.TrimSpace(options.UserInfoURL)
-	options.UserIDPath = strings.TrimSpace(options.UserIDPath)
 
 	if options.ClientID == "" {
 		return nil, errors.New("client ID is required")
@@ -71,10 +60,6 @@ func New(options Options) (*Provider, error) {
 	if strings.TrimSpace(options.ClientSecret) == "" {
 		return nil, errors.New("client secret is required")
 	}
-	if options.UserIDPath == "" {
-		return nil, errors.New("user ID path is required")
-	}
-
 	for _, endpoint := range []struct {
 		name string
 		url  string
@@ -91,14 +76,9 @@ func New(options Options) (*Provider, error) {
 
 	scopes := normalizeScopes(options.Scopes)
 	provider := &Provider{
-		userInfoURL:    options.UserInfoURL,
-		userIDPath:     options.UserIDPath,
-		userNamePath:   strings.TrimSpace(options.UserNamePath),
-		userEmailPath:  strings.TrimSpace(options.UserEmailPath),
-		userAvatarPath: strings.TrimSpace(options.UserAvatarPath),
-		userLinkPath:   strings.TrimSpace(options.UserLinkPath),
-		providerName:   ProviderName,
-		HTTPClient:     &http.Client{Timeout: defaultHTTPTimeout},
+		userInfoURL:  options.UserInfoURL,
+		providerName: ProviderName,
+		HTTPClient:   &http.Client{Timeout: defaultHTTPTimeout},
 	}
 	provider.config = &oauth2.Config{
 		ClientID:     options.ClientID,
@@ -227,16 +207,16 @@ func (p *Provider) FetchUser(session goth.Session) (goth.User, error) {
 		return user, fmt.Errorf("decode %s user information: %w", p.providerName, err)
 	}
 
-	userID := valueAtPath(rawData, p.userIDPath)
+	userID := commonUserInfoValue(rawData, "id", "sub", "user_id", "uid", "uuid")
 	if userID == "" {
-		return user, fmt.Errorf("%s user information does not contain a value at ID path %q", p.providerName, p.userIDPath)
+		return user, fmt.Errorf("%s user information does not contain a recognized user ID field", p.providerName)
 	}
 
 	user.UserID = userID
-	user.Name = valueAtPath(rawData, p.userNamePath)
-	user.Email = valueAtPath(rawData, p.userEmailPath)
-	user.AvatarURL = valueAtPath(rawData, p.userAvatarPath)
-	if link := valueAtPath(rawData, p.userLinkPath); link != "" {
+	user.Name = commonUserInfoValue(rawData, "name", "display_name", "full_name", "username", "login", "nickname", "nick_name", "preferred_username")
+	user.Email = commonUserInfoValue(rawData, "email", "mail", "email_address")
+	user.AvatarURL = commonUserInfoValue(rawData, "avatar_url", "avatar.url", "avatar", "picture", "profile_image_url_https", "profile_image_url")
+	if link := commonUserInfoValue(rawData, "html_url", "profile_url", "web_url", "website", "url"); link != "" {
 		rawData[RawDataUserLinkKey] = link
 	}
 	if user.Name == "" && user.Email == "" {
@@ -246,6 +226,21 @@ func (p *Provider) FetchUser(session goth.Session) (goth.User, error) {
 	user.RawData = rawData
 
 	return user, nil
+}
+
+func commonUserInfoValue(data map[string]any, fields ...string) string {
+	for _, container := range commonUserInfoContainers {
+		for _, field := range fields {
+			path := field
+			if container != "" {
+				path = container + "." + field
+			}
+			if value := valueAtPath(data, path); value != "" {
+				return value
+			}
+		}
+	}
+	return ""
 }
 
 func ensureJSONEOF(decoder *json.Decoder) error {

@@ -415,16 +415,6 @@ auth:
     user_info_url: ""
     # 授權時請求的 OAuth 權限範圍
     scopes: []
-    # 用戶 ID 的 JSON 欄位路徑（支援點號，如 "sub" 或 "data.user.id"）
-    user_id_path: "id"
-    # 用戶暱稱的 JSON 欄位路徑
-    user_name_path: "name"
-    # 用戶電子郵件的 JSON 欄位路徑（可選；留空時產生私有暫代信箱）
-    user_email_path: "email"
-    # 用戶頭像位址的 JSON 欄位路徑（可選）
-    user_avatar_path: "avatar_url"
-    # 用戶主頁或網站位址的 JSON 欄位路徑（可選）
-    user_link_path: ""
   # SSO (用外部 OIDC 身分提供商的存取權杖換取 Artalk 登入工作階段，透過呼叫 IdP 的 /userinfo 端點驗證)
   # -- 當嵌入頁面已執行 OIDC 且希望 Artalk 沿用該登入狀態、不顯示自身彈窗登入介面時使用。 --
   sso:

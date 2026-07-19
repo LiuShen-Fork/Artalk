@@ -97,18 +97,13 @@ auth:
     scopes:
       - profile
       - email
-    user_id_path: "data.user.id"
-    user_name_path: "data.user.name"
-    user_email_path: "data.user.email"
-    user_avatar_path: "data.user.avatar_url"
-    user_link_path: "data.user.profile_url"
 ```
 
-`label` is the name shown for this login method in the login-method picker. OIDC-compatible services use the same generic OAuth entry, so it can be named after your identity provider or organization.
+`label` is the name shown for this login method in the login-method picker.
 
-The five `user_*_path` options map fields from the user-information JSON response. Dot notation and array indexes are supported, for example `sub`, `data.user.id`, or `users.0.id`. `user_id_path` is required and may point to a string or numeric value. Name, email, avatar, and profile URL are optional. If email is missing, Artalk creates a private deterministic placeholder email for the OAuth identity under the reserved `.invalid` domain; it is non-deliverable and does not represent a real mailbox.
+Artalk automatically recognizes common user-information fields, including GitHub-style `id`, `login`, `email`, `avatar_url`, and `html_url`, as well as `sub`, `name`, `picture`, and common `data.user` or `data.account` wrappers. If email is missing, Artalk generates a private non-deliverable placeholder email.
 
-For an OpenID Connect-compatible provider, the common mapping is usually `sub`, `name`, `email`, and `picture`, with scopes `openid`, `profile`, and `email`.
+A normal OAuth 2.0 login only requires `auth.generic`; it does not require the `auth.sso` configuration below. SSO is a pre-existing, separate token-exchange feature and is unrelated to the OAuth entry in the login-method picker.
 
 ## SSO Token Exchange
 

@@ -149,12 +149,7 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_AUTH_GENERIC_LABEL** | `"OAuth 2.0"` | 登录按钮显示名称 | auth.generic.label (社交登录 > 通用 OAuth 2.0 > 登录按钮显示名称) |
 | **ATK_AUTH_GENERIC_SCOPES** | `[]` | 授权时请求的 OAuth 权限范围 | auth.generic.scopes (社交登录 > 通用 OAuth 2.0 > 授权时请求的 OAuth 权限范围) |
 | **ATK_AUTH_GENERIC_TOKEN_URL** | `""` | 令牌端点地址 | auth.generic.token_url (社交登录 > 通用 OAuth 2.0 > 令牌端点地址) |
-| **ATK_AUTH_GENERIC_USER_AVATAR_PATH** | `"avatar_url"` | 用户头像地址的 JSON 字段路径（可选） | auth.generic.user_avatar_path (社交登录 > 通用 OAuth 2.0 > 用户头像地址的 JSON 字段路径（可选）) |
-| **ATK_AUTH_GENERIC_USER_EMAIL_PATH** | `"email"` | 用户邮箱的 JSON 字段路径（可选；为空时生成私有占位邮箱） | auth.generic.user_email_path (社交登录 > 通用 OAuth 2.0 > 用户邮箱的 JSON 字段路径（可选；为空时生成私有占位邮箱）) |
-| **ATK_AUTH_GENERIC_USER_ID_PATH** | `"id"` | 用户 ID 的 JSON 字段路径（支持点号，如 "sub" 或 "data.user.id"） | auth.generic.user_id_path (社交登录 > 通用 OAuth 2.0 > 用户 ID 的 JSON 字段路径（支持点号，如 "sub" 或 "data.user.id"）) |
 | **ATK_AUTH_GENERIC_USER_INFO_URL** | `""` | 用户信息端点地址（必须返回 JSON） | auth.generic.user_info_url (社交登录 > 通用 OAuth 2.0 > 用户信息端点地址（必须返回 JSON）) |
-| **ATK_AUTH_GENERIC_USER_LINK_PATH** | `""` | 用户主页或网站地址的 JSON 字段路径（可选） | auth.generic.user_link_path (社交登录 > 通用 OAuth 2.0 > 用户主页或网站地址的 JSON 字段路径（可选）) |
-| **ATK_AUTH_GENERIC_USER_NAME_PATH** | `"name"` | 用户昵称的 JSON 字段路径 | auth.generic.user_name_path (社交登录 > 通用 OAuth 2.0 > 用户昵称的 JSON 字段路径) |
 | **ATK_AUTH_GITEA_CLIENT_ID** | `""` | ClientId | auth.gitea.client_id (社交登录 > Gitea > ClientId) |
 | **ATK_AUTH_GITEA_CLIENT_SECRET** | `""` | ClientSecret | auth.gitea.client_secret (社交登录 > Gitea > ClientSecret) |
 | **ATK_AUTH_GITEA_ENABLED** | `false` | 启用 | auth.gitea.enabled (社交登录 > Gitea > Enabled) |

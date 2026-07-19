@@ -396,12 +396,6 @@ type AuthGenericOAuthConf struct {
 	TokenURL     string   `koanf:"token_url" json:"token_url"`
 	UserInfoURL  string   `koanf:"user_info_url" json:"user_info_url"`
 	Scopes       []string `koanf:"scopes" json:"scopes"`
-
-	UserIDPath     string `koanf:"user_id_path" json:"user_id_path"`
-	UserNamePath   string `koanf:"user_name_path" json:"user_name_path"`
-	UserEmailPath  string `koanf:"user_email_path" json:"user_email_path"`
-	UserAvatarPath string `koanf:"user_avatar_path" json:"user_avatar_path"`
-	UserLinkPath   string `koanf:"user_link_path" json:"user_link_path"`
 }
 
 type AuthConf struct {

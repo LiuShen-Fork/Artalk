@@ -230,11 +230,6 @@ auth:
     token_url: ""
     user_info_url: ""
     scopes: []
-    user_id_path: "id"
-    user_name_path: "name"
-    user_email_path: "email"
-    user_avatar_path: "avatar_url"
-    user_link_path: ""
   sso:
     enabled: false
     issuer: ""

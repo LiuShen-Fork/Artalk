@@ -14,19 +14,14 @@ func genericAuthConfig() *config.Config {
 	conf := &config.Config{}
 	conf.Auth.Callback = "https://artalk.example.com/api/v2/auth/{provider}/callback"
 	conf.Auth.Generic = config.AuthGenericOAuthConf{
-		Enabled:        true,
-		Label:          "Company Login",
-		ClientID:       "client-id",
-		ClientSecret:   "client-secret",
-		AuthorizeURL:   "https://id.example.com/oauth/authorize",
-		TokenURL:       "https://id.example.com/oauth/token",
-		UserInfoURL:    "https://id.example.com/api/user",
-		Scopes:         []string{"profile", "email"},
-		UserIDPath:     "id",
-		UserNamePath:   "name",
-		UserEmailPath:  "email",
-		UserAvatarPath: "avatar_url",
-		UserLinkPath:   "profile_url",
+		Enabled:      true,
+		Label:        "Company Login",
+		ClientID:     "client-id",
+		ClientSecret: "client-secret",
+		AuthorizeURL: "https://id.example.com/oauth/authorize",
+		TokenURL:     "https://id.example.com/oauth/token",
+		UserInfoURL:  "https://id.example.com/api/user",
+		Scopes:       []string{"profile", "email"},
 	}
 	return conf
 }
