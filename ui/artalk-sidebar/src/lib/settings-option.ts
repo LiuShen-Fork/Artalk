@@ -34,8 +34,18 @@ const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placehold
     control: 'input',
     placeholder: 'https://xxx.xxx.com/v1',
   },
+  'moderator.ai.api_key': {
+    control: 'input',
+    placeholder: 'sk-...',
+  },
+  'moderator.ai.model': {
+    control: 'input',
+    placeholder: 'e.g. gpt-4.1-mini',
+  },
   'moderator.ai.prompt': {
     control: 'textarea',
+    placeholder:
+      'Describe which content should be sensitive. JSON Schema is generated automatically.',
   },
 }
 

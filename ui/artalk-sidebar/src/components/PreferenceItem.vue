@@ -25,7 +25,10 @@ const separatorListId = computed(() =>
 
 onBeforeMount(() => {
   // initial value
-  value.value = formatOptionValue(settings.get().getCustom(props.node.path), props.node)
+  value.value = formatOptionValue(
+    settings.get().getCustom(props.node.path) ?? props.node.default ?? '',
+    props.node,
+  )
   disabled.value = !!settings.get().getEnvByPath(props.node.path)
 })
 
