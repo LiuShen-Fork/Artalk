@@ -131,12 +131,26 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_AUTH_DISCORD_CLIENT_SECRET** | `""` | ClientSecret | auth.discord.client_secret (Social Login > Discord > ClientSecret) |
 | **ATK_AUTH_DISCORD_ENABLED** | `false` | 启用 | auth.discord.enabled (Social Login > Discord > Enabled) |
 | **ATK_AUTH_EMAIL_ENABLED** | `true` | Enable email password login | auth.email.enabled (Social Login > Email > Enable email password login) |
+| **ATK_AUTH_EMAIL_LABEL** | `"Email"` | Login button label | auth.email.label (Social Login > Email > Login button label) |
 | **ATK_AUTH_EMAIL_VERIFY_SUBJECT** | `"Your Code - {{code}}"` | Verification email subject | auth.email.verify_subject (Social Login > Email > Verification email subject) |
 | **ATK_AUTH_EMAIL_VERIFY_TPL** | `"default"` | Verification email template (set to file path to use custom template) | auth.email.verify_tpl (Social Login > Email > Verification email template) |
 | **ATK_AUTH_ENABLED** | `false` | Enable Social Login | auth.enabled (Social Login > Enable Social Login) |
 | **ATK_AUTH_FACEBOOK_CLIENT_ID** | `""` | ClientId | auth.facebook.client_id (Social Login > Facebook > ClientId) |
 | **ATK_AUTH_FACEBOOK_CLIENT_SECRET** | `""` | ClientSecret | auth.facebook.client_secret (Social Login > Facebook > ClientSecret) |
 | **ATK_AUTH_FACEBOOK_ENABLED** | `false` | 启用 | auth.facebook.enabled (Social Login > Facebook > Enabled) |
+| **ATK_AUTH_GENERIC_AUTHORIZE_URL** | `""` | Authorization endpoint URL | auth.generic.authorize_url (Social Login > Generic OAuth 2.0 > Authorization endpoint URL) |
+| **ATK_AUTH_GENERIC_CLIENT_ID** | `""` | OAuth client ID | auth.generic.client_id (Social Login > Generic OAuth 2.0 > OAuth client ID) |
+| **ATK_AUTH_GENERIC_CLIENT_SECRET** | `""` | OAuth client secret | auth.generic.client_secret (Social Login > Generic OAuth 2.0 > OAuth client secret) |
+| **ATK_AUTH_GENERIC_ENABLED** | `false` | Enable generic OAuth 2.0 login | auth.generic.enabled (Social Login > Generic OAuth 2.0 > Enable generic OAuth 2.0 login) |
+| **ATK_AUTH_GENERIC_LABEL** | `"OAuth 2.0"` | Login button label | auth.generic.label (Social Login > Generic OAuth 2.0 > Login button label) |
+| **ATK_AUTH_GENERIC_SCOPES** | `[]` | OAuth scopes requested during authorization | auth.generic.scopes (Social Login > Generic OAuth 2.0 > OAuth scopes requested during authorization) |
+| **ATK_AUTH_GENERIC_TOKEN_URL** | `""` | Token endpoint URL | auth.generic.token_url (Social Login > Generic OAuth 2.0 > Token endpoint URL) |
+| **ATK_AUTH_GENERIC_USER_AVATAR_PATH** | `"avatar_url"` | Avatar URL JSON field path (optional) | auth.generic.user_avatar_path (Social Login > Generic OAuth 2.0 > Avatar URL JSON field path) |
+| **ATK_AUTH_GENERIC_USER_EMAIL_PATH** | `"email"` | Email JSON field path (optional; a private placeholder email is generated when empty) | auth.generic.user_email_path (Social Login > Generic OAuth 2.0 > Email JSON field path) |
+| **ATK_AUTH_GENERIC_USER_ID_PATH** | `"id"` | User ID JSON field path (dot notation, e.g. "sub" or "data.user.id") | auth.generic.user_id_path (Social Login > Generic OAuth 2.0 > User ID JSON field path) |
+| **ATK_AUTH_GENERIC_USER_INFO_URL** | `""` | User information endpoint URL (must return JSON) | auth.generic.user_info_url (Social Login > Generic OAuth 2.0 > User information endpoint URL) |
+| **ATK_AUTH_GENERIC_USER_LINK_PATH** | `""` | Profile or website URL JSON field path (optional) | auth.generic.user_link_path (Social Login > Generic OAuth 2.0 > Profile or website URL JSON field path) |
+| **ATK_AUTH_GENERIC_USER_NAME_PATH** | `"name"` | Display name JSON field path | auth.generic.user_name_path (Social Login > Generic OAuth 2.0 > Display name JSON field path) |
 | **ATK_AUTH_GITEA_CLIENT_ID** | `""` | ClientId | auth.gitea.client_id (Social Login > Gitea > ClientId) |
 | **ATK_AUTH_GITEA_CLIENT_SECRET** | `""` | ClientSecret | auth.gitea.client_secret (Social Login > Gitea > ClientSecret) |
 | **ATK_AUTH_GITEA_ENABLED** | `false` | 启用 | auth.gitea.enabled (Social Login > Gitea > Enabled) |

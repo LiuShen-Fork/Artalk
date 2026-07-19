@@ -132,12 +132,26 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_AUTH_DISCORD_CLIENT_SECRET** | `""` | ClientSecret | auth.discord.client_secret (社交登录 > Discord > ClientSecret) |
 | **ATK_AUTH_DISCORD_ENABLED** | `false` | 启用 | auth.discord.enabled (社交登录 > Discord > Enabled) |
 | **ATK_AUTH_EMAIL_ENABLED** | `true` | 启用邮箱密码登录 | auth.email.enabled (社交登录 > Email > 启用邮箱密码登录) |
+| **ATK_AUTH_EMAIL_LABEL** | `"Email"` | 登录按钮显示名称 | auth.email.label (社交登录 > Email > 登录按钮显示名称) |
 | **ATK_AUTH_EMAIL_VERIFY_SUBJECT** | `"您的验证码是 - {{code}}"` | 邮箱验证邮件标题 | auth.email.verify_subject (社交登录 > Email > 邮箱验证邮件标题) |
 | **ATK_AUTH_EMAIL_VERIFY_TPL** | `"default"` | 邮箱验证邮件模板 (填入文件路径使用自定义模板) | auth.email.verify_tpl (社交登录 > Email > 邮箱验证邮件模板) |
 | **ATK_AUTH_ENABLED** | `false` | 启用社交登录 | auth.enabled (社交登录 > 启用社交登录) |
 | **ATK_AUTH_FACEBOOK_CLIENT_ID** | `""` | ClientId | auth.facebook.client_id (社交登录 > Facebook > ClientId) |
 | **ATK_AUTH_FACEBOOK_CLIENT_SECRET** | `""` | ClientSecret | auth.facebook.client_secret (社交登录 > Facebook > ClientSecret) |
 | **ATK_AUTH_FACEBOOK_ENABLED** | `false` | 启用 | auth.facebook.enabled (社交登录 > Facebook > Enabled) |
+| **ATK_AUTH_GENERIC_AUTHORIZE_URL** | `""` | 授权端点地址 | auth.generic.authorize_url (社交登录 > 通用 OAuth 2.0 > 授权端点地址) |
+| **ATK_AUTH_GENERIC_CLIENT_ID** | `""` | OAuth 客户端 ID | auth.generic.client_id (社交登录 > 通用 OAuth 2.0 > OAuth 客户端 ID) |
+| **ATK_AUTH_GENERIC_CLIENT_SECRET** | `""` | OAuth 客户端密钥 | auth.generic.client_secret (社交登录 > 通用 OAuth 2.0 > OAuth 客户端密钥) |
+| **ATK_AUTH_GENERIC_ENABLED** | `false` | 启用通用 OAuth 2.0 登录 | auth.generic.enabled (社交登录 > 通用 OAuth 2.0 > 启用通用 OAuth 2.0 登录) |
+| **ATK_AUTH_GENERIC_LABEL** | `"OAuth 2.0"` | 登录按钮显示名称 | auth.generic.label (社交登录 > 通用 OAuth 2.0 > 登录按钮显示名称) |
+| **ATK_AUTH_GENERIC_SCOPES** | `[]` | 授权时请求的 OAuth 权限范围 | auth.generic.scopes (社交登录 > 通用 OAuth 2.0 > 授权时请求的 OAuth 权限范围) |
+| **ATK_AUTH_GENERIC_TOKEN_URL** | `""` | 令牌端点地址 | auth.generic.token_url (社交登录 > 通用 OAuth 2.0 > 令牌端点地址) |
+| **ATK_AUTH_GENERIC_USER_AVATAR_PATH** | `"avatar_url"` | 用户头像地址的 JSON 字段路径（可选） | auth.generic.user_avatar_path (社交登录 > 通用 OAuth 2.0 > 用户头像地址的 JSON 字段路径（可选）) |
+| **ATK_AUTH_GENERIC_USER_EMAIL_PATH** | `"email"` | 用户邮箱的 JSON 字段路径（可选；为空时生成私有占位邮箱） | auth.generic.user_email_path (社交登录 > 通用 OAuth 2.0 > 用户邮箱的 JSON 字段路径（可选；为空时生成私有占位邮箱）) |
+| **ATK_AUTH_GENERIC_USER_ID_PATH** | `"id"` | 用户 ID 的 JSON 字段路径（支持点号，如 "sub" 或 "data.user.id"） | auth.generic.user_id_path (社交登录 > 通用 OAuth 2.0 > 用户 ID 的 JSON 字段路径（支持点号，如 "sub" 或 "data.user.id"）) |
+| **ATK_AUTH_GENERIC_USER_INFO_URL** | `""` | 用户信息端点地址（必须返回 JSON） | auth.generic.user_info_url (社交登录 > 通用 OAuth 2.0 > 用户信息端点地址（必须返回 JSON）) |
+| **ATK_AUTH_GENERIC_USER_LINK_PATH** | `""` | 用户主页或网站地址的 JSON 字段路径（可选） | auth.generic.user_link_path (社交登录 > 通用 OAuth 2.0 > 用户主页或网站地址的 JSON 字段路径（可选）) |
+| **ATK_AUTH_GENERIC_USER_NAME_PATH** | `"name"` | 用户昵称的 JSON 字段路径 | auth.generic.user_name_path (社交登录 > 通用 OAuth 2.0 > 用户昵称的 JSON 字段路径) |
 | **ATK_AUTH_GITEA_CLIENT_ID** | `""` | ClientId | auth.gitea.client_id (社交登录 > Gitea > ClientId) |
 | **ATK_AUTH_GITEA_CLIENT_SECRET** | `""` | ClientSecret | auth.gitea.client_secret (社交登录 > Gitea > ClientSecret) |
 | **ATK_AUTH_GITEA_ENABLED** | `false` | 启用 | auth.gitea.enabled (社交登录 > Gitea > Enabled) |

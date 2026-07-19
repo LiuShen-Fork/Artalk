@@ -150,6 +150,7 @@ auth:
   callback: "http://localhost:23366/api/v2/auth/{provider}/callback"
   email:
     enabled: true
+    label: "Email"
     verify_subject: "Your Code - {{code}}"
     verify_tpl: default
   github:
@@ -220,6 +221,20 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  generic:
+    enabled: false
+    label: "OAuth 2.0"
+    client_id: ""
+    client_secret: ""
+    authorize_url: ""
+    token_url: ""
+    user_info_url: ""
+    scopes: []
+    user_id_path: "id"
+    user_name_path: "name"
+    user_email_path: "email"
+    user_avatar_path: "avatar_url"
+    user_link_path: ""
   sso:
     enabled: false
     issuer: ""

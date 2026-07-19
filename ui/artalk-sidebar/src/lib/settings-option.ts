@@ -16,6 +16,18 @@ export interface OptionNode {
 }
 
 const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placeholder'>> = {
+  'auth.generic.authorize_url': {
+    control: 'input',
+    placeholder: 'https://provider.example.com/oauth/authorize',
+  },
+  'auth.generic.token_url': {
+    control: 'input',
+    placeholder: 'https://provider.example.com/oauth/token',
+  },
+  'auth.generic.user_info_url': {
+    control: 'input',
+    placeholder: 'https://provider.example.com/api/user',
+  },
   'moderator.ai.base_url': {
     control: 'input',
     placeholder: 'https://xxx.xxx.com/v1',

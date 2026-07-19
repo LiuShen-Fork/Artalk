@@ -323,6 +323,8 @@ auth:
   email:
     # 启用邮箱密码登录
     enabled: true
+    # 登录按钮显示名称
+    label: "Email"
     # 邮箱验证邮件标题
     verify_subject: "您的验证码是 - {{code}}"
     # 邮箱验证邮件模板 (填入文件路径使用自定义模板)
@@ -412,6 +414,35 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  # 通用 OAuth 2.0
+  # -- 使用标准授权码流程，请在 OAuth 应用中将回调地址设为 https://example.com/api/v2/auth/generic/callback。 --
+  generic:
+    # 启用通用 OAuth 2.0 登录
+    enabled: false
+    # 登录按钮显示名称
+    label: "OAuth 2.0"
+    # OAuth 客户端 ID
+    client_id: ""
+    # OAuth 客户端密钥
+    client_secret: ""
+    # 授权端点地址
+    authorize_url: ""
+    # 令牌端点地址
+    token_url: ""
+    # 用户信息端点地址（必须返回 JSON）
+    user_info_url: ""
+    # 授权时请求的 OAuth 权限范围
+    scopes: []
+    # 用户 ID 的 JSON 字段路径（支持点号，如 "sub" 或 "data.user.id"）
+    user_id_path: "id"
+    # 用户昵称的 JSON 字段路径
+    user_name_path: "name"
+    # 用户邮箱的 JSON 字段路径（可选；为空时生成私有占位邮箱）
+    user_email_path: "email"
+    # 用户头像地址的 JSON 字段路径（可选）
+    user_avatar_path: "avatar_url"
+    # 用户主页或网站地址的 JSON 字段路径（可选）
+    user_link_path: ""
   # SSO (用外部 OIDC 身份提供商的访问令牌换取 Artalk 登录会话，通过调用 IdP 的 /userinfo 端点校验)
   # -- 当嵌入页面已运行 OIDC 且希望 Artalk 复用该登录态、不显示自身弹窗登录界面时使用。 --
   sso:

@@ -382,8 +382,26 @@ type NotifyWebHookConf struct {
 
 type AuthEmailConf struct {
 	Enabled       bool   `koanf:"enabled" json:"enabled"`
+	Label         string `koanf:"label" json:"label"`
 	VerifySubject string `koanf:"verify_subject" json:"verify_subject"`
 	VerifyTpl     string `koanf:"verify_tpl" json:"verify_tpl"`
+}
+
+type AuthGenericOAuthConf struct {
+	Enabled      bool     `koanf:"enabled" json:"enabled"`
+	Label        string   `koanf:"label" json:"label"`
+	ClientID     string   `koanf:"client_id" json:"client_id"`
+	ClientSecret string   `koanf:"client_secret" json:"client_secret"`
+	AuthorizeURL string   `koanf:"authorize_url" json:"authorize_url"`
+	TokenURL     string   `koanf:"token_url" json:"token_url"`
+	UserInfoURL  string   `koanf:"user_info_url" json:"user_info_url"`
+	Scopes       []string `koanf:"scopes" json:"scopes"`
+
+	UserIDPath     string `koanf:"user_id_path" json:"user_id_path"`
+	UserNamePath   string `koanf:"user_name_path" json:"user_name_path"`
+	UserEmailPath  string `koanf:"user_email_path" json:"user_email_path"`
+	UserAvatarPath string `koanf:"user_avatar_path" json:"user_avatar_path"`
+	UserLinkPath   string `koanf:"user_link_path" json:"user_link_path"`
 }
 
 type AuthConf struct {
@@ -476,6 +494,7 @@ type AuthConf struct {
 		ClientSecret string `koanf:"client_secret" json:"client_secret"`
 		Domain       string `koanf:"domain" json:"domain"`
 	} `koanf:"auth0" json:"auth0"`
+	Generic AuthGenericOAuthConf `koanf:"generic" json:"generic"`
 
 	// Token exchange — accept an access token from an external OIDC IdP
 	// (verified via that IdP's /userinfo) and issue an Artalk JWT for the
