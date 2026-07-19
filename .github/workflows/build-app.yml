@@ -63,7 +63,8 @@ jobs:
 
           # publish the GitHub Release to the repository that runs this workflow
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          perl -0pi -e "s/owner: ArtalkJS/owner: ${GITHUB_REPOSITORY_OWNER}/g; s/name: Artalk/name: ${REPO_NAME}/g" .goreleaser.yml
+          cp .goreleaser.yml local/.goreleaser.yml
+          perl -0pi -e "s/owner: ArtalkJS/owner: ${GITHUB_REPOSITORY_OWNER}/g; s/name: Artalk/name: ${REPO_NAME}/g" local/.goreleaser.yml
 
           # changelog
           git-chglog --config .github/chglog/config.yml ${{ inputs.version }} > local/release-notes.md
@@ -85,4 +86,4 @@ jobs:
             -w /repo \
             --env-file local/.release-env \
             ghcr.io/goreleaser/goreleaser-cross:v${GO_VERSION} \
-            release --release-notes local/release-notes.md ${{ inputs.dry_run && '--skip=publish' || '' }}
+            release --config local/.goreleaser.yml --release-notes local/release-notes.md ${{ inputs.dry_run && '--skip=publish' || '' }}
