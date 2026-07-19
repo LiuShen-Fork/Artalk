@@ -6,6 +6,8 @@
 # https://goreleaser.com/customization/fury/
 # https://goreleaser.com/customization/announce/telegram/
 
+version: 2
+
 project_name: artalk
 
 env:

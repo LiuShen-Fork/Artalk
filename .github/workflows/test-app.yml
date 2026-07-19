@@ -65,5 +65,5 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: go
-          file: ${{ env.REPORT_DIR }}/coverage.out
+          files: ${{ env.REPORT_DIR }}/coverage.out
           token: ${{ secrets.CODECOV_TOKEN }}
