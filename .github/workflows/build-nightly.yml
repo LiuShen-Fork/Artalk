@@ -2,8 +2,6 @@ name: Build Nightly
 run-name: Build Nightly
 
 on:
-  schedule:
-    - cron: "0 10 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -14,7 +12,7 @@ on:
 env:
   DIST_DIR: /tmp/builds
   DIGEST_DIR: /tmp/digests
-  DOCKER_IMG: artalk/artalk-go
+  DOCKER_IMG: willowgod/artalk
   DOCKER_BUILD_ARGS: |-
     SKIP_UI_BUILD=true
 
@@ -30,12 +28,8 @@ jobs:
 
       - name: Check should run
         id: check
-        if: github.event_name == 'schedule'
         run: |
-          if [[ "$(git log --since='24 hours ago' | wc -l)" -eq 0 ]] || \
-            [[ "$GITHUB_REPOSITORY" != "ArtalkJS/Artalk" ]]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
 
   # Bulid UI first
   # (build ui outside of docker to speed up cross-platform builds)
@@ -312,7 +306,7 @@ jobs:
           echo -e "\n> [!NOTE]\n" \
                   "> The Nightly version, automatically built based on the latest code, " \
                   "is not yet released and may be unstable. Please use it with caution. " \
-                  "Docker user can run \`docker pull artalk/artalk-go:nightly\` to get " \
+                  "Docker user can run \`docker pull willowgod/artalk:nightly\` to get " \
                   "the nightly build." >> $MD_FILE
 
       # checksums.txt

@@ -61,6 +61,10 @@ jobs:
           # github token
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" > local/.release-env
 
+          # publish the GitHub Release to the repository that runs this workflow
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          perl -0pi -e "s/owner: ArtalkJS/owner: ${GITHUB_REPOSITORY_OWNER}/g; s/name: Artalk/name: ${REPO_NAME}/g" .goreleaser.yml
+
           # changelog
           git-chglog --config .github/chglog/config.yml ${{ inputs.version }} > local/release-notes.md
 

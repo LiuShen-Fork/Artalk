@@ -1,13 +1,7 @@
 name: Test Frontend
 
 on:
-  push:
-    paths: ["ui/**"]
-    branches-ignore: ["release/*", "nightly"]
-    tags-ignore: ["v*"]
-  pull_request:
-    paths: ["ui/**"]
-    branches-ignore: ["release/*", "nightly"]
+  workflow_dispatch:
 
 jobs:
   test_ui:

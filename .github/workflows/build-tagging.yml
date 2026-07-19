@@ -3,34 +3,35 @@ name: Build Pre Tagging
 on:
   workflow_call:
     inputs:
+      version:
+        required: true
+        type: string
       dry_run:
         required: true
         type: boolean
-      issue_number:
-        required: true
-        type: number
     outputs:
       version:
         description: "Version"
         value: ${{ jobs.tagging.outputs.version }}
 
+permissions:
+  contents: write
+
 jobs:
   tagging:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ env.VERSION }}
     steps:
-      - name: Get release version
+      - name: Validate release version
         run: |
-          # `github.head_ref` only exists for pull_request events
-          REF="${{ github.head_ref || github.ref }}"
-          VERSION="${REF#refs/tags/}"
-          VERSION="${VERSION#refs/heads/}"
-          VERSION="${VERSION#release/}"
+          VERSION="${{ inputs.version }}"
 
           echo "Version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
           if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Invalid version format: $VERSION, please check git ref or tag."
+            echo "Invalid version format: $VERSION, expected v1.0.0"
             exit 1
           fi
 
@@ -41,21 +42,11 @@ jobs:
 
       - name: Create Tag
         run: |
-          if [ ! $(git tag -l "${VERSION}") ]; then
+          if [ ! "$(git tag -l "${VERSION}")" ]; then
             git config user.name github-actions[bot]
             git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-            git tag -a $VERSION -m "Release $VERSION"
-            git push origin $VERSION
+            git tag -a "$VERSION" -m "Release $VERSION"
+            git push origin "$VERSION"
           else
             echo "Skip creating tag $VERSION, already exists."
           fi
-
-      - name: Comment tag info to PR
-        uses: ./.github/actions/comment
-        if: ${{ inputs.issue_number != 0 }}
-        with:
-          issue_number: ${{ inputs.issue_number }}
-          content: |-
-            🔖 Tagged version [${{ env.VERSION }}](https://github.com/ArtalkJS/Artalk/tree/${{ env.VERSION }}) and updated the [CHANGELOG.md](https://github.com/ArtalkJS/Artalk/blob/master/CHANGELOG.md).
-    outputs:
-      version: ${{ env.VERSION }}

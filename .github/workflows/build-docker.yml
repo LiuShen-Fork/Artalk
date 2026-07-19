@@ -14,7 +14,7 @@ on:
         type: string
 
 env:
-  DOCKER_IMG: artalk/artalk-go
+  DOCKER_IMG: willowgod/artalk
 
 jobs:
   build_publish:
@@ -35,10 +35,10 @@ jobs:
           images: |
             ${{ env.DOCKER_IMG }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=${{ inputs.version }}
+            type=semver,pattern={{version}},value=${{ inputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
+            type=raw,value=latest
             type=sha
 
       # https://github.com/docker/login-action

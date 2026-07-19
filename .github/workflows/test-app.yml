@@ -1,13 +1,7 @@
 name: Test App
 
 on:
-  push:
-    paths: ["cmd/**", "internal/**", "server/**", "test/**", "main.go", "go.mod", "go.sum"]
-    branches-ignore: ["release/*", "nightly"]
-    tags-ignore: ["v*"]
-  pull_request:
-    paths: ["cmd/**", "internal/**", "server/**", "test/**", "main.go", "go.mod", "go.sum"]
-    branches-ignore: ["release/*", "nightly"]
+  workflow_dispatch:
 
 env:
   REPORT_DIR: "/tmp/test-reports"
