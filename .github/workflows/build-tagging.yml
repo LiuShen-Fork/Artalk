@@ -48,5 +48,12 @@ jobs:
             git tag -a "$VERSION" -m "Release $VERSION"
             git push origin "$VERSION"
           else
-            echo "Skip creating tag $VERSION, already exists."
+            TAG_SHA="$(git rev-list -n 1 "$VERSION")"
+            HEAD_SHA="$(git rev-parse HEAD)"
+            if [ "$TAG_SHA" != "$HEAD_SHA" ]; then
+              echo "Tag $VERSION already exists but points to $TAG_SHA, current commit is $HEAD_SHA."
+              echo "Delete or move the existing tag, or publish a new version."
+              exit 1
+            fi
+            echo "Skip creating tag $VERSION, already exists at current commit."
           fi
