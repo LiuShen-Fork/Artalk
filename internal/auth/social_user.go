@@ -1,8 +1,11 @@
 package auth
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"strings"
 
+	"github.com/artalkjs/artalk/v2/internal/auth/generic"
 	"github.com/markbates/goth"
 )
 
@@ -21,6 +24,11 @@ func GetSocialUser(u goth.User) SocialUser {
 			link = l
 		}
 	}
+	if u.Provider == generic.ProviderName {
+		if l, ok := u.RawData[generic.RawDataUserLinkKey].(string); ok {
+			link = l
+		}
+	}
 
 	// Email patch
 	if u.Provider == "steam" {
@@ -28,7 +36,12 @@ func GetSocialUser(u goth.User) SocialUser {
 		u.Email = u.UserID + "@steam.com"
 	}
 	if u.Email == "" {
-		u.Email = u.UserID + "@" + u.Provider + ".com"
+		if u.Provider == generic.ProviderName {
+			sum := sha256.Sum256([]byte(u.UserID))
+			u.Email = "oauth-" + hex.EncodeToString(sum[:16]) + "@generic.invalid"
+		} else {
+			u.Email = u.UserID + "@" + u.Provider + ".com"
+		}
 	}
 
 	// Name patch

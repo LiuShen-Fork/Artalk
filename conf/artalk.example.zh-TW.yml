@@ -305,6 +305,8 @@ auth:
   email:
     # 啟用郵箱密碼登錄
     enabled: true
+    # 登錄按鈕顯示名稱
+    label: "Email"
     # 郵箱驗證郵件標題
     verify_subject: "您的驗證碼是 - {{code}}"
     # 郵箱驗證郵件模板 (填入文件路徑使用自定義模板)
@@ -394,6 +396,35 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  # 通用 OAuth 2.0
+  # -- 使用標準授權碼流程，請在 OAuth 應用中將回呼位址設為 https://example.com/api/v2/auth/generic/callback。 --
+  generic:
+    # 啟用通用 OAuth 2.0 登入
+    enabled: false
+    # 登入按鈕顯示名稱
+    label: "OAuth 2.0"
+    # OAuth 用戶端 ID
+    client_id: ""
+    # OAuth 用戶端密鑰
+    client_secret: ""
+    # 授權端點位址
+    authorize_url: ""
+    # 權杖端點位址
+    token_url: ""
+    # 用戶資訊端點位址（必須回傳 JSON）
+    user_info_url: ""
+    # 授權時請求的 OAuth 權限範圍
+    scopes: []
+    # 用戶 ID 的 JSON 欄位路徑（支援點號，如 "sub" 或 "data.user.id"）
+    user_id_path: "id"
+    # 用戶暱稱的 JSON 欄位路徑
+    user_name_path: "name"
+    # 用戶電子郵件的 JSON 欄位路徑（可選；留空時產生私有暫代信箱）
+    user_email_path: "email"
+    # 用戶頭像位址的 JSON 欄位路徑（可選）
+    user_avatar_path: "avatar_url"
+    # 用戶主頁或網站位址的 JSON 欄位路徑（可選）
+    user_link_path: ""
   # SSO (用外部 OIDC 身分提供商的存取權杖換取 Artalk 登入工作階段，透過呼叫 IdP 的 /userinfo 端點驗證)
   # -- 當嵌入頁面已執行 OIDC 且希望 Artalk 沿用該登入狀態、不顯示自身彈窗登入介面時使用。 --
   sso:

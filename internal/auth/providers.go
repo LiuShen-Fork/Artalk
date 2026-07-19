@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/artalkjs/artalk/v2/internal/auth/generic"
 	"github.com/artalkjs/artalk/v2/internal/config"
 	"github.com/artalkjs/artalk/v2/internal/log"
 	"github.com/markbates/goth"
@@ -116,6 +117,29 @@ func GetProviders(conf *config.Config) []goth.Provider {
 	if auth0Conf := conf.Auth.Auth0; auth0Conf.Enabled {
 		providers = append(providers, auth0.New(auth0Conf.ClientID, auth0Conf.ClientSecret, callbackURL("auth0"),
 			auth0Conf.Domain, "openid", "profile", "email"))
+	}
+
+	// Generic OAuth 2.0 Authorization Code provider.
+	if genericConf := conf.Auth.Generic; genericConf.Enabled {
+		provider, err := generic.New(generic.Options{
+			ClientID:       genericConf.ClientID,
+			ClientSecret:   genericConf.ClientSecret,
+			CallbackURL:    callbackURL(generic.ProviderName),
+			AuthorizeURL:   genericConf.AuthorizeURL,
+			TokenURL:       genericConf.TokenURL,
+			UserInfoURL:    genericConf.UserInfoURL,
+			Scopes:         genericConf.Scopes,
+			UserIDPath:     genericConf.UserIDPath,
+			UserNamePath:   genericConf.UserNamePath,
+			UserEmailPath:  genericConf.UserEmailPath,
+			UserAvatarPath: genericConf.UserAvatarPath,
+			UserLinkPath:   genericConf.UserLinkPath,
+		})
+		if err != nil {
+			log.Errorf("[SocialLogin] Invalid generic OAuth configuration: %v", err)
+		} else {
+			providers = append(providers, provider)
+		}
 	}
 
 	return providers
