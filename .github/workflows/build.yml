@@ -32,6 +32,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   tagging:
@@ -47,6 +48,7 @@ jobs:
     uses: ./.github/workflows/build-ui.yml
     with:
       version: ${{ needs.tagging.outputs.version }}
+      ref: ${{ needs.tagging.outputs.version }}
       dry_run: ${{ inputs.dry_run || false }}
     secrets: inherit
 
