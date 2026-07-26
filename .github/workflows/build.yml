@@ -12,10 +12,6 @@ on:
         description: "Dry run"
         type: boolean
         default: false
-      build_items:
-        description: "Build items: app,docker or ui,app,docker"
-        type: string
-        default: "app,docker"
 
   workflow_call:
     inputs:
@@ -25,14 +21,9 @@ on:
       dry_run:
         required: true
         type: boolean
-      build_items:
-        required: false
-        type: string
-        default: "app,docker"
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   tagging:
@@ -42,18 +33,7 @@ jobs:
       dry_run: ${{ inputs.dry_run || false }}
     secrets: inherit
 
-  ui:
-    if: inputs.build_items == '' || contains(inputs.build_items, 'ui')
-    needs: tagging
-    uses: ./.github/workflows/build-ui.yml
-    with:
-      version: ${{ needs.tagging.outputs.version }}
-      ref: ${{ needs.tagging.outputs.version }}
-      dry_run: ${{ inputs.dry_run || false }}
-    secrets: inherit
-
   docker:
-    if: inputs.build_items == '' || contains(inputs.build_items, 'docker')
     needs: tagging
     uses: ./.github/workflows/build-docker.yml
     strategy:
@@ -66,7 +46,6 @@ jobs:
     secrets: inherit
 
   app:
-    if: inputs.build_items == '' || contains(inputs.build_items, 'app')
     needs: tagging
     uses: ./.github/workflows/build-app.yml
     with:
@@ -75,13 +54,12 @@ jobs:
     secrets: inherit
 
   done:
-    needs: [tagging, ui, docker, app]
+    needs: [tagging, docker, app]
     if: |
       always() &&
       needs.tagging.result == 'success' &&
-      (needs.ui.result == 'success' || needs.ui.result == 'skipped') &&
-      (needs.docker.result == 'success' || needs.docker.result == 'skipped') &&
-      (needs.app.result == 'success' || needs.app.result == 'skipped')
+      needs.docker.result == 'success' &&
+      needs.app.result == 'success'
     uses: ./.github/workflows/build-done.yml
     with:
       version: ${{ needs.tagging.outputs.version }}

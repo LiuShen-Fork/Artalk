@@ -59,11 +59,3 @@ jobs:
         with:
           name: Go-Test-Results-${{ runner.os }}
           path: ${{ env.REPORT_DIR }}
-
-      - if: matrix.os == 'ubuntu-latest'
-        name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          flags: go
-          files: ${{ env.REPORT_DIR }}/coverage.out
-          token: ${{ secrets.CODECOV_TOKEN }}
