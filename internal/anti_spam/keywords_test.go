@@ -120,7 +120,7 @@ func TestNewKeywordsChecker(t *testing.T) {
 			Mode:    KwCheckerModeBlock,
 		})
 		ok, err := checker.Check(&CheckerParams{
-			Content: "关键词A",
+			RawContent: "关键词A",
 		})
 		assert.ErrorContains(t, err, "separator cannot be empty")
 		assert.False(t, ok)
