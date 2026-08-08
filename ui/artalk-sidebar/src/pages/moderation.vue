@@ -29,6 +29,7 @@ type ModerationResponse = {
 
 const nav = useNavStore()
 const user = useUserStore()
+const route = useRoute()
 const { curtTab } = storeToRefs(nav)
 const { site: curtSite } = storeToRefs(user)
 const { t } = useI18n()
@@ -42,6 +43,11 @@ const statusMeta = computed(() => ({
   block: { label: t('moderationBlocked'), icon: '!' },
   error: { label: t('opFailed'), icon: 'X' },
 }))
+
+function getRouteStatus() {
+  const status = route.query.status
+  return typeof status === 'string' && ['pass', 'block', 'error'].includes(status) ? status : 'all'
+}
 
 async function fetchLogs() {
   loading.value = true
@@ -72,11 +78,17 @@ onMounted(() => {
       block: 'moderationBlocked',
       error: 'opFailed',
     },
-    'all',
+    getRouteStatus(),
   )
   fetchLogs()
   watch(curtTab, fetchLogs)
   watch(curtSite, fetchLogs)
+  watch(
+    () => route.query.status,
+    () => {
+      curtTab.value = getRouteStatus()
+    },
+  )
 })
 </script>
 

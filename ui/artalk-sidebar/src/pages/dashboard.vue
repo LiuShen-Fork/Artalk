@@ -172,18 +172,21 @@ onMounted(() => {
           <RouterLink to="/moderation">查看</RouterLink>
         </div>
         <div class="review-summary">
-          <div class="ok">
+          <RouterLink class="ok" :to="{ path: '/moderation', query: { status: 'pass' } }">
+            <span class="review-icon">OK</span>
             <b>{{ formatNumber(data?.moderation.pass) }}</b>
             <span>正常</span>
-          </div>
-          <div class="warn">
+          </RouterLink>
+          <RouterLink class="warn" :to="{ path: '/moderation', query: { status: 'block' } }">
+            <span class="review-icon">!</span>
             <b>{{ formatNumber(data?.moderation.block) }}</b>
             <span>非正常</span>
-          </div>
-          <div class="bad">
+          </RouterLink>
+          <RouterLink class="bad" :to="{ path: '/moderation', query: { status: 'error' } }">
+            <span class="review-icon">X</span>
             <b>{{ formatNumber(data?.moderation.error) }}</b>
             <span>系统失败</span>
-          </div>
+          </RouterLink>
         </div>
         <div class="review-list compact">
           <div v-for="item in data?.recent_reviews || []" :key="item.id" class="review-row">
@@ -398,10 +401,52 @@ onMounted(() => {
   gap: 8px;
   margin-bottom: 12px;
 
-  div {
+  > div,
+  > a {
     border-radius: 8px;
     padding: 12px;
     background: var(--at-color-bg-grey-transl);
+  }
+
+  > a {
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform 0.16s ease,
+      border-color 0.16s ease,
+      background 0.16s ease;
+  }
+
+  a:hover {
+    transform: translateY(-1px);
+    background: rgba(54, 171, 207, 0.08);
+  }
+
+  .review-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .ok .review-icon {
+    background: rgba(47, 158, 68, 0.12);
+    color: #2f9e44;
+  }
+
+  .warn .review-icon {
+    background: rgba(240, 140, 0, 0.14);
+    color: #f08c00;
+  }
+
+  .bad .review-icon {
+    background: rgba(224, 49, 49, 0.12);
+    color: #e03131;
   }
 
   b,

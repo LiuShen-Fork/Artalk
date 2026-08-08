@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import YAML from 'yaml'
 import { shallowRef } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useNavStore } from '../stores/nav'
 import { artalk } from '../global'
 import settings, { type OptionNode } from '../lib/settings'
 import LoadingLayer from '../components/LoadingLayer.vue'
 
 const nav = useNavStore()
-const router = useRouter()
 const { t } = useI18n()
-const { curtTab } = storeToRefs(nav)
 const isLoading = ref(false)
 const tree = shallowRef<OptionNode>()
 const selectedRootPath = ref('')
@@ -31,15 +28,7 @@ watch(rootGroups, (groups) => {
 })
 
 onMounted(() => {
-  nav.updateTabs({
-    sites: 'site',
-    transfer: 'transfer',
-  })
-
-  watch(curtTab, (tab) => {
-    if (tab === 'sites') router.replace('/sites')
-    else if (tab === 'transfer') router.replace('/transfer')
-  })
+  nav.updateTabs({})
 
   Promise.all([
     artalk!.ctx.getApi().settings.getSettingsTemplate(''),
@@ -103,6 +92,14 @@ function save() {
       <LoadingLayer v-if="isLoading" />
     </div>
     <div v-if="tree" class="settings-layout">
+      <section class="settings-head">
+        <div>
+          <div class="eyebrow">Config</div>
+          <h1>{{ t('settings') }}</h1>
+          <p>{{ t('settingNotice') }}</p>
+        </div>
+      </section>
+
       <aside class="settings-index">
         <div class="settings-index-title">{{ t('config') }}</div>
         <button
@@ -125,7 +122,6 @@ function save() {
           :node="activeRoot"
           default-expanded
         />
-        <div class="notice">{{ t('settingNotice') }}</div>
       </main>
     </div>
   </div>
@@ -201,6 +197,36 @@ function save() {
     grid-template-columns: 240px minmax(0, 1fr);
     gap: 18px;
     align-items: start;
+  }
+
+  .settings-head {
+    grid-column: 1 / -1;
+    border: 1px solid var(--at-color-border);
+    background:
+      linear-gradient(135deg, rgba(54, 171, 207, 0.12), transparent 48%),
+      var(--at-color-bg);
+    border-radius: 10px;
+    padding: 24px 26px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+
+    h1 {
+      margin: 4px 0 8px;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--at-color-sub);
+      font-size: 13px;
+    }
+  }
+
+  .eyebrow {
+    color: var(--at-color-main);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   .settings-index,
