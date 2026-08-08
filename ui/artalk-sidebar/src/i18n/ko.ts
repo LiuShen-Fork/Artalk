@@ -65,6 +65,7 @@ export const ko: MessageSchema = {
   siteDeleteConfirm: '사이트 "{name}" 을(를) 삭제하시겠습니까? 모든 관련 데이터도 삭제됩니다',
   siteNameInputHint: '사이트 이름을 입력하세요',
   comments: '댓글',
+  dashboard: '대시보드',
   last: '최근',
   show: '보기',
   username: '사용자 이름',

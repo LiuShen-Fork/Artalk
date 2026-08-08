@@ -68,6 +68,7 @@ export const tr: MessageSchema = {
     'Bu işlem "{name}" sitesini ve altındaki tüm verileri silecektir. Devam edilsin mi?',
   siteNameInputHint: 'Lütfen site adını girin',
   comments: 'Yorumlar',
+  dashboard: 'Pano',
   last: 'Son',
   show: 'Göster',
   username: 'Kullanıcı Adı',

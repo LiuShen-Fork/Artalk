@@ -65,6 +65,7 @@ export const en = {
     'This operation will delete the site: "{name}" and all data under it. Continue?',
   siteNameInputHint: 'Please enter the site name',
   comments: 'Comments',
+  dashboard: 'Dashboard',
   last: 'Last',
   show: 'Show',
   username: 'Username',

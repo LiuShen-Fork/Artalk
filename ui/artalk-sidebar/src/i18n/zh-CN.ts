@@ -63,6 +63,7 @@ export const zhCN: MessageSchema = {
   siteDeleteConfirm: '确认删除站点 "{name}"？将会删除所有相关数据',
   siteNameInputHint: '请输入站点名称',
   comments: '评论',
+  dashboard: '总览',
   last: '近期',
   show: '展开',
   username: '用户名',

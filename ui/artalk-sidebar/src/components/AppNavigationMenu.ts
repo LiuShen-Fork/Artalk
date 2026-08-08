@@ -1,5 +1,6 @@
 import { storeToRefs } from 'pinia'
 import { RouteLocation } from 'vue-router'
+import DashboardIcon from '@/assets/nav-icon-dashboard.svg'
 import CommentsIcon from '@/assets/nav-icon-comments.svg'
 import PagesIcon from '@/assets/nav-icon-pages.svg'
 import UsersIcon from '@/assets/nav-icon-users.svg'
@@ -15,6 +16,11 @@ export type PageItem = { label: string; link: string; hideOnMobile?: boolean; ic
  * Pages for admin
  */
 export const AdminPages: Record<string, PageItem> = {
+  dashboard: {
+    label: 'dashboard',
+    link: '/dashboard',
+    icon: DashboardIcon,
+  },
   comments: {
     label: 'comment',
     link: '/comments',

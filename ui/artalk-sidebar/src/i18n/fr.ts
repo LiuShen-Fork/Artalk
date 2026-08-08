@@ -68,6 +68,7 @@ export const fr: MessageSchema = {
     'Confirmez-vous la suppression du site "{name}" ? Toutes les données associées seront également supprimées',
   siteNameInputHint: 'Veuillez entrer le nom du site',
   comments: 'Commentaires',
+  dashboard: 'Tableau de bord',
   last: 'Récent',
   show: 'Afficher',
   username: "Nom d'utilisateur",

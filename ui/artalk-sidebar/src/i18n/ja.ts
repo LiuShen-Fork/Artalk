@@ -66,6 +66,7 @@ export const ja: MessageSchema = {
   siteDeleteConfirm: 'サイト "{name}" を削除してもよろしいですか？すべての関連データも削除されます',
   siteNameInputHint: 'サイト名を入力してください',
   comments: 'コメント',
+  dashboard: 'ダッシュボード',
   last: '最近',
   show: '表示',
   username: 'ユーザー名',

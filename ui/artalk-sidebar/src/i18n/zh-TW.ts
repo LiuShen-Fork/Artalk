@@ -63,6 +63,7 @@ export const zhTW: MessageSchema = {
   userCreate: '建立用戶',
   userEdit: '用戶編輯',
   comments: '評論',
+  dashboard: '總覽',
   last: '最後',
   show: '展開',
   username: '用戶名',

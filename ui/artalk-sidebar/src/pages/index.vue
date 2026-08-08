@@ -19,12 +19,13 @@ onMounted(() => {
   }
 
   const LinkMap: { [key: string]: string } = {
+    dashboard: '/dashboard',
     comments: '/comments',
     pages: '/pages',
     sites: '/sites',
     settings: '/settings',
   }
-  router.replace(LinkMap[bootParams.view] || '/comments')
+  router.replace(LinkMap[bootParams.view] || (bootParams.user?.is_admin ? '/dashboard' : '/comments'))
 })
 </script>
 
