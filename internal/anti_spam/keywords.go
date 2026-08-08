@@ -84,6 +84,7 @@ func (c *KeywordsChecker) Check(p *CheckerParams) (bool, error) {
 			content = strings.ReplaceAll(content, keyword,
 				strings.Repeat(c.conf.ReplaceTo, len([]rune(keyword))))
 		}
+		p.UpdatedContent = content
 
 		log.Info(LOG_TAG, fmt.Sprintf("keyword replace comment id=%d original=%s processed=%s",
 			p.CommentID, strconv.Quote(p.RawContent), strconv.Quote(content)))

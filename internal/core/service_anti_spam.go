@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/artalkjs/artalk/v2/internal/anti_spam"
 	"github.com/artalkjs/artalk/v2/internal/entity"
@@ -39,6 +40,9 @@ func (s *AntiSpamService) Init() error {
 			comment.Content = content
 			s.app.dao.UpdateComment(&comment)
 		},
+		OnCheckResult: func(result anti_spam.CheckResult) {
+			s.recordCheckResult(result)
+		},
 	})
 
 	return nil
@@ -48,6 +52,31 @@ func (s *AntiSpamService) Dispose() error {
 	s.client = nil
 
 	return nil
+}
+
+func (s *AntiSpamService) recordCheckResult(result anti_spam.CheckResult) {
+	if result.CommentID == 0 {
+		return
+	}
+
+	cutoff := time.Now().AddDate(0, 0, -90)
+	if err := s.app.dao.DB().Where("created_at < ?", cutoff).Delete(&entity.ModerationLog{}).Error; err != nil {
+		log.Errorf("[AntiSpam] prune moderation logs failed: %v", err)
+	}
+
+	logRow := entity.ModerationLog{
+		CommentID: result.CommentID,
+		SiteName:  result.SiteName,
+		PageKey:   result.PageKey,
+		UserID:    result.UserID,
+		Checker:   result.Checker,
+		Status:    string(result.Status),
+		Action:    string(result.Action),
+		Message:   result.Message,
+	}
+	if err := s.app.dao.DB().Create(&logRow).Error; err != nil {
+		log.Errorf("[AntiSpam] record moderation log failed: %v", err)
+	}
 }
 
 func (s *AntiSpamService) CheckAndBlock(data *AntiSpamCheckPayload) {
@@ -91,6 +120,8 @@ func (s *AntiSpamService) payload2CheckerParams(payload *AntiSpamCheckPayload) *
 		BlogURL: siteURL,
 
 		CommentID:     payload.Comment.ID,
+		SiteName:      payload.Comment.SiteName,
+		PageKey:       payload.Comment.PageKey,
 		RawContent:    payload.Comment.Content,
 		ReviewContent: reviewContent,
 		ReviewText:    anti_spam.BuildReviewText(user.Name, reviewContent),

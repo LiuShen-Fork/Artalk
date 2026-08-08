@@ -21,6 +21,7 @@ type AntiSpamConf struct {
 
 	OnBlockComment  func(commentID uint)
 	OnUpdateComment func(commentID uint, content string)
+	OnCheckResult   func(result CheckResult)
 }
 
 type AntiSpam struct {
@@ -53,13 +54,29 @@ func (as AntiSpam) CheckAndBlock(params *CheckerParams) {
 
 // Checker trigger function
 func (as AntiSpam) checkerTrigger(checker Checker, params *CheckerParams) bool {
+	params.UpdatedContent = ""
+	params.ResultReason = ""
+
 	pass, err := checker.Check(params)
+	status := CheckStatusPass
+	action := CheckActionAllow
+	message := params.ResultReason
 
 	if err != nil {
 		log.Error(LOG_TAG, fmt.Sprintf("%s checker comment=%d error:",
 			checker.Name(), params.CommentID), err)
 
 		pass = lo.If(as.conf.ApiFailBlock, false).Else(true) // block if api fail
+		status = CheckStatusError
+		message = err.Error()
+	} else if !pass {
+		status = CheckStatusBlock
+		action = CheckActionPending
+	} else if params.UpdatedContent != "" {
+		action = CheckActionReplace
+		if message == "" {
+			message = "keyword matched and comment content was replaced"
+		}
 	}
 
 	if !pass {
@@ -69,6 +86,19 @@ func (as AntiSpam) checkerTrigger(checker Checker, params *CheckerParams) bool {
 
 		log.Debug(LOG_TAG, fmt.Sprintf("[%s] Successful blocking of comments ID=%d CONT=%s",
 			checker.Name(), params.CommentID, strconv.Quote(params.RawContent)))
+	}
+
+	if as.conf.OnCheckResult != nil {
+		as.conf.OnCheckResult(CheckResult{
+			CommentID: params.CommentID,
+			SiteName:  params.SiteName,
+			PageKey:   params.PageKey,
+			UserID:    params.UserID,
+			Checker:   checker.Name(),
+			Status:    status,
+			Action:    action,
+			Message:   message,
+		})
 	}
 
 	return pass
@@ -144,10 +174,14 @@ func (as AntiSpam) getEnabledCheckers() []Checker {
 type CheckerParams struct {
 	BlogURL string
 
-	CommentID     uint
-	RawContent    string
-	ReviewContent string
-	ReviewText    string
+	CommentID      uint
+	SiteName       string
+	PageKey        string
+	RawContent     string
+	ReviewContent  string
+	ReviewText     string
+	UpdatedContent string
+	ResultReason   string
 
 	UserName  string
 	UserEmail string
@@ -159,4 +193,31 @@ type CheckerParams struct {
 type Checker interface {
 	Name() string
 	Check(p *CheckerParams) (bool, error)
+}
+
+type CheckStatus string
+
+const (
+	CheckStatusPass  CheckStatus = "pass"
+	CheckStatusBlock CheckStatus = "block"
+	CheckStatusError CheckStatus = "error"
+)
+
+type CheckAction string
+
+const (
+	CheckActionAllow   CheckAction = "allow"
+	CheckActionPending CheckAction = "pending"
+	CheckActionReplace CheckAction = "replace"
+)
+
+type CheckResult struct {
+	CommentID uint
+	SiteName  string
+	PageKey   string
+	UserID    uint
+	Checker   string
+	Status    CheckStatus
+	Action    CheckAction
+	Message   string
 }

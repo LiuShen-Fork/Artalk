@@ -97,6 +97,7 @@ func (c *AIChecker) Check(p *CheckerParams) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	p.ResultReason = result.Reason
 
 	return !result.Sensitive, nil
 }
