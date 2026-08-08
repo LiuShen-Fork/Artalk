@@ -214,6 +214,30 @@ img_upload:
   max_size: 5
   # 图片链接基础路径 (默认为 "/static/images/")
   public_path: null
+  # 上传频率限制
+  rate_limit:
+    # 启用上传频率限制
+    enabled: true
+    # 单 IP 在窗口期内最多上传次数
+    ip_limit: 20
+    # 频率限制窗口 (单位：秒)
+    window_seconds: 3600
+  # 兰空图床
+  lsky:
+    # 启用兰空图床上传
+    enabled: false
+    # 兰空 API 地址 (例如 "https://img.example.com/api/v1")
+    base_url: ""
+    # API Token
+    token: ""
+    # 图片权限 ["", "public", "private", "1", "0"]
+    permission: public
+    # 储存策略 ID (0 表示默认)
+    strategy_id: 0
+    # 相册 ID (0 表示不指定)
+    album_id: 0
+    # 上传后删除本地的图片
+    del_local: true
   # Upgit 配置
   # (使用 Upgit 将图片上传到 GitHub 或图床：https://github.com/pluveto/upgit)
   upgit:

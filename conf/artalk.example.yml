@@ -204,6 +204,30 @@ img_upload:
   max_size: 5
   # Image link base path (default: "/static/images/")
   public_path: null
+  # Upload rate limit
+  rate_limit:
+    # Enable upload rate limit
+    enabled: true
+    # Max uploads per IP during the window
+    ip_limit: 20
+    # Rate limit window (unit: seconds)
+    window_seconds: 3600
+  # Lsky Pro image host
+  lsky:
+    # Enable Lsky Pro upload
+    enabled: false
+    # Lsky API base URL (e.g. "https://img.example.com/api/v1")
+    base_url: ""
+    # API token
+    token: ""
+    # Image permission ["", "public", "private", "1", "0"]
+    permission: public
+    # Storage strategy ID (0 = default)
+    strategy_id: 0
+    # Album ID (0 = none)
+    album_id: 0
+    # Delete local image after upload success
+    del_local: true
   # Upgit config
   upgit:
     # Enable Upgit

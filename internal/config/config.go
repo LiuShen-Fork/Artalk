@@ -303,12 +303,30 @@ const (
 )
 
 type ImgUploadConf struct {
-	Enabled    bool      `koanf:"enabled" json:"enabled"`         // 总开关
-	Path       string    `koanf:"path" json:"path"`               // 图片存放路径
-	MaxSize    int64     `koanf:"max_size" json:"max_size"`       // 图片大小限制
-	Quality    string    `koanf:"quality" json:"quality"`         // 图片质量
-	PublicPath string    `koanf:"public_path" json:"public_path"` // 图片 URL 基础路径
-	Upgit      UpgitConf `koanf:"upgit" json:"upgit"`             // upgit
+	Enabled    bool                `koanf:"enabled" json:"enabled"`         // 总开关
+	Path       string              `koanf:"path" json:"path"`               // 图片存放路径
+	MaxSize    int64               `koanf:"max_size" json:"max_size"`       // 图片大小限制
+	Quality    string              `koanf:"quality" json:"quality"`         // 图片质量
+	PublicPath string              `koanf:"public_path" json:"public_path"` // 图片 URL 基础路径
+	RateLimit  UploadRateLimitConf `koanf:"rate_limit" json:"rate_limit"`   // 上传频率限制
+	Lsky       LskyConf            `koanf:"lsky" json:"lsky"`               // 兰空图床
+	Upgit      UpgitConf           `koanf:"upgit" json:"upgit"`             // upgit
+}
+
+type UploadRateLimitConf struct {
+	Enabled       bool `koanf:"enabled" json:"enabled"`               // 启用上传频率限制
+	IPLimit       int  `koanf:"ip_limit" json:"ip_limit"`             // 单 IP 限制次数
+	WindowSeconds int  `koanf:"window_seconds" json:"window_seconds"` // 统计窗口
+}
+
+type LskyConf struct {
+	Enabled    bool   `koanf:"enabled" json:"enabled"`         // 启用兰空图床
+	BaseURL    string `koanf:"base_url" json:"base_url"`       // 兰空 API 地址
+	Token      string `koanf:"token" json:"token"`             // Bearer Token
+	Permission string `koanf:"permission" json:"permission"`   // 权限
+	StrategyID int    `koanf:"strategy_id" json:"strategy_id"` // 储存策略 ID
+	AlbumID    int    `koanf:"album_id" json:"album_id"`       // 相册 ID
+	DelLocal   bool   `koanf:"del_local" json:"del_local"`     // 上传后删除本地的图片
 }
 
 type UpgitConf struct {

@@ -57,6 +57,10 @@ func Upload(app *core.App, router fiber.Router) {
 			return resp
 		}
 
+		if !uploadRateLimiter.Allow(c.IP(), app.Conf().ImgUpload.RateLimit) {
+			return common.RespError(c, fiber.StatusTooManyRequests, "Image upload rate limit exceeded")
+		}
+
 		// find page
 		// page := entity.FindPage(p.PageKey, p.PageTitle)
 		// ip := c.RealIP()
@@ -164,8 +168,32 @@ func Upload(app *core.App, router fiber.Router) {
 			imgURL = path.Join(baseURL, filename)
 		}
 
-		// 使用 upgit
-		if app.Conf().ImgUpload.Upgit.Enabled {
+		// 使用兰空图床
+		if app.Conf().ImgUpload.Lsky.Enabled {
+			lskyURL, err := uploadToLsky(app.Conf().ImgUpload.Lsky, fileFullPath, filename)
+			if err != nil {
+				// 上传失败，删除源图片文件
+				var removeErr = os.Remove(fileFullPath)
+				if removeErr != nil {
+					log.Error(removeErr)
+				}
+
+				log.Error("[IMG_UPLOAD] [lsky] ", err)
+				return common.RespError(c, 500, i18n.T("Upload image via {{method}} failed", Map{"method": "lsky"}))
+			}
+
+			// 上传成功，删除本地文件
+			if app.Conf().ImgUpload.Lsky.DelLocal {
+				var err = os.Remove(fileFullPath)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+
+			// 使用从兰空获取的图片 URL
+			imgURL = lskyURL
+
+		} else if app.Conf().ImgUpload.Upgit.Enabled {
 			upgitURL := execUpgitUpload(app.Conf().ImgUpload.Upgit.Exec, fileFullPath)
 			if upgitURL == "" || !utils.ValidateURL(upgitURL) {
 				// 上传失败，删除源图片文件

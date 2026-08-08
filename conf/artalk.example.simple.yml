@@ -85,6 +85,18 @@ img_upload:
   path: ./data/artalk-img/
   max_size: 5
   public_path: null
+  rate_limit:
+    enabled: true
+    ip_limit: 20
+    window_seconds: 3600
+  lsky:
+    enabled: false
+    base_url: ""
+    token: ""
+    permission: public
+    strategy_id: 0
+    album_id: 0
+    del_local: true
   upgit:
     enabled: false
     exec: upgit -c UPGIT_CONF_FILE_PATH -t /artalk-img

@@ -186,6 +186,30 @@ img_upload:
   max_size: 5
   # Resim bağlantısı temel yolu (varsayılan: "/static/images/")
   public_path: null
+  # Yükleme hız sınırı
+  rate_limit:
+    # Yükleme hız sınırını etkinleştir
+    enabled: true
+    # Pencere içinde IP başına maksimum yükleme
+    ip_limit: 20
+    # Hız sınırı penceresi (birim: saniye)
+    window_seconds: 3600
+  # Lsky Pro resim barındırma
+  lsky:
+    # Lsky Pro yüklemeyi etkinleştir
+    enabled: false
+    # Lsky API temel URL'si (örn. "https://img.example.com/api/v1")
+    base_url: ""
+    # API token
+    token: ""
+    # Resim izni ["", "public", "private", "1", "0"]
+    permission: public
+    # Depolama stratejisi ID'si (0 = varsayılan)
+    strategy_id: 0
+    # Albüm ID'si (0 = yok)
+    album_id: 0
+    # Yükleme başarılı olduktan sonra yerel resmi sil
+    del_local: true
   # Upgit yapılandırması
   upgit:
     # Upgit'i etkinleştir
