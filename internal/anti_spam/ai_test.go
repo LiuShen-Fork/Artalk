@@ -43,6 +43,24 @@ func TestAICheckerResponses(t *testing.T) {
 	assert.Equal(t, false, format["schema"].(map[string]any)["additionalProperties"])
 }
 
+func TestAICheckerResponsesTopLevelOutputText(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"output_text":"{\"sensitive\":true,\"reason\":\"spam\"}"}`))
+	}))
+	defer server.Close()
+
+	checker := NewAIChecker(AICheckerConf{
+		APIType: AIAPITypeResponses,
+		BaseURL: server.URL + "/v1",
+		Model:   "test-model",
+	})
+	pass, err := checker.Check(&CheckerParams{ReviewText: "nickname: spam"})
+
+	require.NoError(t, err)
+	assert.False(t, pass)
+}
+
 func TestAICheckerChatCompletionsSensitive(t *testing.T) {
 	var received map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -38,18 +38,32 @@ func NewAntiSpam(conf *AntiSpamConf) *AntiSpam {
 // Check and block comment if it is spam,
 // the function is exposed and can be called by other modules
 func (as AntiSpam) CheckAndBlock(params *CheckerParams) {
-	checkers := as.getEnabledCheckers()
+	as.checkAndBlockWithCheckers(params, as.getEnabledCheckers())
+}
+
+func (as AntiSpam) checkAndBlockWithCheckers(params *CheckerParams, checkers []Checker) {
+	shouldBlock := false
 
 	// Execute check one by one
 	// Multiple checkers can be enabled at the same time
-	// If one of the checkers returns false, the comment will be blocked
+	// All enabled checkers are executed so every stage can be recorded.
 	for _, checker := range checkers {
 		pass := as.checkerTrigger(checker, params)
-
 		if !pass {
-			return // if blocked, stop checking
+			shouldBlock = true
 		}
 	}
+
+	if !shouldBlock {
+		return
+	}
+
+	if as.conf.OnBlockComment != nil {
+		as.conf.OnBlockComment(params.CommentID)
+	}
+
+	log.Debug(LOG_TAG, fmt.Sprintf("Successful blocking of comments ID=%d CONT=%s",
+		params.CommentID, strconv.Quote(params.RawContent)))
 }
 
 // Checker trigger function
@@ -69,6 +83,9 @@ func (as AntiSpam) checkerTrigger(checker Checker, params *CheckerParams) bool {
 		pass = lo.If(as.conf.ApiFailBlock, false).Else(true) // block if api fail
 		status = CheckStatusError
 		message = err.Error()
+		if !pass {
+			action = CheckActionPending
+		}
 	} else if !pass {
 		status = CheckStatusBlock
 		action = CheckActionPending
@@ -77,15 +94,6 @@ func (as AntiSpam) checkerTrigger(checker Checker, params *CheckerParams) bool {
 		if message == "" {
 			message = "keyword matched and comment content was replaced"
 		}
-	}
-
-	if !pass {
-		if as.conf.OnBlockComment != nil {
-			as.conf.OnBlockComment(params.CommentID)
-		}
-
-		log.Debug(LOG_TAG, fmt.Sprintf("[%s] Successful blocking of comments ID=%d CONT=%s",
-			checker.Name(), params.CommentID, strconv.Quote(params.RawContent)))
 	}
 
 	if as.conf.OnCheckResult != nil {

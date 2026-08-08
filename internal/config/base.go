@@ -112,6 +112,19 @@ func (conf *Config) normalPatch() {
 		conf.AdminNotify.NoiseMode = true
 	}
 
+	// AI 审核兼容旧配置，避免启用后因缺少新字段而直接请求失败
+	if conf.Moderator.AI.Enabled {
+		if strings.TrimSpace(string(conf.Moderator.AI.APIType)) == "" {
+			conf.Moderator.AI.APIType = AIAPITypeResponses
+		}
+		if strings.TrimSpace(conf.Moderator.AI.BaseURL) == "" {
+			conf.Moderator.AI.BaseURL = "https://api.openai.com/v1"
+		}
+		if strings.TrimSpace(conf.Moderator.AI.Prompt) == "" {
+			conf.Moderator.AI.Prompt = DefaultAIModerationPrompt
+		}
+	}
+
 	// 默认将验证码类型设置为 image
 	if strings.TrimSpace(string(conf.Captcha.CaptchaType)) == "" {
 		conf.Captcha.CaptchaType = TypeImage

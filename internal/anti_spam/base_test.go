@@ -120,6 +120,8 @@ func TestAntiSpam(t *testing.T) {
 	})
 
 	t.Run("MockChecker Error Return", func(t *testing.T) {
+		defer func() { mockCheckerErr = false }()
+
 		t.Run("ApiFailBlock=true", func(t *testing.T) {
 			checker := &mockChecker{}
 			antiSpam := NewAntiSpam(&AntiSpamConf{
@@ -146,6 +148,34 @@ func TestAntiSpam(t *testing.T) {
 			assert.True(t, pass, "should not be blocked when api fail")
 		})
 	})
+
+	t.Run("CheckAndBlock records all checker stages before blocking", func(t *testing.T) {
+		blockedID := uint(0)
+		results := []CheckResult{}
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			OnBlockComment: func(commentID uint) {
+				blockedID = commentID
+			},
+			OnCheckResult: func(result CheckResult) {
+				results = append(results, result)
+			},
+		})
+
+		antiSpam.checkAndBlockWithCheckers(&CheckerParams{CommentID: 1000}, []Checker{
+			fixedChecker{name: "first", pass: false},
+			fixedChecker{name: "second", pass: false},
+			fixedChecker{name: "third", pass: true},
+		})
+
+		assert.Equal(t, uint(1000), blockedID)
+		assert.Len(t, results, 3)
+		assert.Equal(t, "first", results[0].Checker)
+		assert.Equal(t, CheckStatusBlock, results[0].Status)
+		assert.Equal(t, "second", results[1].Checker)
+		assert.Equal(t, CheckStatusBlock, results[1].Status)
+		assert.Equal(t, "third", results[2].Checker)
+		assert.Equal(t, CheckStatusPass, results[2].Status)
+	})
 }
 
 // -------------------------------------------------------------------
@@ -169,4 +199,18 @@ func (c *mockChecker) Check(params *CheckerParams) (bool, error) {
 	}
 
 	return true, nil
+}
+
+type fixedChecker struct {
+	name string
+	pass bool
+	err  error
+}
+
+func (c fixedChecker) Name() string {
+	return c.name
+}
+
+func (c fixedChecker) Check(params *CheckerParams) (bool, error) {
+	return c.pass, c.err
 }

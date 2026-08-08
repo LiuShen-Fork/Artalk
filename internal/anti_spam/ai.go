@@ -183,7 +183,8 @@ func (c *AIChecker) extractResultJSON(responseBody []byte) ([]byte, error) {
 	switch c.conf.APIType {
 	case AIAPITypeResponses:
 		var response struct {
-			Output []struct {
+			OutputText string `json:"output_text"`
+			Output     []struct {
 				Content []struct {
 					Type string `json:"type"`
 					Text string `json:"text"`
@@ -193,9 +194,12 @@ func (c *AIChecker) extractResultJSON(responseBody []byte) ([]byte, error) {
 		if err := json.Unmarshal(responseBody, &response); err != nil {
 			return nil, fmt.Errorf("decode AI responses result: %w", err)
 		}
+		if strings.TrimSpace(response.OutputText) != "" {
+			return []byte(response.OutputText), nil
+		}
 		for _, output := range response.Output {
 			for _, content := range output.Content {
-				if content.Type == "output_text" && strings.TrimSpace(content.Text) != "" {
+				if (content.Type == "output_text" || content.Type == "text") && strings.TrimSpace(content.Text) != "" {
 					return []byte(content.Text), nil
 				}
 			}
