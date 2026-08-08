@@ -13,6 +13,22 @@ const { t } = useI18n()
 const { curtTab } = storeToRefs(nav)
 const isLoading = ref(false)
 const tree = shallowRef<OptionNode>()
+const selectedRootPath = ref('')
+const hiddenRootNodes = new Set(['admin_users'])
+
+const rootGroups = computed(() =>
+  (tree.value?.items || []).filter((node) => !hiddenRootNodes.has(node.name) && !!node.items),
+)
+const activeRoot = computed(
+  () => rootGroups.value.find((node) => node.path === selectedRootPath.value) || rootGroups.value[0],
+)
+
+watch(rootGroups, (groups) => {
+  if (!groups.length) return
+  if (!groups.some((node) => node.path === selectedRootPath.value)) {
+    selectedRootPath.value = groups[0].path
+  }
+})
 
 onMounted(() => {
   nav.updateTabs({
@@ -34,6 +50,7 @@ onMounted(() => {
     // console.log(tree.value)
     settings.get().setCustoms(custom.data.yaml)
     settings.get().setEnvs(custom.data.envs)
+    if (rootGroups.value.length) selectedRootPath.value = rootGroups.value[0].path
   })
 })
 
@@ -85,15 +102,39 @@ function save() {
       </div>
       <LoadingLayer v-if="isLoading" />
     </div>
-    <div v-if="tree" class="pfs">
-      <PreferenceGrp :node="tree" />
-      <div class="notice">{{ t('settingNotice') }}</div>
+    <div v-if="tree" class="settings-layout">
+      <aside class="settings-index">
+        <div class="settings-index-title">{{ t('config') }}</div>
+        <button
+          v-for="node in rootGroups"
+          :key="node.path"
+          type="button"
+          class="settings-index-item"
+          :class="{ active: activeRoot?.path === node.path }"
+          @click="selectedRootPath = node.path"
+        >
+          <span>{{ node.title }}</span>
+          <small v-if="node.subTitle">{{ node.subTitle }}</small>
+        </button>
+      </aside>
+
+      <main class="settings-content">
+        <PreferenceGrp
+          v-if="activeRoot"
+          :key="activeRoot.path"
+          :node="activeRoot"
+          default-expanded
+        />
+        <div class="notice">{{ t('settingNotice') }}</div>
+      </main>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .settings {
+  padding: 18px 28px 80px;
+
   .notice {
     font-size: 13px;
     background: var(--at-color-bg-light);
@@ -155,8 +196,81 @@ function save() {
     }
   }
 
-  .pfs {
-    padding: 10px 30px;
+  .settings-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .settings-index,
+  .settings-content {
+    border: 1px solid var(--at-color-border);
+    background: var(--at-color-bg);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  }
+
+  .settings-index {
+    position: sticky;
+    top: 16px;
+    padding: 10px;
+  }
+
+  .settings-index-title {
+    padding: 8px 10px 10px;
+    color: var(--at-color-sub);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .settings-index-item {
+    width: 100%;
+    display: block;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: var(--at-color-font);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+
+    span,
+    small {
+      display: block;
+    }
+
+    span {
+      font-weight: 600;
+    }
+
+    small {
+      margin-top: 4px;
+      color: var(--at-color-sub);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    &.active,
+    &:hover {
+      background: var(--at-color-bg-grey-transl);
+    }
+
+    &.active {
+      color: var(--at-color-main);
+    }
+  }
+
+  .settings-content {
+    min-width: 0;
+    padding: 6px 24px 20px;
+
+    :deep(.pf-grp.level-1 > .pf-head) {
+      margin-top: 18px;
+    }
   }
 
   :deep(input[type='text']),
@@ -182,6 +296,25 @@ function save() {
     resize: vertical;
     line-height: 1.5;
     min-height: 140px;
+  }
+}
+
+@media (max-width: 900px) {
+  .settings {
+    padding: 12px 14px 80px;
+
+    .settings-layout {
+      display: block;
+    }
+
+    .settings-index {
+      position: static;
+      margin-bottom: 12px;
+    }
+
+    .settings-index-item {
+      margin-bottom: 6px;
+    }
   }
 }
 </style>

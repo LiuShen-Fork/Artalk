@@ -3,16 +3,17 @@ import type { OptionNode } from '../lib/settings'
 
 const props = defineProps<{
   node: OptionNode
+  defaultExpanded?: boolean
 }>()
 
-const expanded = ref(true)
+const expanded = ref(props.defaultExpanded ?? true)
 
 const expandable = computed(() => {
   return props.node.level === 1 && (props.node.type === 'object' || props.node.type === 'array')
 })
 
 onMounted(() => {
-  if (expandable.value) expanded.value = false
+  if (expandable.value && !props.defaultExpanded) expanded.value = false
 })
 
 function onHeadClick(evt: Event) {
