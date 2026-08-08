@@ -58,6 +58,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/moderation': RouteRecordInfo<
+      '/moderation',
+      '/moderation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/pages': RouteRecordInfo<
       '/pages',
       '/pages',
@@ -127,6 +134,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/login.vue': {
       routes:
         | '/login'
+      views:
+        | never
+    }
+    'src/pages/moderation.vue': {
+      routes:
+        | '/moderation'
       views:
         | never
     }

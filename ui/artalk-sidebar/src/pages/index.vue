@@ -21,6 +21,7 @@ onMounted(() => {
   const LinkMap: { [key: string]: string } = {
     dashboard: '/dashboard',
     comments: '/comments',
+    moderation: '/moderation',
     pages: '/pages',
     sites: '/sites',
     settings: '/settings',
