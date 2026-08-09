@@ -13,8 +13,28 @@ const tree = shallowRef<OptionNode>()
 const selectedRootPath = ref('')
 const hiddenRootNodes = new Set(['admin_users'])
 
+const visibleRootNodes = computed(() =>
+  (tree.value?.items || []).filter((node) => !hiddenRootNodes.has(node.name)),
+)
+const basicRootGroup = computed<OptionNode | null>(() => {
+  const items = visibleRootNodes.value.filter((node) => !node.items)
+  if (!items.length) return null
+
+  return {
+    name: '__basic__',
+    path: '__basic__',
+    level: 1,
+    type: 'object',
+    title: t('config'),
+    subTitle: '',
+    items,
+  }
+})
 const rootGroups = computed(() =>
-  (tree.value?.items || []).filter((node) => !hiddenRootNodes.has(node.name) && !!node.items),
+  [
+    basicRootGroup.value,
+    ...visibleRootNodes.value.filter((node) => !!node.items),
+  ].filter((node): node is OptionNode => !!node),
 )
 const activeRoot = computed(
   () => rootGroups.value.find((node) => node.path === selectedRootPath.value) || rootGroups.value[0],
