@@ -51,7 +51,7 @@ onMounted(() => {
   nav.updateTabs({})
 
   Promise.all([
-    artalk!.ctx.getApi().settings.getSettingsTemplate(''),
+    artalk!.ctx.getApi().settings.getSettingsTemplate('zh-CN'),
     artalk!.ctx.getApi().settings.getSettings(),
   ]).then(([template, custom]) => {
     const yamlObj = YAML.parseDocument(template.data.yaml)
