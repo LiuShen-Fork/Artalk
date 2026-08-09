@@ -9,8 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -28,7 +26,7 @@ type lskyUploadResponse struct {
 	} `json:"data"`
 }
 
-func uploadToLsky(conf config.LskyConf, fileFullPath string, filename string) (string, error) {
+func uploadToLsky(conf config.LskyConf, file io.Reader, filename string) (string, error) {
 	endpoint, err := lskyUploadEndpoint(conf.BaseURL)
 	if err != nil {
 		return "", err
@@ -41,16 +39,8 @@ func uploadToLsky(conf config.LskyConf, fileFullPath string, filename string) (s
 	if err != nil {
 		return "", fmt.Errorf("create lsky multipart file: %w", err)
 	}
-	file, err := os.Open(filepath.Clean(fileFullPath))
-	if err != nil {
-		return "", fmt.Errorf("open lsky upload file: %w", err)
-	}
 	if _, err := io.Copy(fileWriter, file); err != nil {
-		_ = file.Close()
 		return "", fmt.Errorf("write lsky multipart file: %w", err)
-	}
-	if err := file.Close(); err != nil {
-		return "", fmt.Errorf("close lsky upload file: %w", err)
 	}
 
 	if permission := strings.TrimSpace(conf.Permission); permission != "" {

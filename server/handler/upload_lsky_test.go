@@ -1,11 +1,11 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/artalkjs/artalk/v2/internal/config"
@@ -33,6 +33,9 @@ func TestUploadToLsky(t *testing.T) {
 		gotPermission = r.FormValue("permission")
 		file, _, err := r.FormFile("file")
 		require.NoError(t, err)
+		content, err := io.ReadAll(file)
+		require.NoError(t, err)
+		assert.Equal(t, []byte("png"), content)
 		require.NoError(t, file.Close())
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"status": true,
@@ -43,15 +46,12 @@ func TestUploadToLsky(t *testing.T) {
 	}))
 	defer server.Close()
 
-	filePath := filepath.Join(t.TempDir(), "a.png")
-	require.NoError(t, os.WriteFile(filePath, []byte("png"), 0o600))
-
 	url, err := uploadToLsky(config.LskyConf{
 		Enabled:    true,
 		BaseURL:    server.URL,
 		Token:      "token",
 		Permission: "public",
-	}, filePath, "a.png")
+	}, bytes.NewReader([]byte("png")), "a.png")
 	require.NoError(t, err)
 	assert.Equal(t, "https://cdn.example.com/a.png", url)
 	assert.Equal(t, "Bearer token", gotAuth)

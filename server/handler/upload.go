@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -133,6 +134,22 @@ func Upload(app *core.App, router fiber.Router) {
 		t := time.Now()
 		filename := t.Format("20060102-150405.000") + mineToExts[fileMine]
 
+		// 使用兰空图床且不保留本地图片时，直接将内存中的文件上传到兰空，
+		// 避免先写入本地再删除。
+		if app.Conf().ImgUpload.Lsky.Enabled && app.Conf().ImgUpload.Lsky.DelLocal {
+			lskyURL, err := uploadToLsky(app.Conf().ImgUpload.Lsky, bytes.NewReader(buf), filename)
+			if err != nil {
+				log.Error("[IMG_UPLOAD] [lsky] ", err)
+				return common.RespError(c, 500, i18n.T("Upload image via {{method}} failed", Map{"method": "lsky"}))
+			}
+
+			return common.RespData(c, ResponseUpload{
+				FileType:  "image",
+				FileName:  filename,
+				PublicURL: lskyURL,
+			})
+		}
+
 		// 创建图片目标文件
 		if err := utils.EnsureDir(app.Conf().ImgUpload.Path); err != nil {
 			log.Error(err)
@@ -145,10 +162,14 @@ func Upload(app *core.App, router fiber.Router) {
 			log.Error(err)
 			return common.RespError(c, 500, "File creation failed")
 		}
-		defer dst.Close()
 
 		// 写入图片文件
 		if _, err = dst.Write(buf); err != nil {
+			_ = dst.Close()
+			log.Error(err)
+			return common.RespError(c, 500, "File write failed")
+		}
+		if err := dst.Close(); err != nil {
 			log.Error(err)
 			return common.RespError(c, 500, "File write failed")
 		}
@@ -170,7 +191,15 @@ func Upload(app *core.App, router fiber.Router) {
 
 		// 使用兰空图床
 		if app.Conf().ImgUpload.Lsky.Enabled {
-			lskyURL, err := uploadToLsky(app.Conf().ImgUpload.Lsky, fileFullPath, filename)
+			fileReader, err := os.Open(fileFullPath)
+			if err != nil {
+				log.Error(err)
+				return common.RespError(c, 500, "File open failed")
+			}
+			lskyURL, err := uploadToLsky(app.Conf().ImgUpload.Lsky, fileReader, filename)
+			if closeErr := fileReader.Close(); closeErr != nil {
+				log.Error(closeErr)
+			}
 			if err != nil {
 				// 上传失败，删除源图片文件
 				var removeErr = os.Remove(fileFullPath)
@@ -184,9 +213,8 @@ func Upload(app *core.App, router fiber.Router) {
 
 			// 上传成功，删除本地文件
 			if app.Conf().ImgUpload.Lsky.DelLocal {
-				var err = os.Remove(fileFullPath)
-				if err != nil {
-					log.Error(err)
+				if err := os.Remove(fileFullPath); err != nil {
+					log.Error("[IMG_UPLOAD] [lsky] delete local image: ", err)
 				}
 			}
 
