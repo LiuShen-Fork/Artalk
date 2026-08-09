@@ -8,8 +8,9 @@ const props = defineProps<{
 
 const expanded = ref(props.defaultExpanded ?? true)
 
+const hasChildItems = computed(() => !!props.node.items?.length)
 const expandable = computed(() => {
-  return props.node.level === 1 && (props.node.type === 'object' || props.node.type === 'array')
+  return props.node.level === 1 && props.node.type === 'object' && hasChildItems.value
 })
 
 onMounted(() => {
@@ -47,7 +48,7 @@ const hiddenNodes = ['admin_users']
     </div>
     <div v-show="expanded" class="pf-body">
       <!-- Grp -->
-      <template v-if="node.items">
+      <template v-if="node.items?.length">
         <PreferenceGrp v-for="n in node.items" :key="n.path" :node="n" />
       </template>
 

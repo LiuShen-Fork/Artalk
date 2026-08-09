@@ -17,7 +17,12 @@ const visibleRootNodes = computed(() =>
   (tree.value?.items || []).filter((node) => !hiddenRootNodes.has(node.name)),
 )
 const basicRootGroup = computed<OptionNode | null>(() => {
-  const items = visibleRootNodes.value.filter((node) => !node.items)
+  const items = visibleRootNodes.value
+    .filter((node) => !node.items)
+    .map((node) => ({
+      ...node,
+      level: 2,
+    }))
   if (!items.length) return null
 
   return {
