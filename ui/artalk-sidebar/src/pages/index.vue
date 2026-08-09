@@ -26,7 +26,7 @@ onMounted(() => {
     sites: '/sites',
     settings: '/settings',
   }
-  router.replace(LinkMap[bootParams.view] || (bootParams.user?.is_admin ? '/dashboard' : '/comments'))
+  router.replace(LinkMap[bootParams.view] || '/comments')
 })
 </script>
 
