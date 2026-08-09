@@ -68,12 +68,17 @@ export const en = {
   dashboard: 'Dashboard',
   moderation: 'Moderation',
   moderationBlocked: 'Blocked',
+  moderationReplaced: 'Replaced',
   moderationIntro:
     'Shows staged results from keywords, AI, and external moderation services. It does not replace the pending comment list.',
   moderationSummary: '{total} records; showing latest {count}.',
   moderationNoMessage: 'No extra moderation message',
   moderationCommentUnavailable: 'Comment deleted or unavailable',
   noModerationLogs: 'No moderation logs',
+  moderationClear: 'Clear records',
+  moderationClearConfirm:
+    'Clear all moderation records for the current site? Comments will not be deleted.',
+  moderationDeleteConfirm: 'Delete this moderation record? The comment will not be deleted.',
   refresh: 'Refresh',
   refreshing: 'Refreshing...',
   unknownUser: 'Unknown user',

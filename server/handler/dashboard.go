@@ -140,7 +140,7 @@ func buildDashboardTrend(app *core.App, siteName string, start90 time.Time, star
 }
 
 func loadDashboardModeration(app *core.App, siteName string, start90 time.Time) (DashboardModerationSummary, []ModerationLogItem) {
-	q := app.Dao().DB().Model(&entity.ModerationLog{}).Where("created_at >= ?", start90)
+	q := moderationLogAttentionQuery(app.Dao().DB().Model(&entity.ModerationLog{})).Where("created_at >= ?", start90)
 	if siteName != "" {
 		q = q.Where("site_name = ?", siteName)
 	}

@@ -145,6 +145,8 @@ func admin(app *core.App, api fiber.Router) {
 	h.UserDelete(app, api)
 	h.Dashboard(app, api)
 	h.ModerationLogList(app, api)
+	h.ModerationLogDelete(app, api)
+	h.ModerationLogClear(app, api)
 	h.CacheWarmUp(app, api)
 	h.CacheFlush(app, api)
 	h.EmailSend(app, api)

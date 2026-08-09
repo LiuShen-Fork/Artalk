@@ -23,6 +23,8 @@ func NewAntiSpamService(app *App) *AntiSpamService {
 }
 
 func (s *AntiSpamService) Init() error {
+	s.pruneModerationLogs()
+
 	s.client = anti_spam.NewAntiSpam(&anti_spam.AntiSpamConf{
 		ModeratorConf: s.app.Conf().Moderator,
 		OnBlockComment: func(commentID uint) {
@@ -55,13 +57,10 @@ func (s *AntiSpamService) Dispose() error {
 }
 
 func (s *AntiSpamService) recordCheckResult(result anti_spam.CheckResult) {
-	if result.CommentID == 0 {
-		return
-	}
+	s.pruneModerationLogs()
 
-	cutoff := time.Now().AddDate(0, 0, -90)
-	if err := s.app.dao.DB().Where("created_at < ?", cutoff).Delete(&entity.ModerationLog{}).Error; err != nil {
-		log.Errorf("[AntiSpam] prune moderation logs failed: %v", err)
+	if result.CommentID == 0 || !shouldRecordModerationResult(result) {
+		return
 	}
 
 	logRow := entity.ModerationLog{
@@ -76,6 +75,19 @@ func (s *AntiSpamService) recordCheckResult(result anti_spam.CheckResult) {
 	}
 	if err := s.app.dao.DB().Create(&logRow).Error; err != nil {
 		log.Errorf("[AntiSpam] record moderation log failed: %v", err)
+	}
+}
+
+func shouldRecordModerationResult(result anti_spam.CheckResult) bool {
+	return result.Status == anti_spam.CheckStatusBlock ||
+		result.Status == anti_spam.CheckStatusError ||
+		result.Action == anti_spam.CheckActionReplace
+}
+
+func (s *AntiSpamService) pruneModerationLogs() {
+	cutoff := time.Now().AddDate(0, 0, -90)
+	if err := s.app.dao.DB().Where("created_at < ?", cutoff).Delete(&entity.ModerationLog{}).Error; err != nil {
+		log.Errorf("[AntiSpam] prune moderation logs failed: %v", err)
 	}
 }
 

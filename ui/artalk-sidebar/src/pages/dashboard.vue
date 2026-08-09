@@ -172,10 +172,10 @@ onMounted(() => {
           <RouterLink to="/moderation">查看</RouterLink>
         </div>
         <div class="review-summary">
-          <RouterLink class="ok" :to="{ path: '/moderation', query: { status: 'pass' } }">
-            <span class="review-icon">OK</span>
+          <RouterLink class="ok" :to="{ path: '/moderation', query: { status: 'replace' } }">
+            <span class="review-icon">~</span>
             <b>{{ formatNumber(data?.moderation.pass) }}</b>
-            <span>正常</span>
+            <span>已替换</span>
           </RouterLink>
           <RouterLink class="warn" :to="{ path: '/moderation', query: { status: 'block' } }">
             <span class="review-icon">!</span>

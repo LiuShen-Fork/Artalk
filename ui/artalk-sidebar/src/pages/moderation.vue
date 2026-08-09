@@ -5,6 +5,7 @@ import { useNavStore } from '../stores/nav'
 import { useUserStore } from '../stores/user'
 
 type ModerationStatus = 'pass' | 'block' | 'error'
+type ModerationTab = 'all' | 'block' | 'replace' | 'error'
 
 type ModerationLog = {
   id: number
@@ -37,16 +38,25 @@ const { t } = useI18n()
 const logs = ref<ModerationLog[]>([])
 const total = ref(0)
 const loading = ref(false)
+const clearing = ref(false)
+const deletingID = ref<number | null>(null)
 
 const statusMeta = computed(() => ({
-  pass: { label: t('normal'), icon: 'OK' },
+  replace: { label: t('moderationReplaced'), icon: '~' },
   block: { label: t('moderationBlocked'), icon: '!' },
   error: { label: t('opFailed'), icon: 'X' },
 }))
 
-function getRouteStatus() {
+function getRouteStatus(): ModerationTab {
   const status = route.query.status
-  return typeof status === 'string' && ['pass', 'block', 'error'].includes(status) ? status : 'all'
+  return typeof status === 'string' && ['block', 'replace', 'error'].includes(status)
+    ? (status as ModerationTab)
+    : 'all'
+}
+
+function displayStatus(item: ModerationLog): Exclude<ModerationTab, 'all'> {
+  if (item.action === 'replace' || item.status === 'pass') return 'replace'
+  return item.status
 }
 
 async function fetchLogs() {
@@ -70,12 +80,53 @@ async function fetchLogs() {
   }
 }
 
+async function deleteLog(item: ModerationLog) {
+  if (!window.confirm(t('moderationDeleteConfirm'))) return
+
+  deletingID.value = item.id
+  try {
+    await artalk!.ctx.getApi().request({
+      path: `/moderation/logs/${item.id}`,
+      method: 'DELETE',
+      secure: true,
+      format: 'json',
+    })
+    logs.value = logs.value.filter((log) => log.id !== item.id)
+    total.value = Math.max(0, total.value - 1)
+  } catch (err: any) {
+    alert(err?.message || t('opFailed'))
+  } finally {
+    deletingID.value = null
+  }
+}
+
+async function clearLogs() {
+  if (!window.confirm(t('moderationClearConfirm'))) return
+
+  clearing.value = true
+  try {
+    await artalk!.ctx.getApi().request({
+      path: '/moderation/logs',
+      method: 'DELETE',
+      query: { site_name: curtSite.value || undefined },
+      secure: true,
+      format: 'json',
+    })
+    logs.value = []
+    total.value = 0
+  } catch (err: any) {
+    alert(err?.message || t('opFailed'))
+  } finally {
+    clearing.value = false
+  }
+}
+
 onMounted(() => {
   nav.updateTabs(
     {
       all: 'all',
-      pass: 'normal',
       block: 'moderationBlocked',
+      replace: 'moderationReplaced',
       error: 'opFailed',
     },
     getRouteStatus(),
@@ -100,9 +151,14 @@ onMounted(() => {
         <h1>{{ t('moderation') }}</h1>
         <p>{{ t('moderationIntro') }}</p>
       </div>
-      <button :disabled="loading" @click="fetchLogs">
-        {{ loading ? t('refreshing') : t('refresh') }}
-      </button>
+      <div class="head-actions">
+        <button class="clear-btn" :disabled="clearing || !total" @click="clearLogs">
+          {{ clearing ? t('refreshing') : t('moderationClear') }}
+        </button>
+        <button class="refresh-btn" :disabled="loading" @click="fetchLogs">
+          {{ loading ? t('refreshing') : t('refresh') }}
+        </button>
+      </div>
     </section>
 
     <section class="log-panel">
@@ -110,13 +166,27 @@ onMounted(() => {
         {{ t('moderationSummary', { total, count: logs.length }) }}
       </div>
       <div class="log-list">
-        <article v-for="item in logs" :key="item.id" class="log-item" :class="item.status">
-          <div class="status-icon">{{ statusMeta[item.status].icon }}</div>
+        <article
+          v-for="item in logs"
+          :key="item.id"
+          class="log-item"
+          :class="displayStatus(item)"
+        >
+          <div class="status-icon">{{ statusMeta[displayStatus(item)].icon }}</div>
           <div class="log-main">
-            <div class="log-title">
-              <b>{{ statusMeta[item.status].label }}</b>
-              <span>{{ item.checker }}</span>
-              <em>{{ item.action }}</em>
+            <div class="log-top">
+              <div class="log-title">
+                <b>{{ statusMeta[displayStatus(item)].label }}</b>
+                <span>{{ item.checker }}</span>
+                <em>{{ item.action }}</em>
+              </div>
+              <button
+                class="delete-btn"
+                :disabled="deletingID === item.id"
+                @click="deleteLog(item)"
+              >
+                {{ t('delete') }}
+              </button>
             </div>
             <p>{{ item.message || t('moderationNoMessage') }}</p>
             <blockquote>{{ item.comment_content || t('moderationCommentUnavailable') }}</blockquote>
@@ -139,20 +209,12 @@ onMounted(() => {
   padding: 24px 28px 70px;
 }
 
-.page-head,
-.log-panel {
-  border: 1px solid var(--at-color-border);
-  background: var(--at-color-bg);
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-}
-
 .page-head {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  padding: 26px;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  margin: 2px 0 22px;
 
   h1 {
     margin: 4px 0 8px;
@@ -164,15 +226,36 @@ onMounted(() => {
     color: var(--at-color-sub);
   }
 
-  button {
-    align-self: flex-start;
-    border: 0;
-    background: #36abcf;
-    color: #fff;
-    border-radius: 6px;
-    padding: 9px 18px;
-    cursor: pointer;
+}
+
+.head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
+}
+
+.refresh-btn {
+  background: #168aac;
+  color: #fff;
+}
+
+.clear-btn,
+.delete-btn {
+  border-color: rgba(211, 47, 47, 0.32);
+  background: transparent;
+  color: #c92a2a;
 }
 
 .eyebrow {
@@ -184,22 +267,42 @@ onMounted(() => {
 }
 
 .log-panel {
-  overflow: hidden;
+  border-top: 1px solid var(--at-color-border);
 }
 
 .log-summary {
-  padding: 14px 18px;
+  padding: 13px 2px;
   color: var(--at-color-sub);
-  border-bottom: 1px solid var(--at-color-border);
+  font-size: 13px;
+}
+
+.log-list {
+  display: grid;
+  gap: 10px;
 }
 
 .log-item {
   display: flex;
   gap: 14px;
-  padding: 18px;
-  border-bottom: 1px solid var(--at-color-border);
+  padding: 16px;
+  border: 1px solid var(--at-color-border);
+  border-left-width: 3px;
+  border-radius: 8px;
+  background: var(--at-color-bg);
 
-  &.pass .status-icon {
+  &.replace {
+    border-left-color: #2f9e44;
+  }
+
+  &.block {
+    border-left-color: #f08c00;
+  }
+
+  &.error {
+    border-left-color: #e03131;
+  }
+
+  &.replace .status-icon {
     background: rgba(47, 158, 68, 0.12);
     color: #2f9e44;
   }
@@ -218,7 +321,7 @@ onMounted(() => {
 .status-icon {
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -246,6 +349,13 @@ onMounted(() => {
   }
 }
 
+.log-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .log-title {
   display: flex;
   align-items: center;
@@ -255,7 +365,7 @@ onMounted(() => {
   span,
   em {
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: 5px;
     background: var(--at-color-bg-grey-transl);
     color: var(--at-color-sub);
     font-size: 12px;
@@ -273,7 +383,7 @@ onMounted(() => {
 }
 
 .empty {
-  padding: 36px;
+  padding: 42px 16px;
   color: var(--at-color-sub);
   text-align: center;
 }
@@ -285,10 +395,10 @@ onMounted(() => {
 
   .page-head {
     display: block;
+  }
 
-    button {
-      margin-top: 16px;
-    }
+  .head-actions {
+    margin-top: 16px;
   }
 }
 </style>
