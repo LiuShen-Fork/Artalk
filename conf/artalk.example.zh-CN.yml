@@ -201,6 +201,8 @@ ip_region:
   enabled: false
   # 数据文件路径 (.xdb 格式)
   db_path: ./data/ip2region.xdb
+  # IPv6 数据文件路径 (.xdb 格式，可选；留空则保持现有单库解析逻辑)
+  db_path_v6: ""
   # 显示精度 ["province", "city", "country"]
   precision: province
 

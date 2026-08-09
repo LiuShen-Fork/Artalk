@@ -26,6 +26,40 @@ func TestIpScraper(t *testing.T) {
 	}
 }
 
+func TestSelectDBPathForIP(t *testing.T) {
+	withV6Database := IPRegionConf{
+		IPRegionConf: config.IPRegionConf{
+			DBPath:   "ipv4.xdb",
+			DBPathV6: "ipv6.xdb",
+		},
+	}
+	withoutV6Database := IPRegionConf{
+		IPRegionConf: config.IPRegionConf{
+			DBPath: "ipv4.xdb",
+		},
+	}
+
+	tests := []struct {
+		name string
+		ip   string
+		conf IPRegionConf
+		want string
+	}{
+		{name: "IPv4", ip: "203.0.113.10", conf: withV6Database, want: "ipv4.xdb"},
+		{name: "IPv6", ip: "2001:db8::10", conf: withV6Database, want: "ipv6.xdb"},
+		{name: "IPv6 without dedicated database", ip: "2001:db8::10", conf: withoutV6Database, want: "ipv4.xdb"},
+		{name: "invalid IP", ip: "not-an-ip", conf: withV6Database, want: "ipv4.xdb"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := selectDBPathForIP(test.ip, test.conf); got != test.want {
+				t.Fatalf("selectDBPathForIP(%q) = %q, want %q", test.ip, got, test.want)
+			}
+		})
+	}
+}
+
 func TestRegionScraper(t *testing.T) {
 	tests := []struct {
 		raw       string
