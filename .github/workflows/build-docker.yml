@@ -72,7 +72,6 @@ jobs:
           context: .
           file: ./Dockerfile
           build-args: |
-            APP_VERSION=${{ inputs.version }}
             SKIP_UI_BUILD=true
           platforms: ${{ inputs.target }}
           tags: ${{ steps.meta.outputs.tags }}
