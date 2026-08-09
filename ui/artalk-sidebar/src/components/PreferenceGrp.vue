@@ -46,7 +46,7 @@ const hiddenNodes = ['admin_users']
       <div class="title">{{ node.title }}</div>
       <div v-if="!!node.subTitle" class="sub-title">{{ node.subTitle }}</div>
     </div>
-    <div v-show="expanded" class="pf-body">
+    <div class="pf-body">
       <!-- Grp -->
       <template v-if="node.items?.length">
         <PreferenceGrp v-for="n in node.items" :key="n.path" :node="n" />
