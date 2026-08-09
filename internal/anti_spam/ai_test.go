@@ -91,6 +91,53 @@ func TestAICheckerChatCompletionsSensitive(t *testing.T) {
 	assert.Equal(t, true, responseFormat["json_schema"].(map[string]any)["strict"])
 }
 
+func TestAICheckerChatCompletionsJSONObject(t *testing.T) {
+	var received map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&received))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"{\"sensitive\":false}"}}]}`))
+	}))
+	defer server.Close()
+
+	checker := NewAIChecker(AICheckerConf{
+		APIType:         AIAPITypeChatCompletions,
+		BaseURL:         server.URL + "/v1",
+		Model:           "deepseek-v4-flash",
+		Prompt:          "Classify the comment.",
+		OutputFormat:    AIOutputFormatJSONObject,
+		MaxTokens:       256,
+		DisableThinking: true,
+	})
+	pass, err := checker.Check(&CheckerParams{ReviewText: "nickname: user\ncomment: normal discussion"})
+
+	require.NoError(t, err)
+	assert.True(t, pass)
+	responseFormat := received["response_format"].(map[string]any)
+	assert.Equal(t, "json_object", responseFormat["type"])
+	assert.NotContains(t, responseFormat, "json_schema")
+	assert.Equal(t, float64(256), received["max_tokens"])
+	assert.Equal(t, "disabled", received["thinking"].(map[string]any)["type"])
+	messages := received["messages"].([]any)
+	systemPrompt := messages[0].(map[string]any)["content"].(string)
+	assert.Contains(t, systemPrompt, "JSON")
+	assert.Contains(t, systemPrompt, `{"sensitive": false, "reason": "brief reason"}`)
+}
+
+func TestAICheckerResponsesRequestOptions(t *testing.T) {
+	checker := NewAIChecker(AICheckerConf{
+		APIType:         AIAPITypeResponses,
+		Model:           "deepseek-v4-flash",
+		MaxTokens:       128,
+		DisableThinking: true,
+	})
+	request, err := checker.requestBody("comment")
+
+	require.NoError(t, err)
+	assert.Equal(t, 128, request["max_output_tokens"])
+	assert.Equal(t, "none", request["reasoning"].(map[string]any)["effort"])
+}
+
 func TestAICheckerErrors(t *testing.T) {
 	t.Run("base URL must end with v1", func(t *testing.T) {
 		checker := NewAIChecker(AICheckerConf{APIType: AIAPITypeResponses, BaseURL: "https://example.com/api", Model: "model"})
@@ -110,6 +157,30 @@ func TestAICheckerErrors(t *testing.T) {
 		checker := NewAIChecker(AICheckerConf{APIType: "unknown", BaseURL: "https://example.com/v1", Model: "model"})
 		pass, err := checker.Check(&CheckerParams{})
 		assert.ErrorContains(t, err, "API type")
+		assert.False(t, pass)
+	})
+
+	t.Run("json object is unsupported by responses", func(t *testing.T) {
+		checker := NewAIChecker(AICheckerConf{
+			APIType:      AIAPITypeResponses,
+			BaseURL:      "https://example.com/v1",
+			Model:        "model",
+			OutputFormat: AIOutputFormatJSONObject,
+		})
+		pass, err := checker.Check(&CheckerParams{})
+		assert.ErrorContains(t, err, "only supported by chat_completions")
+		assert.False(t, pass)
+	})
+
+	t.Run("negative max tokens", func(t *testing.T) {
+		checker := NewAIChecker(AICheckerConf{
+			APIType:   AIAPITypeResponses,
+			BaseURL:   "https://example.com/v1",
+			Model:     "model",
+			MaxTokens: -1,
+		})
+		pass, err := checker.Check(&CheckerParams{})
+		assert.ErrorContains(t, err, "max tokens")
 		assert.False(t, pass)
 	})
 

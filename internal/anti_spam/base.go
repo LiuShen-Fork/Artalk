@@ -140,11 +140,14 @@ func (as AntiSpam) getEnabledCheckers() []Checker {
 	aiConf := as.conf.AI
 	if aiConf.Enabled {
 		checkers = append(checkers, NewAIChecker(AICheckerConf{
-			APIType: AIAPIType(aiConf.APIType),
-			BaseURL: aiConf.BaseURL,
-			APIKey:  aiConf.APIKey,
-			Model:   aiConf.Model,
-			Prompt:  aiConf.Prompt,
+			APIType:         AIAPIType(aiConf.APIType),
+			BaseURL:         aiConf.BaseURL,
+			APIKey:          aiConf.APIKey,
+			Model:           aiConf.Model,
+			Prompt:          aiConf.Prompt,
+			OutputFormat:    AIOutputFormat(aiConf.OutputFormat),
+			MaxTokens:       aiConf.MaxTokens,
+			DisableThinking: aiConf.DisableThinking,
 		}))
 	}
 	// Keywords Checker

@@ -20,12 +20,23 @@ const (
 	AIAPITypeChatCompletions AIAPIType = "chat_completions"
 )
 
+type AIOutputFormat string
+
+const (
+	AIOutputFormatJSONSchema AIOutputFormat = "json_schema"
+	AIOutputFormatJSONObject AIOutputFormat = "json_object"
+)
+
 type AICheckerConf struct {
 	APIType AIAPIType
 	BaseURL string
 	APIKey  string
 	Model   string
 	Prompt  string
+
+	OutputFormat    AIOutputFormat
+	MaxTokens       int
+	DisableThinking bool
 }
 
 type AIChecker struct {
@@ -93,7 +104,7 @@ func (c *AIChecker) Check(p *CheckerParams) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	result, err := parseAIModerationResult(resultJSON)
+	result, err := parseAIModerationResult(resultJSON, c.outputFormat() == AIOutputFormatJSONObject)
 	if err != nil {
 		return false, err
 	}
@@ -130,10 +141,16 @@ func (c *AIChecker) endpoint() (string, error) {
 
 func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 	schema := aiModerationJSONSchema()
+	if c.conf.MaxTokens < 0 {
+		return nil, fmt.Errorf("AI max tokens must not be negative")
+	}
 
 	switch c.conf.APIType {
 	case AIAPITypeResponses:
-		return map[string]any{
+		if c.outputFormat() != AIOutputFormatJSONSchema {
+			return nil, fmt.Errorf("AI output format %q is only supported by chat_completions", c.outputFormat())
+		}
+		request := map[string]any{
 			"model":        strings.TrimSpace(c.conf.Model),
 			"instructions": c.conf.Prompt,
 			"input":        reviewText,
@@ -145,26 +162,69 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 					"schema": schema,
 				},
 			},
-		}, nil
+		}
+		if c.conf.MaxTokens > 0 {
+			request["max_output_tokens"] = c.conf.MaxTokens
+		}
+		if c.conf.DisableThinking {
+			request["reasoning"] = map[string]any{"effort": "none"}
+		}
+		return request, nil
 	case AIAPITypeChatCompletions:
-		return map[string]any{
+		request := map[string]any{
 			"model": strings.TrimSpace(c.conf.Model),
 			"messages": []map[string]string{
-				{"role": "system", "content": c.conf.Prompt},
+				{"role": "system", "content": c.systemPrompt()},
 				{"role": "user", "content": reviewText},
 			},
-			"response_format": map[string]any{
+		}
+		switch c.outputFormat() {
+		case AIOutputFormatJSONSchema:
+			request["response_format"] = map[string]any{
 				"type": "json_schema",
 				"json_schema": map[string]any{
 					"name":   "comment_moderation",
 					"strict": true,
 					"schema": schema,
 				},
-			},
-		}, nil
+			}
+		case AIOutputFormatJSONObject:
+			request["response_format"] = map[string]any{"type": "json_object"}
+		default:
+			return nil, fmt.Errorf("unknown AI output format %q", c.outputFormat())
+		}
+		if c.conf.MaxTokens > 0 {
+			request["max_tokens"] = c.conf.MaxTokens
+		}
+		if c.conf.DisableThinking {
+			request["thinking"] = map[string]any{"type": "disabled"}
+		}
+		return request, nil
 	default:
 		return nil, fmt.Errorf("unknown AI API type %q", c.conf.APIType)
 	}
+}
+
+func (c *AIChecker) outputFormat() AIOutputFormat {
+	format := AIOutputFormat(strings.TrimSpace(string(c.conf.OutputFormat)))
+	if format == "" {
+		return AIOutputFormatJSONSchema
+	}
+	return format
+}
+
+func (c *AIChecker) systemPrompt() string {
+	prompt := strings.TrimSpace(c.conf.Prompt)
+	if c.outputFormat() != AIOutputFormatJSONObject {
+		return prompt
+	}
+
+	const jsonInstruction = `Return JSON only. Use exactly this JSON shape:
+{"sensitive": false, "reason": "brief reason"}`
+	if prompt == "" {
+		return jsonInstruction
+	}
+	return prompt + "\n\n" + jsonInstruction
 }
 
 func aiModerationJSONSchema() map[string]any {
@@ -235,18 +295,18 @@ func (c *AIChecker) extractResultJSON(responseBody []byte) ([]byte, error) {
 	}
 }
 
-func parseAIModerationResult(data []byte) (aiModerationResult, error) {
+func parseAIModerationResult(data []byte, allowMissingReason bool) (aiModerationResult, error) {
 	var fields map[string]json.RawMessage
 	if err := json.Unmarshal(data, &fields); err != nil {
 		return aiModerationResult{}, fmt.Errorf("decode AI moderation JSON: %w", err)
 	}
-	if len(fields) != 2 {
+	if !allowMissingReason && len(fields) != 2 {
 		return aiModerationResult{}, fmt.Errorf("AI moderation JSON must contain exactly sensitive and reason")
 	}
 
 	sensitiveJSON, hasSensitive := fields["sensitive"]
 	reasonJSON, hasReason := fields["reason"]
-	if !hasSensitive || !hasReason {
+	if !hasSensitive || (!allowMissingReason && !hasReason) {
 		return aiModerationResult{}, fmt.Errorf("AI moderation JSON must contain sensitive and reason")
 	}
 
@@ -254,8 +314,10 @@ func parseAIModerationResult(data []byte) (aiModerationResult, error) {
 	if err := json.Unmarshal(sensitiveJSON, &result.Sensitive); err != nil {
 		return aiModerationResult{}, fmt.Errorf("AI moderation sensitive must be boolean: %w", err)
 	}
-	if err := json.Unmarshal(reasonJSON, &result.Reason); err != nil {
-		return aiModerationResult{}, fmt.Errorf("AI moderation reason must be string: %w", err)
+	if hasReason {
+		if err := json.Unmarshal(reasonJSON, &result.Reason); err != nil {
+			return aiModerationResult{}, fmt.Errorf("AI moderation reason must be string: %w", err)
+		}
 	}
 
 	return result, nil
