@@ -30,6 +30,23 @@ const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placehold
     control: 'input',
     placeholder: 'https://provider.example.com/api/user',
   },
+  'moderator.ai.base_url': {
+    control: 'input',
+    placeholder: 'https://api.openai.com/v1 or https://api.deepseek.com/v1',
+  },
+  'moderator.ai.api_key': {
+    control: 'input',
+    placeholder: 'sk-...',
+  },
+  'moderator.ai.model': {
+    control: 'input',
+    placeholder: 'e.g. gpt-4.1-mini, deepseek-v4-flash',
+  },
+  'moderator.ai.prompt': {
+    control: 'textarea',
+    placeholder:
+      '默认审核规则已内置；如需覆盖，只写敏感/非敏感判断规则，不需要写 JSON Schema。',
+  },
 }
 
 function extractItemComment(item: Pair, index: number, parentPair?: Pair): string {

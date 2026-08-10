@@ -38,6 +38,7 @@ export const SensitiveConfigPaths = [
   'db.password',
   'email.ali_dm.access_key_secret',
   'email.smtp.password',
+  'moderator.ai.api_key',
 ]
 
 export function isSensitiveConfigPath(path: string) {
