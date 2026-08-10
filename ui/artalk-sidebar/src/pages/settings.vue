@@ -227,9 +227,7 @@ function save() {
   .settings-head {
     grid-column: 1 / -1;
     border: 1px solid var(--at-color-border);
-    background:
-      linear-gradient(135deg, rgba(54, 171, 207, 0.12), transparent 48%),
-      var(--at-color-bg);
+    background: var(--at-color-bg);
     border-radius: 10px;
     padding: 24px 26px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);

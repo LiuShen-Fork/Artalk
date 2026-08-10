@@ -79,6 +79,12 @@ export const en = {
   moderationClearConfirm:
     'Clear all moderation records for the current site? Comments will not be deleted.',
   moderationDeleteConfirm: 'Delete this moderation record? The comment will not be deleted.',
+  moderationApproveComment: 'Approve comment',
+  moderationApproveCommentConfirm:
+    'Approve this comment and make it publicly visible?',
+  moderationDeleteComment: 'Delete comment',
+  moderationDeleteCommentConfirm:
+    'Delete this comment and its replies? The moderation record will be kept.',
   refresh: 'Refresh',
   refreshing: 'Refreshing...',
   unknownUser: 'Unknown user',

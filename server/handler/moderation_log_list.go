@@ -18,10 +18,17 @@ type ParamsModerationLogList struct {
 
 type ModerationLogItem struct {
 	entity.CookedModerationLog
-	CommentContent string `json:"comment_content"`
-	CommentPending bool   `json:"comment_pending"`
-	UserName       string `json:"user_name"`
-	UserEmail      string `json:"user_email"`
+	CommentContent   string `json:"comment_content"`
+	CommentAvailable bool   `json:"comment_available"`
+	CommentRid       uint   `json:"comment_rid"`
+	CommentUA        string `json:"comment_ua"`
+	CommentIP        string `json:"comment_ip"`
+	CommentPending   bool   `json:"comment_pending"`
+	CommentCollapsed bool   `json:"comment_collapsed"`
+	CommentPinned    bool   `json:"comment_pinned"`
+	UserName         string `json:"user_name"`
+	UserEmail        string `json:"user_email"`
+	UserLink         string `json:"user_link"`
 }
 
 type ResponseModerationLogList struct {
@@ -114,11 +121,18 @@ func loadModerationLogItems(app *core.App, q *gorm.DB) []ModerationLogItem {
 		item := ModerationLogItem{CookedModerationLog: cookModerationLog(logRow)}
 		comment := app.Dao().FindComment(logRow.CommentID)
 		if !comment.IsEmpty() {
+			item.CommentAvailable = true
 			item.CommentContent = comment.Content
+			item.CommentRid = comment.Rid
+			item.CommentUA = comment.UA
+			item.CommentIP = comment.IP
 			item.CommentPending = comment.IsPending
+			item.CommentCollapsed = comment.IsCollapsed
+			item.CommentPinned = comment.IsPinned
 			user := app.Dao().FetchUserForComment(&comment)
 			item.UserName = user.Name
 			item.UserEmail = user.Email
+			item.UserLink = user.Link
 		}
 		items = append(items, item)
 	}

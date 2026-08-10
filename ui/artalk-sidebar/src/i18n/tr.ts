@@ -81,6 +81,11 @@ export const tr: MessageSchema = {
   moderationClear: 'Kayıtları temizle',
   moderationClearConfirm: 'Geçerli siteye ait tüm moderasyon kayıtları temizlensin mi? Yorumlar silinmez.',
   moderationDeleteConfirm: 'Bu moderasyon kaydı silinsin mi? Yorum silinmez.',
+  moderationApproveComment: 'Yorumu onayla',
+  moderationApproveCommentConfirm: 'Bu yorumu onaylayıp herkese açık hale getirmek istiyor musunuz?',
+  moderationDeleteComment: 'Yorumu sil',
+  moderationDeleteCommentConfirm:
+    'Bu yorum ve yanıtları silinsin mi? Moderasyon kaydı korunur.',
   refresh: 'Yenile',
   refreshing: 'Yenileniyor...',
   unknownUser: 'Bilinmeyen kullanıcı',

@@ -45,15 +45,20 @@ func TestModerationLogManagement(t *testing.T) {
 	var list struct {
 		Count int64 `json:"count"`
 		Logs  []struct {
-			ID     uint   `json:"id"`
-			Status string `json:"status"`
-			Action string `json:"action"`
+			ID               uint   `json:"id"`
+			Status           string `json:"status"`
+			Action           string `json:"action"`
+			CommentAvailable bool   `json:"comment_available"`
+			CommentRid       uint   `json:"comment_rid"`
+			CommentContent   string `json:"comment_content"`
 		} `json:"logs"`
 	}
 	require.NoError(t, json.NewDecoder(listResp.Body).Decode(&list))
 	assert.Equal(t, int64(2), list.Count)
 	assert.Len(t, list.Logs, 2)
 	assert.NotContains(t, []string{list.Logs[0].Action, list.Logs[1].Action}, "allow")
+	assert.True(t, list.Logs[0].CommentAvailable)
+	assert.NotEmpty(t, list.Logs[0].CommentContent)
 
 	deleteReq := httptest.NewRequest(http.MethodDelete, "/moderation/logs/"+jsonNumber(logs[1].ID)+"?token="+token, nil)
 	deleteResp, err := fiberApp.Test(deleteReq)

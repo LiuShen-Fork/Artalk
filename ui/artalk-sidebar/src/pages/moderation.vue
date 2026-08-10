@@ -18,9 +18,16 @@ type ModerationLog = {
   message: string
   date: string
   comment_content: string
+  comment_available: boolean
+  comment_rid: number
+  comment_ua: string
+  comment_ip: string
   comment_pending: boolean
+  comment_collapsed: boolean
+  comment_pinned: boolean
   user_name: string
   user_email: string
+  user_link: string
 }
 
 type ModerationResponse = {
@@ -40,6 +47,7 @@ const total = ref(0)
 const loading = ref(false)
 const clearing = ref(false)
 const deletingID = ref<number | null>(null)
+const commentAction = ref<string | null>(null)
 
 const statusMeta = computed(() => ({
   replace: { label: t('moderationReplaced'), icon: '~' },
@@ -97,6 +105,69 @@ async function deleteLog(item: ModerationLog) {
     alert(err?.message || t('opFailed'))
   } finally {
     deletingID.value = null
+  }
+}
+
+function getCommentActionKey(item: ModerationLog, action: 'approve' | 'delete') {
+  return action + ':' + item.comment_id
+}
+
+function isCommentActionLoading(item: ModerationLog, action: 'approve' | 'delete') {
+  return commentAction.value === getCommentActionKey(item, action)
+}
+
+function canOperateComment(item: ModerationLog) {
+  return item.comment_available && item.comment_id > 0
+}
+
+function buildCommentUpdatePayload(item: ModerationLog, isPending: boolean) {
+  return {
+    site_name: item.site_name,
+    content: item.comment_content,
+    page_key: item.page_key,
+    nick: item.user_name,
+    email: item.user_email,
+    link: item.user_link,
+    rid: item.comment_rid,
+    ua: item.comment_ua,
+    ip: item.comment_ip,
+    is_collapsed: item.comment_collapsed,
+    is_pending: isPending,
+    is_pinned: item.comment_pinned,
+  }
+}
+
+async function approveComment(item: ModerationLog) {
+  if (!canOperateComment(item)) return
+  if (!window.confirm(t('moderationApproveCommentConfirm'))) return
+
+  commentAction.value = getCommentActionKey(item, 'approve')
+  try {
+    await artalk!.ctx
+      .getApi()
+      .comments.updateComment(item.comment_id, buildCommentUpdatePayload(item, false))
+    item.comment_pending = false
+  } catch (err: any) {
+    alert(err?.message || t('opFailed'))
+  } finally {
+    commentAction.value = null
+  }
+}
+
+async function deleteComment(item: ModerationLog) {
+  if (!canOperateComment(item)) return
+  if (!window.confirm(t('moderationDeleteCommentConfirm'))) return
+
+  commentAction.value = getCommentActionKey(item, 'delete')
+  try {
+    await artalk!.ctx.getApi().comments.deleteComment(item.comment_id)
+    item.comment_available = false
+    item.comment_content = ''
+    item.comment_pending = false
+  } catch (err: any) {
+    alert(err?.message || t('opFailed'))
+  } finally {
+    commentAction.value = null
   }
 }
 
@@ -180,13 +251,38 @@ onMounted(() => {
                 <span>{{ item.checker }}</span>
                 <em>{{ item.action }}</em>
               </div>
-              <button
-                class="delete-btn"
-                :disabled="deletingID === item.id"
-                @click="deleteLog(item)"
-              >
-                {{ t('delete') }}
-              </button>
+              <div class="row-actions">
+                <button
+                  v-if="item.comment_pending"
+                  class="approve-comment-btn"
+                  :disabled="!canOperateComment(item) || !!commentAction"
+                  @click="approveComment(item)"
+                >
+                  {{
+                    isCommentActionLoading(item, 'approve')
+                      ? t('refreshing')
+                      : t('moderationApproveComment')
+                  }}
+                </button>
+                <button
+                  class="delete-comment-btn"
+                  :disabled="!canOperateComment(item) || !!commentAction"
+                  @click="deleteComment(item)"
+                >
+                  {{
+                    isCommentActionLoading(item, 'delete')
+                      ? t('refreshing')
+                      : t('moderationDeleteComment')
+                  }}
+                </button>
+                <button
+                  class="delete-btn"
+                  :disabled="deletingID === item.id"
+                  @click="deleteLog(item)"
+                >
+                  {{ t('delete') }}
+                </button>
+              </div>
             </div>
             <p>{{ item.message || t('moderationNoMessage') }}</p>
             <blockquote>{{ item.comment_content || t('moderationCommentUnavailable') }}</blockquote>
@@ -214,11 +310,16 @@ onMounted(() => {
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
-  margin: 2px 0 22px;
+  margin: 2px 0 18px;
+  padding: 22px 24px;
+  border: 1px solid var(--at-color-border);
+  border-radius: 8px;
+  background: var(--at-color-bg);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
 
   h1 {
     margin: 4px 0 8px;
-    font-size: 28px;
+    font-size: 26px;
   }
 
   p {
@@ -231,13 +332,16 @@ onMounted(() => {
 .head-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 button {
-  border: 1px solid transparent;
+  border: 1px solid var(--at-color-border);
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
+  background: var(--at-color-bg);
+  color: var(--at-color-font);
   font: inherit;
 
   &:disabled {
@@ -247,15 +351,24 @@ button {
 }
 
 .refresh-btn {
-  background: #168aac;
-  color: #fff;
+  border-color: rgba(54, 171, 207, 0.42);
+  color: var(--at-color-main);
 }
 
 .clear-btn,
 .delete-btn {
-  border-color: rgba(211, 47, 47, 0.32);
-  background: transparent;
-  color: #c92a2a;
+  border-color: rgba(170, 70, 70, 0.34);
+  color: #9b3f3f;
+}
+
+.approve-comment-btn {
+  border-color: rgba(73, 125, 89, 0.34);
+  color: #3f704d;
+}
+
+.delete-comment-btn {
+  border-color: rgba(170, 70, 70, 0.34);
+  color: #9b3f3f;
 }
 
 .eyebrow {
@@ -291,30 +404,30 @@ button {
   background: var(--at-color-bg);
 
   &.replace {
-    border-left-color: #2f9e44;
+    border-left-color: #5b8a65;
   }
 
   &.block {
-    border-left-color: #f08c00;
+    border-left-color: #a87a36;
   }
 
   &.error {
-    border-left-color: #e03131;
+    border-left-color: #a95555;
   }
 
   &.replace .status-icon {
-    background: rgba(47, 158, 68, 0.12);
-    color: #2f9e44;
+    background: rgba(91, 138, 101, 0.12);
+    color: #4c7656;
   }
 
   &.block .status-icon {
-    background: rgba(240, 140, 0, 0.14);
-    color: #f08c00;
+    background: rgba(168, 122, 54, 0.14);
+    color: #8b6329;
   }
 
   &.error .status-icon {
-    background: rgba(224, 49, 49, 0.12);
-    color: #e03131;
+    background: rgba(169, 85, 85, 0.12);
+    color: #964848;
   }
 }
 
@@ -356,6 +469,13 @@ button {
   gap: 12px;
 }
 
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .log-title {
   display: flex;
   align-items: center;
@@ -395,6 +515,7 @@ button {
 
   .page-head {
     display: block;
+    padding: 18px;
   }
 
   .head-actions {

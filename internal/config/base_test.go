@@ -8,6 +8,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/artalkjs/artalk/v2/internal/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestI18nPatch(t *testing.T) {
@@ -31,6 +32,38 @@ func TestI18nPatch(t *testing.T) {
 		test("zh-cn", "zh-CN")
 		test("ZH-cn", "zh-CN")
 		test("EN", "en")
+	})
+}
+
+func TestAIDisableThinkingDefault(t *testing.T) {
+	t.Run("defaults to disabled", func(t *testing.T) {
+		conf := &Config{
+			Moderator: ModeratorConf{
+				AI: AIAntispamConf{Enabled: true},
+			},
+		}
+		conf.historyPatch()
+		conf.normalPatch()
+
+		require.NotNil(t, conf.Moderator.AI.DisableThinking)
+		assert.True(t, *conf.Moderator.AI.DisableThinking)
+	})
+
+	t.Run("explicitly enables thinking", func(t *testing.T) {
+		disableThinking := false
+		conf := &Config{
+			Moderator: ModeratorConf{
+				AI: AIAntispamConf{
+					Enabled:         true,
+					DisableThinking: &disableThinking,
+				},
+			},
+		}
+		conf.historyPatch()
+		conf.normalPatch()
+
+		require.NotNil(t, conf.Moderator.AI.DisableThinking)
+		assert.False(t, *conf.Moderator.AI.DisableThinking)
 	})
 }
 

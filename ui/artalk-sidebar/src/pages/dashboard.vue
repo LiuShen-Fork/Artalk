@@ -243,9 +243,7 @@ onMounted(() => {
   gap: 20px;
   padding: 28px;
   border-radius: 10px;
-  background:
-    linear-gradient(135deg, rgba(54, 171, 207, 0.12), transparent 48%),
-    var(--at-color-bg);
+  background: var(--at-color-bg);
 
   h1 {
     margin: 4px 0 8px;
