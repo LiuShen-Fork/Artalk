@@ -14,6 +14,7 @@ Currently, the following social login methods are supported:
 | Steam        | [View](https://partner.steamgames.com/doc/webapi_overview/auth) | WeChat     | [View](https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Wechat_Login.html) | Line | [View](https://developers.line.biz/en/docs/line-login/integrate-line-login/) |
 | GitLab       | [View](https://docs.gitlab.com/ee/api/oauth2.html) | Gitea      | [View](https://docs.gitea.io/en-us/oauth2-provider/) | Mastodon | [View](https://docs.joinmastodon.org/api/authentication/) |
 | Patreon      | [View](https://docs.patreon.com/#oauth) | Auth0      | [View](https://auth0.com/docs/connections/social/) | Email & Password | [View](#email-password-login) |
+| Generic OAuth 2.0 | [View](#generic-oauth-20) | | | | |
 
 To enable social login, simply find the "Social Login" option in the [Dashboard](./sidebar.md#settings), enable it, and fill in the corresponding configuration information. Alternatively, you can configure it through the [configuration file](../backend/config.md) or [environment variables](../env.md#social-login).
 
@@ -29,13 +30,14 @@ Users can register an account via email, and Artalk will send a verification cod
 
 ![Email Registration](/images/auth/email_register.png)
 
-You can customize the verification email template and subject. In the settings page of the Artalk Dashboard under social login, you can find options for "Email Verification Subject" and "Email Verification Template". In the configuration file, you can set them using `auth.email.verify_subject` and `auth.email.verify_tpl`:
+The email-and-password entry is shown as `Email` in the login-method picker by default and can be customized with `auth.email.label`. You can also customize the verification email template and subject in the Dashboard's social-login settings, or through `auth.email.verify_subject` and `auth.email.verify_tpl`:
 
 ```yaml
 auth:
   enabled: true
   email:
     enabled: true
+    label: "Email and Password"
     verify_subject: "Your verification code is - {{code}}"
     verify_tpl: default
 ```
@@ -67,6 +69,41 @@ If only one login method is enabled, such as GitHub login, the GitHub authorizat
 ![GitHub Authorization Popup](/images/auth/github_login.png)
 
 For integrating GitHub login, refer to the documentation: [About Creating GitHub Apps](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). After obtaining the Client ID and Client Secret, fill them in the "GitHub" option in the social login settings page of the Artalk Dashboard.
+
+## Generic OAuth 2.0
+
+Artalk can connect to one self-hosted or third-party OAuth 2.0 application through the standard Authorization Code flow. The provider must expose authorization, token, and user-information endpoints, and the user-information endpoint must accept a Bearer access token and return JSON.
+
+Register the following callback URL in the OAuth application (replace the host with the public Artalk server address):
+
+```text
+https://comments.example.com/api/v2/auth/generic/callback
+```
+
+Then configure the provider in the Dashboard or YAML:
+
+```yaml
+auth:
+  enabled: true
+  callback: "https://comments.example.com/api/v2/auth/{provider}/callback"
+  generic:
+    enabled: true
+    label: "Company Login"
+    client_id: "your-client-id"
+    client_secret: "your-client-secret"
+    authorize_url: "https://id.example.com/oauth/authorize"
+    token_url: "https://id.example.com/oauth/token"
+    user_info_url: "https://id.example.com/api/user"
+    scopes:
+      - profile
+      - email
+```
+
+`label` is the name shown for this login method in the login-method picker.
+
+Artalk automatically recognizes common user-information fields, including GitHub-style `id`, `login`, `email`, `avatar_url`, and `html_url`, as well as `sub`, `name`, `picture`, and common `data.user` or `data.account` wrappers. If email is missing, Artalk generates a private non-deliverable placeholder email.
+
+A normal OAuth 2.0 login only requires `auth.generic`; it does not require the `auth.sso` configuration below. SSO is a pre-existing, separate token-exchange feature and is unrelated to the OAuth entry in the login-method picker.
 
 ## SSO Token Exchange
 

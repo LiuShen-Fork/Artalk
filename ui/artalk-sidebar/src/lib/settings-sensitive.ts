@@ -21,6 +21,7 @@ export const SensitiveConfigPaths = [
   'auth.github.client_secret',
   'auth.gitlab.client_secret',
   'auth.google.client_secret',
+  'auth.generic.client_secret',
   'auth.line.client_secret',
   'auth.mastodon.client_secret',
   'auth.microsoft.client_secret',

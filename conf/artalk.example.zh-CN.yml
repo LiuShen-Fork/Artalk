@@ -183,6 +183,8 @@ ip_region:
   enabled: false
   # 数据文件路径 (.xdb 格式)
   db_path: ./data/ip2region.xdb
+  # IPv6 数据文件路径 (.xdb 格式，可选；留空则保持现有单库解析逻辑)
+  db_path_v6: ""
   # 显示精度 ["province", "city", "country"]
   precision: province
 
@@ -196,6 +198,30 @@ img_upload:
   max_size: 5
   # 图片链接基础路径 (默认为 "/static/images/")
   public_path: null
+  # 上传频率限制
+  rate_limit:
+    # 启用上传频率限制
+    enabled: true
+    # 单 IP 在窗口期内最多上传次数
+    ip_limit: 20
+    # 频率限制窗口 (单位：秒)
+    window_seconds: 3600
+  # 兰空图床
+  lsky:
+    # 启用兰空图床上传
+    enabled: false
+    # 兰空 API 地址 (例如 "https://img.example.com/api/v1")
+    base_url: ""
+    # API Token
+    token: ""
+    # 图片权限 ["", "public", "private", "1", "0"]
+    permission: public
+    # 储存策略 ID (0 表示默认)
+    strategy_id: 0
+    # 相册 ID (0 表示不指定)
+    album_id: 0
+    # 上传后删除本地的图片
+    del_local: true
   # Upgit 配置
   # (使用 Upgit 将图片上传到 GitHub 或图床：https://github.com/pluveto/upgit)
   upgit:
@@ -305,6 +331,8 @@ auth:
   email:
     # 启用邮箱密码登录
     enabled: true
+    # 登录按钮显示名称
+    label: "Email"
     # 邮箱验证邮件标题
     verify_subject: "您的验证码是 - {{code}}"
     # 邮箱验证邮件模板 (填入文件路径使用自定义模板)
@@ -394,6 +422,25 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  # 通用 OAuth 2.0
+  # -- 使用标准授权码流程，请在 OAuth 应用中将回调地址设为 https://example.com/api/v2/auth/generic/callback。 --
+  generic:
+    # 启用通用 OAuth 2.0 登录
+    enabled: false
+    # 登录按钮显示名称
+    label: "OAuth 2.0"
+    # OAuth 客户端 ID
+    client_id: ""
+    # OAuth 客户端密钥
+    client_secret: ""
+    # 授权端点地址
+    authorize_url: ""
+    # 令牌端点地址
+    token_url: ""
+    # 用户信息端点地址（必须返回 JSON）
+    user_info_url: ""
+    # 授权时请求的 OAuth 权限范围
+    scopes: []
   # SSO (用外部 OIDC 身份提供商的访问令牌换取 Artalk 登录会话，通过调用 IdP 的 /userinfo 端点校验)
   # -- 当嵌入页面已运行 OIDC 且希望 Artalk 复用该登录态、不显示自身弹窗登录界面时使用。 --
   sso:

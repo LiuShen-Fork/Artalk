@@ -18,7 +18,7 @@ func (dao *Dao) MigrateModels() {
 	// Migrate the schema
 	dao.DB().AutoMigrate(&entity.Site{}, &entity.Page{}, &entity.User{},
 		&entity.AuthIdentity{}, &entity.UserEmailVerify{},
-		&entity.Comment{}, &entity.Notify{}, &entity.Vote{})
+		&entity.Comment{}, &entity.Notify{}, &entity.Vote{}, &entity.ModerationLog{})
 
 	// Delete all foreign key constraints
 	// Leave relationship maintenance to the program and reduce the difficulty of database management.

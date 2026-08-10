@@ -1,6 +1,7 @@
 package ip_region
 
 import (
+	"net"
 	"strings"
 
 	"github.com/artalkjs/artalk/v2/internal/config"
@@ -28,7 +29,8 @@ func (ipRegion *IPRegion) IP2Region(ip string) string {
 	}
 
 	ip = ipScraper(ip)
-	region, err := search(ip, ipRegion.conf.DBPath, ipRegion.conf.CacheEnabled)
+	dbPath := selectDBPathForIP(ip, ipRegion.conf)
+	region, err := search(ip, dbPath, ipRegion.conf.CacheEnabled)
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), "invalid ip address") {
 			log.Warn("[IP2Region] ", err)
@@ -37,4 +39,13 @@ func (ipRegion *IPRegion) IP2Region(ip string) string {
 	}
 
 	return regionScraper(region, config.IPRegionPrecision(ipRegion.conf.Precision))
+}
+
+func selectDBPathForIP(ip string, conf IPRegionConf) string {
+	parsedIP := net.ParseIP(ip)
+	if parsedIP != nil && parsedIP.To4() == nil && strings.TrimSpace(conf.DBPathV6) != "" {
+		return conf.DBPathV6
+	}
+
+	return conf.DBPath
 }

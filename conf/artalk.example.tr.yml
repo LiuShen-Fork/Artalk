@@ -186,6 +186,30 @@ img_upload:
   max_size: 5
   # Resim bağlantısı temel yolu (varsayılan: "/static/images/")
   public_path: null
+  # Yükleme hız sınırı
+  rate_limit:
+    # Yükleme hız sınırını etkinleştir
+    enabled: true
+    # Pencere içinde IP başına maksimum yükleme
+    ip_limit: 20
+    # Hız sınırı penceresi (birim: saniye)
+    window_seconds: 3600
+  # Lsky Pro resim barındırma
+  lsky:
+    # Lsky Pro yüklemeyi etkinleştir
+    enabled: false
+    # Lsky API temel URL'si (örn. "https://img.example.com/api/v1")
+    base_url: ""
+    # API token
+    token: ""
+    # Resim izni ["", "public", "private", "1", "0"]
+    permission: public
+    # Depolama stratejisi ID'si (0 = varsayılan)
+    strategy_id: 0
+    # Albüm ID'si (0 = yok)
+    album_id: 0
+    # Yükleme başarılı olduktan sonra yerel resmi sil
+    del_local: true
   # Upgit yapılandırması
   upgit:
     # Upgit'i etkinleştir
@@ -297,6 +321,8 @@ auth:
   email:
     # E-posta şifre girişini etkinleştir
     enabled: true
+    # Giriş düğmesi etiketi
+    label: "Email"
     # Doğrulama e-postası konusu
     verify_subject: "Kodunuz - {{code}}"
     # Doğrulama e-postası şablonu (özel şablon kullanmak için dosya yolunu ayarlayın)
@@ -386,6 +412,25 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  # Genel OAuth 2.0
+  # -- Standart Authorization Code akisini kullanir. OAuth uygulamasindaki geri donus URL'sini https://example.com/api/v2/auth/generic/callback olarak ayarlayin. --
+  generic:
+    # Genel OAuth 2.0 girisini etkinlestir
+    enabled: false
+    # Giris dugmesi etiketi
+    label: "OAuth 2.0"
+    # OAuth istemci ID'si
+    client_id: ""
+    # OAuth istemci gizli anahtari
+    client_secret: ""
+    # Yetkilendirme ucu URL'si
+    authorize_url: ""
+    # Belirtec ucu URL'si
+    token_url: ""
+    # Kullanici bilgisi ucu URL'si (JSON dondurmelidir)
+    user_info_url: ""
+    # Yetkilendirme sirasinda istenen OAuth kapsamlar
+    scopes: []
   # SSO (Harici OIDC erişim belirteçlerini Artalk oturumuyla değiştirir, IdP'nin /userinfo uç noktası ile doğrulanır)
   # -- Gömülü uygulama zaten OIDC çalıştırıyorsa ve Artalk'ın kendi açılır giriş ekranını göstermeden bu oturumu devralmasını istiyorsanız kullanın. --
   sso:

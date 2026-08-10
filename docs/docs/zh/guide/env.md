@@ -135,12 +135,21 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_AUTH_DISCORD_CLIENT_SECRET** | `""` | ClientSecret | auth.discord.client_secret (社交登录 > Discord > ClientSecret) |
 | **ATK_AUTH_DISCORD_ENABLED** | `false` | 启用 | auth.discord.enabled (社交登录 > Discord > Enabled) |
 | **ATK_AUTH_EMAIL_ENABLED** | `true` | 启用邮箱密码登录 | auth.email.enabled (社交登录 > Email > 启用邮箱密码登录) |
+| **ATK_AUTH_EMAIL_LABEL** | `"Email"` | 登录按钮显示名称 | auth.email.label (社交登录 > Email > 登录按钮显示名称) |
 | **ATK_AUTH_EMAIL_VERIFY_SUBJECT** | `"您的验证码是 - {{code}}"` | 邮箱验证邮件标题 | auth.email.verify_subject (社交登录 > Email > 邮箱验证邮件标题) |
 | **ATK_AUTH_EMAIL_VERIFY_TPL** | `"default"` | 邮箱验证邮件模板 (填入文件路径使用自定义模板) | auth.email.verify_tpl (社交登录 > Email > 邮箱验证邮件模板) |
 | **ATK_AUTH_ENABLED** | `false` | 启用社交登录 | auth.enabled (社交登录 > 启用社交登录) |
 | **ATK_AUTH_FACEBOOK_CLIENT_ID** | `""` | ClientId | auth.facebook.client_id (社交登录 > Facebook > ClientId) |
 | **ATK_AUTH_FACEBOOK_CLIENT_SECRET** | `""` | ClientSecret | auth.facebook.client_secret (社交登录 > Facebook > ClientSecret) |
 | **ATK_AUTH_FACEBOOK_ENABLED** | `false` | 启用 | auth.facebook.enabled (社交登录 > Facebook > Enabled) |
+| **ATK_AUTH_GENERIC_AUTHORIZE_URL** | `""` | 授权端点地址 | auth.generic.authorize_url (社交登录 > 通用 OAuth 2.0 > 授权端点地址) |
+| **ATK_AUTH_GENERIC_CLIENT_ID** | `""` | OAuth 客户端 ID | auth.generic.client_id (社交登录 > 通用 OAuth 2.0 > OAuth 客户端 ID) |
+| **ATK_AUTH_GENERIC_CLIENT_SECRET** | `""` | OAuth 客户端密钥 | auth.generic.client_secret (社交登录 > 通用 OAuth 2.0 > OAuth 客户端密钥) |
+| **ATK_AUTH_GENERIC_ENABLED** | `false` | 启用通用 OAuth 2.0 登录 | auth.generic.enabled (社交登录 > 通用 OAuth 2.0 > 启用通用 OAuth 2.0 登录) |
+| **ATK_AUTH_GENERIC_LABEL** | `"OAuth 2.0"` | 登录按钮显示名称 | auth.generic.label (社交登录 > 通用 OAuth 2.0 > 登录按钮显示名称) |
+| **ATK_AUTH_GENERIC_SCOPES** | `[]` | 授权时请求的 OAuth 权限范围 | auth.generic.scopes (社交登录 > 通用 OAuth 2.0 > 授权时请求的 OAuth 权限范围) |
+| **ATK_AUTH_GENERIC_TOKEN_URL** | `""` | 令牌端点地址 | auth.generic.token_url (社交登录 > 通用 OAuth 2.0 > 令牌端点地址) |
+| **ATK_AUTH_GENERIC_USER_INFO_URL** | `""` | 用户信息端点地址（必须返回 JSON） | auth.generic.user_info_url (社交登录 > 通用 OAuth 2.0 > 用户信息端点地址（必须返回 JSON）) |
 | **ATK_AUTH_GITEA_CLIENT_ID** | `""` | ClientId | auth.gitea.client_id (社交登录 > Gitea > ClientId) |
 | **ATK_AUTH_GITEA_CLIENT_SECRET** | `""` | ClientSecret | auth.gitea.client_secret (社交登录 > Gitea > ClientSecret) |
 | **ATK_AUTH_GITEA_ENABLED** | `false` | 启用 | auth.gitea.enabled (社交登录 > Gitea > Enabled) |
@@ -298,9 +307,19 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | 环境变量 | 默认值 | 描述 | 路径 |
 | --- | --- | --- | --- |
 | **ATK_IMG_UPLOAD_ENABLED** | `true` | 启用图片上传 | img_upload.enabled (图片上传 > 启用图片上传) |
+| **ATK_IMG_UPLOAD_LSKY_ALBUM_ID** | `0` | 相册 ID (0 表示不指定) | img_upload.lsky.album_id (图片上传 > 兰空图床 > 相册 ID) |
+| **ATK_IMG_UPLOAD_LSKY_BASE_URL** | `""` | 兰空 API 地址 (例如 "https://img.example.com/api/v1") | img_upload.lsky.base_url (图片上传 > 兰空图床 > 兰空 API 地址) |
+| **ATK_IMG_UPLOAD_LSKY_DEL_LOCAL** | `true` | 上传后删除本地的图片 | img_upload.lsky.del_local (图片上传 > 兰空图床 > 上传后删除本地的图片) |
+| **ATK_IMG_UPLOAD_LSKY_ENABLED** | `false` | 启用兰空图床上传 | img_upload.lsky.enabled (图片上传 > 兰空图床 > 启用兰空图床上传) |
+| **ATK_IMG_UPLOAD_LSKY_PERMISSION** | `"public"` | 图片权限 (可选：`["", "public", "private", "1", "0"]`) | img_upload.lsky.permission (图片上传 > 兰空图床 > 图片权限) |
+| **ATK_IMG_UPLOAD_LSKY_STRATEGY_ID** | `0` | 储存策略 ID (0 表示默认) | img_upload.lsky.strategy_id (图片上传 > 兰空图床 > 储存策略 ID) |
+| **ATK_IMG_UPLOAD_LSKY_TOKEN** | `""` | API Token | img_upload.lsky.token (图片上传 > 兰空图床 > API Token) |
 | **ATK_IMG_UPLOAD_MAX_SIZE** | `5` | 图片大小限制 (单位：MB) | img_upload.max_size (图片上传 > 图片大小限制) |
 | **ATK_IMG_UPLOAD_PATH** | `"./data/artalk-img/"` | 图片存放路径 | img_upload.path (图片上传 > 图片存放路径) |
 | **ATK_IMG_UPLOAD_PUBLIC_PATH** | `<nil>` | 图片链接基础路径 (默认为 "/static/images/") | img_upload.public_path (图片上传 > 图片链接基础路径) |
+| **ATK_IMG_UPLOAD_RATE_LIMIT_ENABLED** | `true` | 启用上传频率限制 | img_upload.rate_limit.enabled (图片上传 > 上传频率限制 > 启用上传频率限制) |
+| **ATK_IMG_UPLOAD_RATE_LIMIT_IP_LIMIT** | `20` | 单 IP 在窗口期内最多上传次数 | img_upload.rate_limit.ip_limit (图片上传 > 上传频率限制 > 单 IP 在窗口期内最多上传次数) |
+| **ATK_IMG_UPLOAD_RATE_LIMIT_WINDOW_SECONDS** | `3600` | 频率限制窗口 (单位：秒) | img_upload.rate_limit.window_seconds (图片上传 > 上传频率限制 > 频率限制窗口) |
 | **ATK_IMG_UPLOAD_UPGIT_DEL_LOCAL** | `true` | 上传后删除本地的图片 | img_upload.upgit.del_local (图片上传 > Upgit 配置 > 上传后删除本地的图片) |
 | **ATK_IMG_UPLOAD_UPGIT_ENABLED** | `false` | 启用 Upgit | img_upload.upgit.enabled (图片上传 > Upgit 配置 > 启用 Upgit) |
 | **ATK_IMG_UPLOAD_UPGIT_EXEC** | `"upgit -c <upgit配置文件路径> -t /artalk-img"` | 命令行参数 | img_upload.upgit.exec (图片上传 > Upgit 配置 > 命令行参数) |
@@ -311,6 +330,7 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | 环境变量 | 默认值 | 描述 | 路径 |
 | --- | --- | --- | --- |
 | **ATK_IP_REGION_DB_PATH** | `"./data/ip2region.xdb"` | 数据文件路径 (.xdb 格式) | ip_region.db_path (IP 属地 > 数据文件路径) |
+| **ATK_IP_REGION_DB_PATH_V6** | `""` | IPv6 数据文件路径 (.xdb 格式，可选；留空则保持现有单库解析逻辑) | ip_region.db_path_v6 (IP 属地 > IPv6 数据文件路径) |
 | **ATK_IP_REGION_ENABLED** | `false` | 启用 IP 属地展示 | ip_region.enabled (IP 属地 > 启用 IP 属地展示) |
 | **ATK_IP_REGION_PRECISION** | `"province"` | 显示精度 (可选：`["province", "city", "country"]`) | ip_region.precision (IP 属地 > 显示精度) |
 

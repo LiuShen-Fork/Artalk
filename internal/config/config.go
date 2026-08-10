@@ -271,9 +271,10 @@ type RedisConf struct {
 }
 
 type IPRegionConf struct {
-	Enabled   bool   `koanf:"enabled" json:"enabled"`     // 启用 IP 属地展示
-	DBPath    string `koanf:"db_path" json:"db_path"`     // 数据文件路径
-	Precision string `koanf:"precision" json:"precision"` // 显示精度
+	Enabled   bool   `koanf:"enabled" json:"enabled"`       // 启用 IP 属地展示
+	DBPath    string `koanf:"db_path" json:"db_path"`       // 数据文件路径
+	DBPathV6  string `koanf:"db_path_v6" json:"db_path_v6"` // IPv6 数据文件路径
+	Precision string `koanf:"precision" json:"precision"`   // 显示精度
 }
 
 type IPRegionPrecision string
@@ -285,12 +286,30 @@ const (
 )
 
 type ImgUploadConf struct {
-	Enabled    bool      `koanf:"enabled" json:"enabled"`         // 总开关
-	Path       string    `koanf:"path" json:"path"`               // 图片存放路径
-	MaxSize    int64     `koanf:"max_size" json:"max_size"`       // 图片大小限制
-	Quality    string    `koanf:"quality" json:"quality"`         // 图片质量
-	PublicPath string    `koanf:"public_path" json:"public_path"` // 图片 URL 基础路径
-	Upgit      UpgitConf `koanf:"upgit" json:"upgit"`             // upgit
+	Enabled    bool                `koanf:"enabled" json:"enabled"`         // 总开关
+	Path       string              `koanf:"path" json:"path"`               // 图片存放路径
+	MaxSize    int64               `koanf:"max_size" json:"max_size"`       // 图片大小限制
+	Quality    string              `koanf:"quality" json:"quality"`         // 图片质量
+	PublicPath string              `koanf:"public_path" json:"public_path"` // 图片 URL 基础路径
+	RateLimit  UploadRateLimitConf `koanf:"rate_limit" json:"rate_limit"`   // 上传频率限制
+	Lsky       LskyConf            `koanf:"lsky" json:"lsky"`               // 兰空图床
+	Upgit      UpgitConf           `koanf:"upgit" json:"upgit"`             // upgit
+}
+
+type UploadRateLimitConf struct {
+	Enabled       bool `koanf:"enabled" json:"enabled"`               // 启用上传频率限制
+	IPLimit       int  `koanf:"ip_limit" json:"ip_limit"`             // 单 IP 限制次数
+	WindowSeconds int  `koanf:"window_seconds" json:"window_seconds"` // 统计窗口
+}
+
+type LskyConf struct {
+	Enabled    bool   `koanf:"enabled" json:"enabled"`         // 启用兰空图床
+	BaseURL    string `koanf:"base_url" json:"base_url"`       // 兰空 API 地址
+	Token      string `koanf:"token" json:"token"`             // Bearer Token
+	Permission string `koanf:"permission" json:"permission"`   // 权限
+	StrategyID int    `koanf:"strategy_id" json:"strategy_id"` // 储存策略 ID
+	AlbumID    int    `koanf:"album_id" json:"album_id"`       // 相册 ID
+	DelLocal   bool   `koanf:"del_local" json:"del_local"`     // 上传后删除本地的图片
 }
 
 type UpgitConf struct {
@@ -364,8 +383,20 @@ type NotifyWebHookConf struct {
 
 type AuthEmailConf struct {
 	Enabled       bool   `koanf:"enabled" json:"enabled"`
+	Label         string `koanf:"label" json:"label"`
 	VerifySubject string `koanf:"verify_subject" json:"verify_subject"`
 	VerifyTpl     string `koanf:"verify_tpl" json:"verify_tpl"`
+}
+
+type AuthGenericOAuthConf struct {
+	Enabled      bool     `koanf:"enabled" json:"enabled"`
+	Label        string   `koanf:"label" json:"label"`
+	ClientID     string   `koanf:"client_id" json:"client_id"`
+	ClientSecret string   `koanf:"client_secret" json:"client_secret"`
+	AuthorizeURL string   `koanf:"authorize_url" json:"authorize_url"`
+	TokenURL     string   `koanf:"token_url" json:"token_url"`
+	UserInfoURL  string   `koanf:"user_info_url" json:"user_info_url"`
+	Scopes       []string `koanf:"scopes" json:"scopes"`
 }
 
 type AuthConf struct {
@@ -458,6 +489,7 @@ type AuthConf struct {
 		ClientSecret string `koanf:"client_secret" json:"client_secret"`
 		Domain       string `koanf:"domain" json:"domain"`
 	} `koanf:"auth0" json:"auth0"`
+	Generic AuthGenericOAuthConf `koanf:"generic" json:"generic"`
 
 	// Token exchange — accept an access token from an external OIDC IdP
 	// (verified via that IdP's /userinfo) and issue an Artalk JWT for the
@@ -468,7 +500,7 @@ type AuthConf struct {
 }
 
 type AuthSSOConf struct {
-	Enabled bool   `koanf:"enabled" json:"enabled"`
+	Enabled bool `koanf:"enabled" json:"enabled"`
 	// Issuer is the OIDC issuer URL — e.g. "tenant.auth0.com" or
 	// "https://tenant.auth0.com". /userinfo is called against this host.
 	Issuer string `koanf:"issuer" json:"issuer"`

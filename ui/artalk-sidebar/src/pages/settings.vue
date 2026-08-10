@@ -1,32 +1,62 @@
 <script setup lang="ts">
 import YAML from 'yaml'
 import { shallowRef } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useNavStore } from '../stores/nav'
 import { artalk } from '../global'
 import settings, { type OptionNode } from '../lib/settings'
 import LoadingLayer from '../components/LoadingLayer.vue'
 
 const nav = useNavStore()
-const router = useRouter()
 const { t } = useI18n()
-const { curtTab } = storeToRefs(nav)
 const isLoading = ref(false)
 const tree = shallowRef<OptionNode>()
+const selectedRootPath = ref('')
+const hiddenRootNodes = new Set(['admin_users'])
+
+const visibleRootNodes = computed(() =>
+  (tree.value?.items || []).filter((node) => !hiddenRootNodes.has(node.name)),
+)
+const basicRootGroup = computed<OptionNode | null>(() => {
+  const items = visibleRootNodes.value
+    .filter((node) => !node.items)
+    .map((node) => ({
+      ...node,
+      level: 2,
+    }))
+  if (!items.length) return null
+
+  return {
+    name: '__basic__',
+    path: '__basic__',
+    level: 1,
+    type: 'object',
+    title: t('config'),
+    subTitle: '',
+    items,
+  }
+})
+const rootGroups = computed(() =>
+  [
+    basicRootGroup.value,
+    ...visibleRootNodes.value.filter((node) => !!node.items),
+  ].filter((node): node is OptionNode => !!node),
+)
+const activeRoot = computed(
+  () => rootGroups.value.find((node) => node.path === selectedRootPath.value) || rootGroups.value[0],
+)
+
+watch(rootGroups, (groups) => {
+  if (!groups.length) return
+  if (!groups.some((node) => node.path === selectedRootPath.value)) {
+    selectedRootPath.value = groups[0].path
+  }
+})
 
 onMounted(() => {
-  nav.updateTabs({
-    sites: 'site',
-    transfer: 'transfer',
-  })
-
-  watch(curtTab, (tab) => {
-    if (tab === 'sites') router.replace('/sites')
-    else if (tab === 'transfer') router.replace('/transfer')
-  })
+  nav.updateTabs({})
 
   Promise.all([
-    artalk!.ctx.getApi().settings.getSettingsTemplate(''),
+    artalk!.ctx.getApi().settings.getSettingsTemplate('zh-CN'),
     artalk!.ctx.getApi().settings.getSettings(),
   ]).then(([template, custom]) => {
     const yamlObj = YAML.parseDocument(template.data.yaml)
@@ -34,6 +64,7 @@ onMounted(() => {
     // console.log(tree.value)
     settings.get().setCustoms(custom.data.yaml)
     settings.get().setEnvs(custom.data.envs)
+    if (rootGroups.value.length) selectedRootPath.value = rootGroups.value[0].path
   })
 })
 
@@ -85,15 +116,46 @@ function save() {
       </div>
       <LoadingLayer v-if="isLoading" />
     </div>
-    <div v-if="tree" class="pfs">
-      <PreferenceGrp :node="tree" />
-      <div class="notice">{{ t('settingNotice') }}</div>
+    <div v-if="tree" class="settings-layout">
+      <section class="settings-head">
+        <div>
+          <div class="eyebrow">Config</div>
+          <h1>{{ t('settings') }}</h1>
+          <p>{{ t('settingNotice') }}</p>
+        </div>
+      </section>
+
+      <aside class="settings-index">
+        <div class="settings-index-title">{{ t('config') }}</div>
+        <button
+          v-for="node in rootGroups"
+          :key="node.path"
+          type="button"
+          class="settings-index-item"
+          :class="{ active: activeRoot?.path === node.path }"
+          @click="selectedRootPath = node.path"
+        >
+          <span>{{ node.title }}</span>
+          <small v-if="node.subTitle">{{ node.subTitle }}</small>
+        </button>
+      </aside>
+
+      <main class="settings-content">
+        <PreferenceGrp
+          v-if="activeRoot"
+          :key="activeRoot.path"
+          :node="activeRoot"
+          default-expanded
+        />
+      </main>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .settings {
+  padding: 18px 28px 80px;
+
   .notice {
     font-size: 13px;
     background: var(--at-color-bg-light);
@@ -155,16 +217,120 @@ function save() {
     }
   }
 
-  .pfs {
-    padding: 10px 30px;
+  .settings-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .settings-head {
+    grid-column: 1 / -1;
+    border: 1px solid var(--at-color-border);
+    background:
+      linear-gradient(135deg, rgba(54, 171, 207, 0.12), transparent 48%),
+      var(--at-color-bg);
+    border-radius: 10px;
+    padding: 24px 26px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+
+    h1 {
+      margin: 4px 0 8px;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--at-color-sub);
+      font-size: 13px;
+    }
+  }
+
+  .eyebrow {
+    color: var(--at-color-main);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .settings-index,
+  .settings-content {
+    border: 1px solid var(--at-color-border);
+    background: var(--at-color-bg);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  }
+
+  .settings-index {
+    position: sticky;
+    top: 16px;
+    padding: 10px;
+  }
+
+  .settings-index-title {
+    padding: 8px 10px 10px;
+    color: var(--at-color-sub);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .settings-index-item {
+    width: 100%;
+    display: block;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: var(--at-color-font);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+
+    span,
+    small {
+      display: block;
+    }
+
+    span {
+      font-weight: 600;
+    }
+
+    small {
+      margin-top: 4px;
+      color: var(--at-color-sub);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    &.active,
+    &:hover {
+      background: var(--at-color-bg-grey-transl);
+    }
+
+    &.active {
+      color: var(--at-color-main);
+    }
+  }
+
+  .settings-content {
+    min-width: 0;
+    padding: 6px 24px 20px;
+
+    :deep(.pf-grp.level-1 > .pf-head) {
+      margin-top: 18px;
+    }
   }
 
   :deep(input[type='text']),
   :deep(input[type='password']),
+  :deep(textarea),
   :deep(select) {
     font-size: 17px;
     width: 100%;
-    height: 35px;
+    min-height: 35px;
     padding: 3px 5px;
     border: 0;
     border-bottom: 1px solid var(--at-color-border);
@@ -175,6 +341,30 @@ function save() {
 
     &:focus {
       border-bottom-color: var(--at-color-main);
+    }
+  }
+  :deep(textarea) {
+    resize: vertical;
+    line-height: 1.5;
+    min-height: 140px;
+  }
+}
+
+@media (max-width: 900px) {
+  .settings {
+    padding: 12px 14px 80px;
+
+    .settings-layout {
+      display: block;
+    }
+
+    .settings-index {
+      position: static;
+      margin-bottom: 12px;
+    }
+
+    .settings-index-item {
+      margin-bottom: 6px;
     }
   }
 }

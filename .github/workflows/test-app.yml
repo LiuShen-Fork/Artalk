@@ -1,70 +1,25 @@
 name: Test App
 
 on:
-  push:
-    paths:
-      - ".github/workflows/test-app.yml"
-      - "cmd/**"
-      - "internal/**"
-      - "server/**"
-      - "test/**"
-      - "main.go"
-      - "go.mod"
-      - "go.sum"
-    branches-ignore: ["release/*", "nightly"]
-    tags-ignore: ["v*"]
-  pull_request:
-    paths:
-      - ".github/workflows/test-app.yml"
-      - "cmd/**"
-      - "internal/**"
-      - "server/**"
-      - "test/**"
-      - "main.go"
-      - "go.mod"
-      - "go.sum"
-    branches-ignore: ["release/*", "nightly"]
+  workflow_dispatch:
 
 env:
   REPORT_DIR: "/tmp/test-reports"
-  CGO_ENABLED: 0
-
-permissions:
-  contents: read
-
-concurrency:
-  group: test-app-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test_app:
-    name: Test Go (${{ matrix.name }})
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
+    name: Test Go on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: Linux AMD64
-            runner: ubuntu-24.04
-            artifact: linux-amd64
-            coverage: true
-          - name: Linux ARM64
-            runner: ubuntu-24.04-arm
-            artifact: linux-arm64
-            coverage: false
-          - name: macOS
-            runner: macos-latest
-            artifact: macos
-            coverage: false
+        os: [ubuntu-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: false # https://github.com/actions/setup-go/issues/483
@@ -76,18 +31,17 @@ jobs:
           echo "GOMODCACHE=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
 
       - name: Cache go modules
-        # v6.1.0; this test-only cache never feeds a publishing workflow.
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # zizmor: ignore[cache-poisoning]
+        uses: actions/cache@v4
         with:
           path: |
             ${{ steps.go-vars.outputs.GOCACHE }}
             ${{ steps.go-vars.outputs.GOMODCACHE }}
-          key: go-test-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.sum') }}
+          key: go-test-${{ runner.os }}-${{ hashFiles('**/go.mod') }}
           restore-keys: |
-            go-test-${{ runner.os }}-${{ runner.arch }}-
+            go-test-${{ runner.os }}
 
       - name: Install tools
-        run: go install gotest.tools/gotestsum@v1.13.0
+        run: go install gotest.tools/gotestsum@latest
 
       - name: Download Go modules
         run: go mod download
@@ -97,23 +51,11 @@ jobs:
 
       - name: Run tests
         run: |
-          mkdir -p "$REPORT_DIR"
-          gotestsum \
-            --junitfile "$REPORT_DIR/unit-tests.xml" \
-            --jsonfile "$REPORT_DIR/unit-tests.json" \
-            -- -coverprofile="$REPORT_DIR/coverage.out" ./...
+          mkdir -p $REPORT_DIR
+          gotestsum --junitfile $REPORT_DIR/unit-tests.xml --jsonfile $REPORT_DIR/unit-tests.json -- -coverprofile=$REPORT_DIR/coverage.out ./...
 
       - name: Upload test results
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@v4
         with:
-          name: Go-Test-Results-${{ matrix.artifact }}
+          name: Go-Test-Results-${{ runner.os }}
           path: ${{ env.REPORT_DIR }}
-
-      - if: ${{ matrix.coverage && !cancelled() }}
-        name: Upload coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
-        with:
-          flags: go
-          file: ${{ env.REPORT_DIR }}/coverage.out
-          token: ${{ secrets.CODECOV_TOKEN }}

@@ -134,12 +134,21 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_AUTH_DISCORD_CLIENT_SECRET** | `""` | ClientSecret | auth.discord.client_secret (Social Login > Discord > ClientSecret) |
 | **ATK_AUTH_DISCORD_ENABLED** | `false` | 启用 | auth.discord.enabled (Social Login > Discord > Enabled) |
 | **ATK_AUTH_EMAIL_ENABLED** | `true` | Enable email password login | auth.email.enabled (Social Login > Email > Enable email password login) |
+| **ATK_AUTH_EMAIL_LABEL** | `"Email"` | Login button label | auth.email.label (Social Login > Email > Login button label) |
 | **ATK_AUTH_EMAIL_VERIFY_SUBJECT** | `"Your Code - {{code}}"` | Verification email subject | auth.email.verify_subject (Social Login > Email > Verification email subject) |
 | **ATK_AUTH_EMAIL_VERIFY_TPL** | `"default"` | Verification email template (set to file path to use custom template) | auth.email.verify_tpl (Social Login > Email > Verification email template) |
 | **ATK_AUTH_ENABLED** | `false` | Enable Social Login | auth.enabled (Social Login > Enable Social Login) |
 | **ATK_AUTH_FACEBOOK_CLIENT_ID** | `""` | ClientId | auth.facebook.client_id (Social Login > Facebook > ClientId) |
 | **ATK_AUTH_FACEBOOK_CLIENT_SECRET** | `""` | ClientSecret | auth.facebook.client_secret (Social Login > Facebook > ClientSecret) |
 | **ATK_AUTH_FACEBOOK_ENABLED** | `false` | 启用 | auth.facebook.enabled (Social Login > Facebook > Enabled) |
+| **ATK_AUTH_GENERIC_AUTHORIZE_URL** | `""` | Authorization endpoint URL | auth.generic.authorize_url (Social Login > Generic OAuth 2.0 > Authorization endpoint URL) |
+| **ATK_AUTH_GENERIC_CLIENT_ID** | `""` | OAuth client ID | auth.generic.client_id (Social Login > Generic OAuth 2.0 > OAuth client ID) |
+| **ATK_AUTH_GENERIC_CLIENT_SECRET** | `""` | OAuth client secret | auth.generic.client_secret (Social Login > Generic OAuth 2.0 > OAuth client secret) |
+| **ATK_AUTH_GENERIC_ENABLED** | `false` | Enable generic OAuth 2.0 login | auth.generic.enabled (Social Login > Generic OAuth 2.0 > Enable generic OAuth 2.0 login) |
+| **ATK_AUTH_GENERIC_LABEL** | `"OAuth 2.0"` | Login button label | auth.generic.label (Social Login > Generic OAuth 2.0 > Login button label) |
+| **ATK_AUTH_GENERIC_SCOPES** | `[]` | OAuth scopes requested during authorization | auth.generic.scopes (Social Login > Generic OAuth 2.0 > OAuth scopes requested during authorization) |
+| **ATK_AUTH_GENERIC_TOKEN_URL** | `""` | Token endpoint URL | auth.generic.token_url (Social Login > Generic OAuth 2.0 > Token endpoint URL) |
+| **ATK_AUTH_GENERIC_USER_INFO_URL** | `""` | User information endpoint URL (must return JSON) | auth.generic.user_info_url (Social Login > Generic OAuth 2.0 > User information endpoint URL) |
 | **ATK_AUTH_GITEA_CLIENT_ID** | `""` | ClientId | auth.gitea.client_id (Social Login > Gitea > ClientId) |
 | **ATK_AUTH_GITEA_CLIENT_SECRET** | `""` | ClientSecret | auth.gitea.client_secret (Social Login > Gitea > ClientSecret) |
 | **ATK_AUTH_GITEA_ENABLED** | `false` | 启用 | auth.gitea.enabled (Social Login > Gitea > Enabled) |
@@ -297,9 +306,19 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | Env | Default | Desc | Path |
 | --- | --- | --- | --- |
 | **ATK_IMG_UPLOAD_ENABLED** | `true` | Enable image upload | img_upload.enabled (Upload > Enable image upload) |
+| **ATK_IMG_UPLOAD_LSKY_ALBUM_ID** | `0` | Album ID (0 = none) | img_upload.lsky.album_id (Upload > Lsky Pro image host > Album ID) |
+| **ATK_IMG_UPLOAD_LSKY_BASE_URL** | `""` | Lsky API base URL (e.g. "https://img.example.com/api/v1") | img_upload.lsky.base_url (Upload > Lsky Pro image host > Lsky API base URL) |
+| **ATK_IMG_UPLOAD_LSKY_DEL_LOCAL** | `true` | Delete local image after upload success | img_upload.lsky.del_local (Upload > Lsky Pro image host > Delete local image after upload success) |
+| **ATK_IMG_UPLOAD_LSKY_ENABLED** | `false` | Enable Lsky Pro upload | img_upload.lsky.enabled (Upload > Lsky Pro image host > Enable Lsky Pro upload) |
+| **ATK_IMG_UPLOAD_LSKY_PERMISSION** | `"public"` | Image permission (可选：`["", "public", "private", "1", "0"]`) | img_upload.lsky.permission (Upload > Lsky Pro image host > Image permission) |
+| **ATK_IMG_UPLOAD_LSKY_STRATEGY_ID** | `0` | Storage strategy ID (0 = default) | img_upload.lsky.strategy_id (Upload > Lsky Pro image host > Storage strategy ID) |
+| **ATK_IMG_UPLOAD_LSKY_TOKEN** | `""` | API token | img_upload.lsky.token (Upload > Lsky Pro image host > API token) |
 | **ATK_IMG_UPLOAD_MAX_SIZE** | `5` | Image size limit (unit: MB) | img_upload.max_size (Upload > Image size limit) |
 | **ATK_IMG_UPLOAD_PATH** | `"./data/artalk-img/"` | Image storage | img_upload.path (Upload > Image storage) |
 | **ATK_IMG_UPLOAD_PUBLIC_PATH** | `<nil>` | Image link base path (default: "/static/images/") | img_upload.public_path (Upload > Image link base path) |
+| **ATK_IMG_UPLOAD_RATE_LIMIT_ENABLED** | `true` | Enable upload rate limit | img_upload.rate_limit.enabled (Upload > Upload rate limit > Enable upload rate limit) |
+| **ATK_IMG_UPLOAD_RATE_LIMIT_IP_LIMIT** | `20` | Max uploads per IP during the window | img_upload.rate_limit.ip_limit (Upload > Upload rate limit > Max uploads per IP during the window) |
+| **ATK_IMG_UPLOAD_RATE_LIMIT_WINDOW_SECONDS** | `3600` | Rate limit window (unit: seconds) | img_upload.rate_limit.window_seconds (Upload > Upload rate limit > Rate limit window) |
 | **ATK_IMG_UPLOAD_UPGIT_DEL_LOCAL** | `true` | Delete local image after upload success | img_upload.upgit.del_local (Upload > Upgit config > Delete local image after upload success) |
 | **ATK_IMG_UPLOAD_UPGIT_ENABLED** | `false` | Enable Upgit | img_upload.upgit.enabled (Upload > Upgit config > Enable Upgit) |
 | **ATK_IMG_UPLOAD_UPGIT_EXEC** | `"upgit -c UPGIT_CONF_FILE_PATH -t /artalk-img"` | Command line arguments | img_upload.upgit.exec (Upload > Upgit config > Command line arguments) |

@@ -14,6 +14,7 @@ Artalk 默认只需填写昵称和邮箱即可发表评论，无需验证邮箱�
 | Steam | [查看](https://partner.steamgames.com/doc/webapi_overview/auth) | WeChat | [查看](https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Wechat_Login.html) | Line | [查看](https://developers.line.biz/en/docs/line-login/integrate-line-login/) |
 | GitLab | [查看](https://docs.gitlab.com/ee/api/oauth2.html) | Gitea | [查看](https://docs.gitea.io/en-us/oauth2-provider/) | Mastodon | [查看](https://docs.joinmastodon.org/api/authentication/) |
 | Patreon | [查看](https://docs.patreon.com/#oauth) | Auth0 | [查看](https://auth0.com/docs/connections/social/) | 邮箱密码 | [查看](#邮箱密码登录) |
+| 通用 OAuth 2.0 | [查看](#通用-oauth-20) | | | | |
 
 开启社交登录功能仅需在 [控制中心](./sidebar.md#设置) 找到「社交登录」启用该功能，然后填写对应的配置信息即可。也可以通过 [配置文件](../backend/config.md) 或 [环境变量](../env.md#社交登录) 进行配置。
 
@@ -30,13 +31,14 @@ Artalk 默认只需填写昵称和邮箱即可发表评论，无需验证邮箱�
 
 ![邮箱注册](/images/auth/email_register.png)
 
-支持自定义验证码邮件模板和邮件标题，可在 Artalk 控制中心的设置页面的社交登录找到「邮箱验证邮件标题」、「邮箱验证邮件模板」选项进行设置。在配置文件中，可以通过 `auth.email.verify_subject` 和 `auth.email.verify_tpl` 进行设置：
+登录方式选择弹窗中的邮箱密码入口默认显示为 `Email`，可以通过 `auth.email.label` 自定义。验证码邮件模板和邮件标题也可以在 Artalk 控制中心的社交登录设置中修改，或通过 `auth.email.verify_subject` 和 `auth.email.verify_tpl` 配置：
 
 ```yaml
 auth:
   enabled: true
   email:
     enabled: true
+    label: "邮箱密码登录"
     verify_subject: "您的验证码是 - {{code}}"
     verify_tpl: default
 ```
@@ -68,6 +70,41 @@ Artalk 支持同时启用多种登录方式，用户可以选择任意一种方�
 ![GitHub 授权弹窗](/images/auth/github_login.png)
 
 接入 GitHub 登录可参考文档：[关于创建 GitHub 应用](https://docs.github.com/zh/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps)，得到 Client ID 和 Client Secret 后，填写到 Artalk 控制中心的设置页面的社交登录中的「GitHub」选项中即可。
+
+## 通用 OAuth 2.0
+
+Artalk 可以通过标准授权码流程接入一个自建或第三方 OAuth 2.0 应用。服务端需要提供授权端点、令牌端点和用户信息端点；用户信息端点需要接受 Bearer Access Token，并返回 JSON。
+
+请在 OAuth 应用中登记以下回调地址（将域名替换为 Artalk 服务的公网地址）：
+
+```text
+https://comments.example.com/api/v2/auth/generic/callback
+```
+
+然后在控制中心或 YAML 中填写配置：
+
+```yaml
+auth:
+  enabled: true
+  callback: "https://comments.example.com/api/v2/auth/{provider}/callback"
+  generic:
+    enabled: true
+    label: "统一账号登录"
+    client_id: "your-client-id"
+    client_secret: "your-client-secret"
+    authorize_url: "https://id.example.com/oauth/authorize"
+    token_url: "https://id.example.com/oauth/token"
+    user_info_url: "https://id.example.com/api/user"
+    scopes:
+      - profile
+      - email
+```
+
+`label` 是该登录方式在登录方式选择弹窗中的显示名称。
+
+Artalk 会自动从用户信息 JSON 中识别常见字段，包括 GitHub 风格的 `id`、`login`、`email`、`avatar_url`、`html_url`，以及常见的 `sub`、`name`、`picture` 字段和 `data.user`、`data.account` 包装。未取得邮箱时会生成不可投递的私有占位邮箱。
+
+普通 OAuth 2.0 登录只需要配置 `auth.generic`，不需要配置下面的 `auth.sso`。SSO 是仓库原有的另一套“复用外部登录态”功能，和登录方式弹窗中的 OAuth 入口无关。
 
 ## SSO 令牌交换
 

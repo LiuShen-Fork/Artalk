@@ -8,44 +8,49 @@ import (
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 )
 
-var (
-	inMemorySearcher *xdb.Searcher
-	inMemoryLoadOnce sync.Once
-	inMemoryLoadErr  error
-)
+type cachedSearcher struct {
+	searcher *xdb.Searcher
+	once     sync.Once
+	err      error
+}
+
+var inMemorySearchers sync.Map
 
 func newSearcherWithCache(dbPath string) (*xdb.Searcher, error) {
-	inMemoryLoadOnce.Do(func() {
+	entry, _ := inMemorySearchers.LoadOrStore(dbPath, &cachedSearcher{})
+	cached := entry.(*cachedSearcher)
+
+	cached.once.Do(func() {
 		// 1、从 dbPath 加载整个 xdb 到内存
 		cBuff, err := xdb.LoadContentFromFile(dbPath)
 		if err != nil {
-			inMemoryLoadErr = fmt.Errorf("failed to load content from %s: %w", strconv.Quote(dbPath), err)
+			cached.err = fmt.Errorf("failed to load content from %s: %w", strconv.Quote(dbPath), err)
 			return
 		}
 
 		// 2、从内容缓冲区中读取 header 以确定 IP 版本
 		header, err := xdb.LoadHeaderFromBuff(cBuff)
 		if err != nil {
-			inMemoryLoadErr = fmt.Errorf("failed to load header from content: %w", err)
+			cached.err = fmt.Errorf("failed to load header from content: %w", err)
 			return
 		}
 		version, err := xdb.VersionFromHeader(header)
 		if err != nil {
-			inMemoryLoadErr = fmt.Errorf("failed to detect IP version from header: %w", err)
+			cached.err = fmt.Errorf("failed to detect IP version from header: %w", err)
 			return
 		}
 
 		// 3、用全局的 cBuff 创建完全基于内存的查询对象。
 		searcher, err := xdb.NewWithBuffer(version, cBuff)
 		if err != nil {
-			inMemoryLoadErr = fmt.Errorf("failed to create searcher with content: %w", err)
+			cached.err = fmt.Errorf("failed to create searcher with content: %w", err)
 			return
 		}
 
-		inMemorySearcher = searcher
+		cached.searcher = searcher
 	})
 
-	return inMemorySearcher, inMemoryLoadErr
+	return cached.searcher, cached.err
 }
 
 func newSearcherWithFileOnly(dbPath string) (*xdb.Searcher, error) {

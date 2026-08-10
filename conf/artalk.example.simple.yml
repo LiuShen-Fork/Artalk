@@ -85,6 +85,18 @@ img_upload:
   path: ./data/artalk-img/
   max_size: 5
   public_path: null
+  rate_limit:
+    enabled: true
+    ip_limit: 20
+    window_seconds: 3600
+  lsky:
+    enabled: false
+    base_url: ""
+    token: ""
+    permission: public
+    strategy_id: 0
+    album_id: 0
+    del_local: true
   upgit:
     enabled: false
     exec: upgit -c UPGIT_CONF_FILE_PATH -t /artalk-img
@@ -150,6 +162,7 @@ auth:
   callback: "http://localhost:23366/api/v2/auth/{provider}/callback"
   email:
     enabled: true
+    label: "Email"
     verify_subject: "Your Code - {{code}}"
     verify_tpl: default
   github:
@@ -220,6 +233,15 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  generic:
+    enabled: false
+    label: "OAuth 2.0"
+    client_id: ""
+    client_secret: ""
+    authorize_url: ""
+    token_url: ""
+    user_info_url: ""
+    scopes: []
   sso:
     enabled: false
     issuer: ""

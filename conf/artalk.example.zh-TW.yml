@@ -183,6 +183,8 @@ ip_region:
   enabled: false
   # 數據文件路徑 (.xdb 格式)
   db_path: ./data/ip2region.xdb
+  # IPv6 數據文件路徑 (.xdb 格式，可選；留空則保持既有單庫解析邏輯)
+  db_path_v6: ""
   # 顯示精度 ["province", "city", "country"]
   precision: province
 
@@ -196,6 +198,30 @@ img_upload:
   max_size: 5
   # 圖片連結基礎路徑 (默認為 "/static/images/")
   public_path: null
+  # 上傳頻率限制
+  rate_limit:
+    # 啟用上傳頻率限制
+    enabled: true
+    # 單 IP 在窗口期內最多上傳次數
+    ip_limit: 20
+    # 頻率限制窗口 (單位：秒)
+    window_seconds: 3600
+  # 蘭空圖床
+  lsky:
+    # 啟用蘭空圖床上傳
+    enabled: false
+    # 蘭空 API 地址 (例如 "https://img.example.com/api/v1")
+    base_url: ""
+    # API Token
+    token: ""
+    # 圖片權限 ["", "public", "private", "1", "0"]
+    permission: public
+    # 儲存策略 ID (0 表示默認)
+    strategy_id: 0
+    # 相簿 ID (0 表示不指定)
+    album_id: 0
+    # 上傳後刪除本地的圖片
+    del_local: true
   # Upgit 配置
   # (使用 Upgit 將圖片上傳到 GitHub 或圖床：https://github.com/pluveto/upgit)
   upgit:
@@ -305,6 +331,8 @@ auth:
   email:
     # 啟用郵箱密碼登錄
     enabled: true
+    # 登錄按鈕顯示名稱
+    label: "Email"
     # 郵箱驗證郵件標題
     verify_subject: "您的驗證碼是 - {{code}}"
     # 郵箱驗證郵件模板 (填入文件路徑使用自定義模板)
@@ -394,6 +422,25 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  # 通用 OAuth 2.0
+  # -- 使用標準授權碼流程，請在 OAuth 應用中將回呼位址設為 https://example.com/api/v2/auth/generic/callback。 --
+  generic:
+    # 啟用通用 OAuth 2.0 登入
+    enabled: false
+    # 登入按鈕顯示名稱
+    label: "OAuth 2.0"
+    # OAuth 用戶端 ID
+    client_id: ""
+    # OAuth 用戶端密鑰
+    client_secret: ""
+    # 授權端點位址
+    authorize_url: ""
+    # 權杖端點位址
+    token_url: ""
+    # 用戶資訊端點位址（必須回傳 JSON）
+    user_info_url: ""
+    # 授權時請求的 OAuth 權限範圍
+    scopes: []
   # SSO (用外部 OIDC 身分提供商的存取權杖換取 Artalk 登入工作階段，透過呼叫 IdP 的 /userinfo 端點驗證)
   # -- 當嵌入頁面已執行 OIDC 且希望 Artalk 沿用該登入狀態、不顯示自身彈窗登入介面時使用。 --
   sso:

@@ -207,6 +207,12 @@ func (conf *Config) ipRegionPatch() {
 		conf.IPRegion.Enabled = false
 	}
 
+	// IPv6 数据库为可选配置；未配置时保持原有单库查询逻辑。
+	if strings.TrimSpace(conf.IPRegion.DBPathV6) != "" && !utils.CheckFileExist(conf.IPRegion.DBPathV6) {
+		log.Warn("未找到 IPv6 IP 数据库文件：" + strconv.Quote(conf.IPRegion.DBPathV6) + "，IPv6 IP 属地解析已禁用")
+		conf.IPRegion.DBPathV6 = ""
+	}
+
 	// 默认精确到省
 	if conf.IPRegion.Precision == "" {
 		conf.IPRegion.Precision = string(IPRegionProvince)

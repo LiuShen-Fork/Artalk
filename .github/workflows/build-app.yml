@@ -6,15 +6,14 @@ on:
       version:
         required: true
         type: string
-      ref:
-        required: true
-        type: string
       dry_run:
         required: true
         type: boolean
 
-permissions:
-  contents: write
+env:
+  GO_VERSION: 1.26.2
+  DOCKER_IMG: ghcr.io/goreleaser/goreleaser-cross
+  CACHE_DIR: /tmp/cache/docker-image
 
 jobs:
   build_publish:
@@ -22,83 +21,69 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
-          persist-credentials: false
+          ref: ${{ inputs.version }}
           # `go-releaser` will read the semver version from git tag name
           # `git-chglog` will diff the tag and generate changelog
           fetch-depth: 0
 
-      - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: go.mod
-          # Release inputs are verified from the lock files instead of shared caches.
-          cache: false
+      # disable cache because the err `no space left on device`
+      # - name: Docker Image Cache
+      #   id: docker-cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ${{ env.CACHE_DIR }}
+      #     key: docker-image-go-cross-${{ env.GO_VERSION }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        with:
-          version: 10.33.2
+      - name: Pull Docker Image
+        # if: steps.docker-cache.outputs.cache-hit != 'true'
+        run: |
+          docker pull "${DOCKER_IMG}:v${GO_VERSION}"
 
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22.x
-          package-manager-cache: false
+          # mkdir -p "${CACHE_DIR}"
+          # docker save -o "${CACHE_DIR}/go-cross.tar" "${DOCKER_IMG}:v${GO_VERSION}"
+
+      # - name: Restore Docker Image from Cache
+      #   if: steps.docker-cache.outputs.cache-hit == 'true'
+      #   run: docker load -i ${CACHE_DIR}/go-cross.tar
 
       - name: Setup git-chglog
         run: |
-          GOBIN="$RUNNER_TEMP/bin" go install github.com/git-chglog/git-chglog/cmd/git-chglog@v0.15.4
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-          go version -m "$RUNNER_TEMP/bin/git-chglog"
-
-      - name: Create local tag for dry run
-        if: ${{ inputs.dry_run }}
-        env:
-          VERSION: ${{ inputs.version }}
-        run: |
-          if git rev-parse --quiet --verify "refs/tags/$VERSION" > /dev/null; then
-            tag_commit="$(git rev-list -n 1 "$VERSION")"
-            head_commit="$(git rev-parse HEAD)"
-            if [[ "$tag_commit" != "$head_commit" ]]; then
-              echo "Tag $VERSION already points to $tag_commit, expected $head_commit."
-              exit 1
-            fi
-          else
-            git tag "$VERSION"
-          fi
+          curl -sL $(curl -s https://api.github.com/repos/git-chglog/git-chglog/releases/latest \
+            | grep -oP '"https://.+linux_amd64.tar.gz"' | tr -d \") | tar -C /usr/local/bin -xz git-chglog
+          git-chglog --version
 
       - name: Pre Build
         run: |-
           mkdir -p local
 
+          # github token
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" > local/.release-env
+
+          # publish the GitHub Release to the repository that runs this workflow
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          cp .goreleaser.yml local/.goreleaser.yml
+          perl -0pi -e "s/owner: ArtalkJS/owner: ${GITHUB_REPOSITORY_OWNER}/g; s/name: Artalk/name: ${REPO_NAME}/g" local/.goreleaser.yml
+
           # changelog
-          git-chglog --config .github/chglog/config.yml "$VERSION" > local/release-notes.md
+          git-chglog --config .github/chglog/config.yml ${{ inputs.version }} > local/release-notes.md
 
           # copy config file
           cp conf/artalk.example.yml artalk.yml
-        env:
-          VERSION: ${{ inputs.version }}
 
-      - name: Print Release Notes
+      - name: Print Relase Notes
         run: cat local/release-notes.md
 
-      - name: Validate release build
-        if: ${{ inputs.dry_run }}
-        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
-        with:
-          distribution: goreleaser
-          version: v2.17.0
-          args: release --clean --release-notes local/release-notes.md --skip=publish
-
       - name: Build and Release
-        if: ${{ !inputs.dry_run }}
-        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
-        with:
-          distribution: goreleaser
-          version: v2.17.0
-          args: release --clean --release-notes local/release-notes.md
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          docker run \
+            --rm \
+            --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd)/sysroot:/sysroot \
+            -v $(pwd):/repo \
+            -w /repo \
+            --env-file local/.release-env \
+            ghcr.io/goreleaser/goreleaser-cross:v${GO_VERSION} \
+            release --config local/.goreleaser.yml --release-notes local/release-notes.md ${{ inputs.dry_run && '--skip=publish' || '' }}

@@ -186,6 +186,30 @@ img_upload:
   max_size: 5
   # Image link base path (default: "/static/images/")
   public_path: null
+  # Upload rate limit
+  rate_limit:
+    # Enable upload rate limit
+    enabled: true
+    # Max uploads per IP during the window
+    ip_limit: 20
+    # Rate limit window (unit: seconds)
+    window_seconds: 3600
+  # Lsky Pro image host
+  lsky:
+    # Enable Lsky Pro upload
+    enabled: false
+    # Lsky API base URL (e.g. "https://img.example.com/api/v1")
+    base_url: ""
+    # API token
+    token: ""
+    # Image permission ["", "public", "private", "1", "0"]
+    permission: public
+    # Storage strategy ID (0 = default)
+    strategy_id: 0
+    # Album ID (0 = none)
+    album_id: 0
+    # Delete local image after upload success
+    del_local: true
   # Upgit config
   upgit:
     # Enable Upgit
@@ -297,6 +321,8 @@ auth:
   email:
     # Enable email password login
     enabled: true
+    # Login button label
+    label: "Email"
     # Verification email subject
     verify_subject: "Your Code - {{code}}"
     # Verification email template (set to file path to use custom template)
@@ -386,6 +412,25 @@ auth:
     client_id: ""
     client_secret: ""
     domain: ""
+  # Generic OAuth 2.0
+  # -- Standard Authorization Code flow. Configure the callback URL in the OAuth application as https://example.com/api/v2/auth/generic/callback. --
+  generic:
+    # Enable generic OAuth 2.0 login
+    enabled: false
+    # Login button label
+    label: "OAuth 2.0"
+    # OAuth client ID
+    client_id: ""
+    # OAuth client secret
+    client_secret: ""
+    # Authorization endpoint URL
+    authorize_url: ""
+    # Token endpoint URL
+    token_url: ""
+    # User information endpoint URL (must return JSON)
+    user_info_url: ""
+    # OAuth scopes requested during authorization
+    scopes: []
   # SSO (Exchange external OIDC access tokens for Artalk login sessions, verified via the IdP's /userinfo endpoint)
   # -- Use this when the embedding app already runs OIDC and you want Artalk to inherit that session without its own popup login UI. --
   sso:

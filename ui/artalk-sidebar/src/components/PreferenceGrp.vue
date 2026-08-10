@@ -3,16 +3,18 @@ import type { OptionNode } from '../lib/settings'
 
 const props = defineProps<{
   node: OptionNode
+  defaultExpanded?: boolean
 }>()
 
-const expanded = ref(true)
+const expanded = ref(props.defaultExpanded ?? true)
 
+const hasChildItems = computed(() => !!props.node.items?.length)
 const expandable = computed(() => {
-  return props.node.level === 1 && (props.node.type === 'object' || props.node.type === 'array')
+  return props.node.level === 1 && props.node.type === 'object' && hasChildItems.value
 })
 
 onMounted(() => {
-  if (expandable.value) expanded.value = false
+  if (expandable.value && !props.defaultExpanded) expanded.value = false
 })
 
 function onHeadClick(evt: Event) {
@@ -44,9 +46,9 @@ const hiddenNodes = ['admin_users']
       <div class="title">{{ node.title }}</div>
       <div v-if="!!node.subTitle" class="sub-title">{{ node.subTitle }}</div>
     </div>
-    <div v-show="expanded" class="pf-body">
+    <div class="pf-body">
       <!-- Grp -->
-      <template v-if="node.items">
+      <template v-if="node.items?.length">
         <PreferenceGrp v-for="n in node.items" :key="n.path" :node="n" />
       </template>
 
