@@ -56,7 +56,7 @@ function login(username?: string) {
         token: res.data.token,
       })
       useUserStore().sync()
-      router.replace('/')
+      router.replace('/comments')
     })
     .catch((e: ArtalkType.FetchError) => {
       if (e.data?.need_name_select) {

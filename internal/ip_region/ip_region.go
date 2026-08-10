@@ -15,7 +15,7 @@ import (
 type IPRegion struct {
 	conf   IPRegionConf
 	mu     sync.Mutex
-	cached regionSearcher
+	cached map[string]regionSearcher
 }
 
 type IPRegionConf struct {
@@ -57,34 +57,48 @@ func (ipRegion *IPRegion) search(ip string) (result region, err error) {
 			err = fmt.Errorf("invalid IP region database: %v", recovered)
 		}
 	}()
-	searcher, err := ipRegion.getSearcher()
+	dbPath := selectDBPathForIP(ip, ipRegion.conf)
+	searcher, err := ipRegion.getSearcher(dbPath)
 	if err != nil {
 		return region{}, err
 	}
-	if !ipRegion.reuseSearcher() {
+	if !ipRegion.reuseSearcher(dbPath) {
 		defer searcher.Close()
 	}
 	return searcher.Search(ip)
 }
 
-func (ipRegion *IPRegion) reuseSearcher() bool {
+func (ipRegion *IPRegion) reuseSearcher(dbPath string) bool {
 	// IPDB always loads the whole file into memory; retain it regardless of the
 	// global cache setting. XDB keeps its existing memory/file mode selection.
-	return ipRegion.conf.CacheEnabled || isIPDBPath(ipRegion.conf.DBPath)
+	return ipRegion.conf.CacheEnabled || isIPDBPath(dbPath)
 }
 
-func (ipRegion *IPRegion) getSearcher() (regionSearcher, error) {
-	if !ipRegion.reuseSearcher() {
-		return newSearcher(ipRegion.conf.DBPath, false)
+func (ipRegion *IPRegion) getSearcher(dbPath string) (regionSearcher, error) {
+	if !ipRegion.reuseSearcher(dbPath) {
+		return newSearcher(dbPath, false)
 	}
 	ipRegion.mu.Lock()
 	defer ipRegion.mu.Unlock()
 	if ipRegion.cached == nil {
-		searcher, err := newSearcher(ipRegion.conf.DBPath, true)
-		if err != nil {
-			return nil, err // Retry on the next lookup if the file is repaired.
-		}
-		ipRegion.cached = searcher
+		ipRegion.cached = make(map[string]regionSearcher)
 	}
-	return ipRegion.cached, nil
+	if searcher, ok := ipRegion.cached[dbPath]; ok {
+		return searcher, nil
+	}
+	searcher, err := newSearcher(dbPath, true)
+	if err != nil {
+		return nil, err // Retry on the next lookup if the file is repaired.
+	}
+	ipRegion.cached[dbPath] = searcher
+	return searcher, nil
+}
+
+func selectDBPathForIP(ip string, conf IPRegionConf) string {
+	parsedIP := net.ParseIP(ip)
+	if parsedIP != nil && parsedIP.To4() == nil && strings.TrimSpace(conf.DBPathV6) != "" {
+		return conf.DBPathV6
+	}
+
+	return conf.DBPath
 }

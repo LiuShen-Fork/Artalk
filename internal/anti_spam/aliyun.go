@@ -34,7 +34,7 @@ func (c *AliyunChecker) Check(p *CheckerParams) (bool, error) {
 		AccessKeyId:     c.AccessKeyID,
 		AccessKeySecret: c.AccessKeySecret,
 		Region:          c.Region,
-		Content:         p.Content,
+		Content:         p.ReviewText,
 		DataID:          fmt.Sprintf("comment-%d", p.CommentID),
 	})
 }

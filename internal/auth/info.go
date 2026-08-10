@@ -21,9 +21,13 @@ func GetProviderInfo(conf *config.Config, providers []goth.Provider) []AuthProvi
 
 	// Email
 	if conf.Auth.Email.Enabled {
+		label := strings.TrimSpace(conf.Auth.Email.Label)
+		if label == "" {
+			label = "Email"
+		}
 		info = append(info, AuthProviderInfo{
 			Name:  "email",
-			Label: "Email",
+			Label: label,
 			Icon:  GetProviderIconBase64("email"),
 		})
 	}
@@ -34,6 +38,9 @@ func GetProviderInfo(conf *config.Config, providers []goth.Provider) []AuthProvi
 		// Patch for Microsoft
 		if title == "Microsoftonline" {
 			title = "Microsoft"
+		}
+		if name == "generic" && strings.TrimSpace(conf.Auth.Generic.Label) != "" {
+			title = strings.TrimSpace(conf.Auth.Generic.Label)
 		}
 		info = append(info, AuthProviderInfo{
 			Name:  name,

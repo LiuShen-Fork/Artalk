@@ -41,11 +41,11 @@ func TestResolveConfigFileBeforeDataDir(t *testing.T) {
 
 	workDir, err := initDataDir("")
 	require.NoError(t, err)
-	assert.Equal(t, dataDir, workDir)
+	assert.Equal(t, filepath.Clean(dataDir), filepath.Clean(workDir))
 
 	currentDir, err := os.Getwd()
 	require.NoError(t, err)
-	assert.Equal(t, dataDir, currentDir)
+	assert.Equal(t, filepath.Clean(dataDir), filepath.Clean(currentDir))
 
 	conf, err := getConfig(cfgFile)
 	require.NoError(t, err)

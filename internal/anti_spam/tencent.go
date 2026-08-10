@@ -34,7 +34,7 @@ func (c *TencentChecker) Check(p *CheckerParams) (bool, error) {
 		SecretID:  c.SecretID,
 		SecretKey: c.SecretKey,
 		Region:    c.Region,
-		Content:   p.Content,
+		Content:   p.ReviewText,
 		DataID:    fmt.Sprintf("comment-%d", p.CommentID),
 		UserID:    fmt.Sprintf("%d", p.UserID),
 		UserName:  p.UserName,

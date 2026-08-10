@@ -105,6 +105,6 @@ func newAkismetReqParams(params *CheckerParams) *AkismetReqParams {
 
 		CommentAuthor:      params.UserName,
 		CommentAuthorEmail: params.UserEmail,
-		CommentContent:     params.Content,
+		CommentContent:     params.ReviewText,
 	}
 }
