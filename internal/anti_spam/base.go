@@ -136,6 +136,20 @@ func (as AntiSpam) getEnabledCheckers() []Checker {
 			aliyunConf.AccessKeyID, aliyunConf.AccessKeySecret, aliyunConf.Region))
 	}
 
+	// AI
+	aiConf := as.conf.AI
+	if aiConf.Enabled {
+		checkers = append(checkers, NewAIChecker(AICheckerConf{
+			APIType:         AIAPIType(aiConf.APIType),
+			BaseURL:         aiConf.BaseURL,
+			APIKey:          aiConf.APIKey,
+			Model:           aiConf.Model,
+			Prompt:          aiConf.Prompt,
+			OutputFormat:    AIOutputFormat(aiConf.OutputFormat),
+			MaxTokens:       aiConf.MaxTokens,
+			DisableThinking: aiConf.DisableThinking,
+		}))
+	}
 	// Keywords Checker
 	keywordsConf := as.conf.Keywords
 	if keywordsConf.Enabled {

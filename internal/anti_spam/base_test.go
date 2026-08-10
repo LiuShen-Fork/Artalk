@@ -21,6 +21,9 @@ func TestAntiSpam(t *testing.T) {
 				Aliyun: config.AliyunAntispamConf{
 					Enabled: true,
 				},
+				AI: config.AIAntispamConf{
+					Enabled: true,
+				},
 				Keywords: config.KeyWordsAntispamConf{
 					Enabled: true,
 				},
@@ -32,7 +35,7 @@ func TestAntiSpam(t *testing.T) {
 		checkerNames := lo.Map[Checker, string](checkers, func(item Checker, index int) string {
 			return item.Name()
 		})
-		expectedCheckers := []string{"akismet", "tencent", "aliyun", "keywords"}
+		expectedCheckers := []string{"akismet", "tencent", "aliyun", "ai", "keywords"}
 
 		assert.Equal(t, expectedCheckers, checkerNames)
 	})
