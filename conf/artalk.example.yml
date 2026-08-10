@@ -146,8 +146,8 @@ moderator:
     model: ""
     # Maximum output tokens (0 omits this parameter; 256 is sufficient for moderation)
     max_tokens: 256
-    # Disable model thinking (DeepSeek: thinking.disabled for Chat Completions, reasoning.effort=none for Responses)
-    disable_thinking: false
+    # Disable model thinking to save tokens (enabled by default; set false only when the provider rejects this option)
+    disable_thinking: true
     # Moderation rules (Artalk provides the structured JSON requirement automatically; do not write a schema here)
     prompt: |-
       You are a comment moderation classifier. Classify the supplied nickname and comment as sensitive or non-sensitive only.

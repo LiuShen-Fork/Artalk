@@ -81,6 +81,11 @@ export const fr: MessageSchema = {
   moderationClear: 'Effacer les journaux',
   moderationClearConfirm: 'Effacer tous les journaux de modération du site actuel ? Les commentaires ne seront pas supprimés.',
   moderationDeleteConfirm: 'Supprimer ce journal de modération ? Le commentaire ne sera pas supprimé.',
+  moderationApproveComment: 'Approuver le commentaire',
+  moderationApproveCommentConfirm: 'Approuver ce commentaire et le rendre visible publiquement ?',
+  moderationDeleteComment: 'Supprimer le commentaire',
+  moderationDeleteCommentConfirm:
+    'Supprimer ce commentaire et ses réponses ? Le journal de modération sera conservé.',
   refresh: 'Actualiser',
   refreshing: 'Actualisation...',
   unknownUser: 'Utilisateur inconnu',

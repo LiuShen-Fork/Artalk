@@ -350,7 +350,7 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_MODERATOR_AI_API_KEY** | `""` | API Key (例如 "sk-...") | moderator.ai.api_key (评论审核 > AI 内容审核 > API Key) |
 | **ATK_MODERATOR_AI_API_TYPE** | `"responses"` | AI 接口类型 (responses: OpenAI 兼容 /v1/responses，使用 JSON Schema 强约束；chat_completions: OpenAI 兼容 /v1/chat/completions，使用 JSON Schema 强约束；deepseek_json_output: DeepSeek /v1/chat/completions，使用 JSON Output) (可选：`["responses", "chat_completions", "deepseek_json_output"]`) | moderator.ai.api_type (评论审核 > AI 内容审核 > AI 接口类型) |
 | **ATK_MODERATOR_AI_BASE_URL** | `"https://api.openai.com/v1"` | API 基础地址，必须以 /v1 结尾 (例如 "https://api.openai.com/v1") | moderator.ai.base_url (评论审核 > AI 内容审核 > API 基础地址，必须以 /v1 结尾) |
-| **ATK_MODERATOR_AI_DISABLE_THINKING** | `false` | 关闭模型思考 (DeepSeek：Chat Completions 使用 thinking.disabled；Responses 使用 reasoning.effort=none) | moderator.ai.disable_thinking (评论审核 > AI 内容审核 > 关闭模型思考) |
+| **ATK_MODERATOR_AI_DISABLE_THINKING** | `true` | 关闭模型思考以节省 Token (默认开启；仅当服务商不支持该参数时设为 false) | moderator.ai.disable_thinking (评论审核 > AI 内容审核 > 关闭模型思考以节省 Token) |
 | **ATK_MODERATOR_AI_ENABLED** | `false` | 启用 AI 内容审核 | moderator.ai.enabled (评论审核 > AI 内容审核 > 启用 AI 内容审核) |
 | **ATK_MODERATOR_AI_MAX_TOKENS** | `256` | 最大输出 Token 数 (填 0 时不发送该参数；评论审核通常 256 已足够) | moderator.ai.max_tokens (评论审核 > AI 内容审核 > 最大输出 Token 数) |
 | **ATK_MODERATOR_AI_MODEL** | `""` | 模型 ID (例如 "gpt-4.1-mini" 或服务商提供的模型名称) | moderator.ai.model (评论审核 > AI 内容审核 > 模型 ID) |

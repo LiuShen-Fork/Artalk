@@ -172,7 +172,7 @@ type AIAntispamConf struct {
 	Prompt          string         `koanf:"prompt" json:"prompt"`
 	OutputFormat    AIOutputFormat `koanf:"output_format" json:"output_format"`
 	MaxTokens       int            `koanf:"max_tokens" json:"max_tokens"`
-	DisableThinking bool           `koanf:"disable_thinking" json:"disable_thinking"`
+	DisableThinking *bool          `koanf:"disable_thinking" json:"disable_thinking"`
 }
 
 const DefaultAIModerationPrompt = `You are a comment moderation classifier. Classify the supplied nickname and comment as sensitive or non-sensitive only.

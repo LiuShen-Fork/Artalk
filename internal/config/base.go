@@ -123,6 +123,10 @@ func (conf *Config) normalPatch() {
 		if strings.TrimSpace(conf.Moderator.AI.Prompt) == "" {
 			conf.Moderator.AI.Prompt = DefaultAIModerationPrompt
 		}
+		if conf.Moderator.AI.DisableThinking == nil {
+			disableThinking := true
+			conf.Moderator.AI.DisableThinking = &disableThinking
+		}
 	}
 
 	// 默认将验证码类型设置为 image

@@ -81,6 +81,11 @@ export const ru: MessageSchema = {
   moderationClear: 'Очистить журнал',
   moderationClearConfirm: 'Очистить все записи модерации для текущего сайта? Комментарии не будут удалены.',
   moderationDeleteConfirm: 'Удалить эту запись модерации? Комментарий не будет удален.',
+  moderationApproveComment: 'Одобрить комментарий',
+  moderationApproveCommentConfirm: 'Одобрить этот комментарий и сделать его общедоступным?',
+  moderationDeleteComment: 'Удалить комментарий',
+  moderationDeleteCommentConfirm:
+    'Удалить этот комментарий и ответы на него? Запись модерации будет сохранена.',
   refresh: 'Обновить',
   refreshing: 'Обновление...',
   unknownUser: 'Неизвестный пользователь',

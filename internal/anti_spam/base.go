@@ -139,6 +139,10 @@ func (as AntiSpam) getEnabledCheckers() []Checker {
 	// AI
 	aiConf := as.conf.AI
 	if aiConf.Enabled {
+		disableThinking := true
+		if aiConf.DisableThinking != nil {
+			disableThinking = *aiConf.DisableThinking
+		}
 		checkers = append(checkers, NewAIChecker(AICheckerConf{
 			APIType:         AIAPIType(aiConf.APIType),
 			BaseURL:         aiConf.BaseURL,
@@ -147,7 +151,7 @@ func (as AntiSpam) getEnabledCheckers() []Checker {
 			Prompt:          aiConf.Prompt,
 			OutputFormat:    AIOutputFormat(aiConf.OutputFormat),
 			MaxTokens:       aiConf.MaxTokens,
-			DisableThinking: aiConf.DisableThinking,
+			DisableThinking: disableThinking,
 		}))
 	}
 	// Keywords Checker
