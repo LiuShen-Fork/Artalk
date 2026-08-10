@@ -74,6 +74,16 @@ func TestModerationLogManagement(t *testing.T) {
 	app.Dao().DB().Model(&entity.ModerationLog{}).Where("site_name = ?", "Site B").Count(&siteBCount)
 	assert.Zero(t, siteACount)
 	assert.Equal(t, int64(1), siteBCount)
+
+	clearAllReq := httptest.NewRequest(http.MethodDelete, "/moderation/logs?token="+token, nil)
+	clearAllResp, err := fiberApp.Test(clearAllReq)
+	require.NoError(t, err)
+	defer clearAllResp.Body.Close()
+	assert.Equal(t, http.StatusOK, clearAllResp.StatusCode)
+
+	var remainingCount int64
+	app.Dao().DB().Model(&entity.ModerationLog{}).Count(&remainingCount)
+	assert.Zero(t, remainingCount)
 }
 
 func jsonNumber(value uint) string {
