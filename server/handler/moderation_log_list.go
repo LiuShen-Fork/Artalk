@@ -95,6 +95,8 @@ func ModerationLogClear(app *core.App, router fiber.Router) {
 		q := app.Dao().DB()
 		if p.SiteName != "" {
 			q = q.Where("site_name = ?", p.SiteName)
+		} else {
+			q = q.Where("1 = 1")
 		}
 		if err := q.Delete(&entity.ModerationLog{}).Error; err != nil {
 			return common.RespError(c, fiber.StatusInternalServerError, "moderation log cleanup failed")
