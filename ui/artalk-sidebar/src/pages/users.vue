@@ -150,8 +150,8 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
 </script>
 
 <template>
-  <div class="user-list-wrap">
-    <div class="user-list">
+  <div class="user-list-wrap admin-page">
+    <div class="user-list admin-panel">
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-main">
           <div class="title">
@@ -232,7 +232,7 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
             color: #fff;
 
             &.admin {
-              background: #0083ff;
+              background: var(--atk-admin-terracotta);
             }
 
             &.in-conf {
@@ -266,6 +266,59 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
         }
       }
     }
+  }
+}
+
+.user-list-wrap {
+  .user-list {
+    overflow: hidden;
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+    border-radius: var(--atk-admin-radius);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .user-item {
+      padding: 18px 20px;
+      border-color: var(--atk-admin-border);
+
+      .user-main {
+        .title {
+          color: var(--atk-admin-ink);
+          font-size: 18px;
+
+          .badge {
+            border-radius: 999px;
+            background: var(--atk-admin-sage);
+
+            &.admin {
+              background: var(--atk-admin-terracotta);
+            }
+
+            &.in-conf {
+              background: var(--atk-admin-sage);
+            }
+          }
+        }
+
+        .sub {
+          color: var(--atk-admin-subtle);
+        }
+      }
+
+      .user-actions > span {
+        color: var(--atk-admin-subtle);
+
+        &:hover {
+          color: var(--atk-admin-sage);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .user-list-wrap .user-list .user-item {
+    padding: 16px;
   }
 }
 </style>

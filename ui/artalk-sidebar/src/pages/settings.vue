@@ -105,11 +105,11 @@ function save() {
 </script>
 
 <template>
-  <div class="settings">
+  <div class="settings admin-page">
     <div class="act-bar">
       <div class="atk-sidebar-container">
         <div class="status-text"></div>
-        <button class="save-btn" @click="save()">
+        <button class="save-btn admin-button primary" @click="save()">
           <i class="atk-icon atk-icon-yes" />
           {{ t('apply') }}
         </button>
@@ -117,15 +117,15 @@ function save() {
       <LoadingLayer v-if="isLoading" />
     </div>
     <div v-if="tree" class="settings-layout">
-      <section class="settings-head">
+      <section class="settings-head admin-page-head">
         <div>
-          <div class="eyebrow">Config</div>
+          <div class="admin-eyebrow">Config</div>
           <h1>{{ t('settings') }}</h1>
           <p>{{ t('settingNotice') }}</p>
         </div>
       </section>
 
-      <aside class="settings-index">
+      <aside class="settings-index admin-panel">
         <div class="settings-index-title">{{ t('config') }}</div>
         <button
           v-for="node in rootGroups"
@@ -140,7 +140,7 @@ function save() {
         </button>
       </aside>
 
-      <main class="settings-content">
+      <main class="settings-content admin-panel">
         <PreferenceGrp
           v-if="activeRoot"
           :key="activeRoot.path"
@@ -199,7 +199,7 @@ function save() {
       cursor: pointer;
       background: transparent;
       border-radius: 2px;
-      background: #36abcf;
+      background: var(--atk-admin-ink);
       color: #fff;
       border: 0;
 
@@ -363,6 +363,75 @@ function save() {
 
     .settings-index-item {
       margin-bottom: 6px;
+    }
+  }
+}
+
+.settings {
+  .settings-head,
+  .settings-index,
+  .settings-content {
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+  }
+
+  .settings-head {
+    background: var(--atk-admin-surface-muted);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.05);
+  }
+
+  .settings-index,
+  .settings-content {
+    border-radius: var(--atk-admin-radius);
+  }
+
+  .settings-index-item {
+    border-radius: 999px;
+    color: var(--atk-admin-ink);
+
+    small {
+      color: var(--atk-admin-subtle);
+    }
+
+    &.active,
+    &:hover {
+      background: var(--atk-admin-surface-muted);
+    }
+
+    &.active {
+      color: var(--atk-admin-sage);
+    }
+  }
+
+  .settings-index-title {
+    color: var(--atk-admin-subtle);
+    letter-spacing: 0;
+  }
+
+  .act-bar {
+    background: var(--atk-admin-surface);
+    border-color: var(--atk-admin-border);
+
+    .save-btn {
+      width: auto;
+      margin: 0;
+      background: var(--atk-admin-ink);
+    }
+  }
+
+  :deep(input[type='text']),
+  :deep(input[type='password']),
+  :deep(textarea),
+  :deep(select) {
+    padding: 7px 11px;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: 9px;
+    background: var(--atk-admin-surface);
+    color: var(--atk-admin-ink);
+
+    &:focus {
+      border-color: var(--atk-admin-sage);
     }
   }
 }

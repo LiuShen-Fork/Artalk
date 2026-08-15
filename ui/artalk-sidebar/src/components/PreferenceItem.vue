@@ -136,7 +136,7 @@ function toggleSensitiveHidden() {
     .sub-title {
       font-size: 14px;
       margin-top: 4px;
-      color: #697182;
+      color: var(--atk-admin-subtle);
     }
   }
 
@@ -178,7 +178,7 @@ function toggleSensitiveHidden() {
 
       .atk-icon {
         &::after {
-          background-color: #697182;
+          background-color: var(--atk-admin-subtle);
         }
 
         &.atk-icon-eye-on::after {
@@ -189,6 +189,18 @@ function toggleSensitiveHidden() {
           mask-image: url('@/assets/icon-eye-off.svg');
         }
       }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .pf-item {
+    display: block;
+    margin-bottom: 24px;
+
+    & > .info {
+      padding-right: 0;
+      margin-bottom: 8px;
     }
   }
 }

@@ -82,7 +82,8 @@ function toggleIndicator() {
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-bottom: 1px solid var(--at-color-border);
+  border-bottom: 1px solid var(--atk-admin-border);
+  background: var(--atk-admin-canvas);
   height: 41px;
 
   @media (min-width: 1024px) {
@@ -120,7 +121,7 @@ function toggleIndicator() {
     align-items: center;
     height: 100%;
     padding: 0 20px;
-    border-right: 1px solid var(--at-color-border);
+    border-right: 1px solid var(--atk-admin-border);
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
@@ -130,7 +131,7 @@ function toggleIndicator() {
     }
 
     .text {
-      color: var(--at-color-deep);
+      color: var(--atk-admin-ink);
     }
   }
 
@@ -151,7 +152,7 @@ function toggleIndicator() {
 
   .item {
     padding: 0 20px;
-    color: var(--at-color-sub);
+    color: var(--atk-admin-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,17 +161,17 @@ function toggleIndicator() {
     white-space: nowrap;
 
     &.active {
-      color: var(--at-color-deep);
+      color: var(--atk-admin-ink);
     }
 
     &:hover {
-      background: var(--at-color-bg-grey);
+      background: var(--atk-admin-surface-muted);
     }
 
     &.search-btn {
       margin-left: auto;
       padding: 0 20px;
-      border-left: 1px solid var(--at-color-border);
+      border-left: 1px solid var(--atk-admin-border);
 
       &::after {
         display: inline-block;

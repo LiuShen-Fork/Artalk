@@ -97,14 +97,14 @@ function add() {
   display: inline-block;
   padding: 2px 10px;
   cursor: pointer;
-  border: 0;
-  color: var(--at-color-font);
-  background: var(--at-color-bg-grey);
-  border-radius: 2px;
+  border: 1px solid var(--atk-admin-border);
+  color: var(--atk-admin-ink);
+  background: var(--atk-admin-surface-muted);
+  border-radius: 999px;
 
   &:hover {
-    color: var(--at-color-light);
-    background: var(--at-color-bg-light);
+    color: var(--atk-admin-ink);
+    background: var(--atk-admin-sage-soft);
   }
 }
 </style>

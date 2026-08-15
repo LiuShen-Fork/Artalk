@@ -123,12 +123,13 @@ function logout() {
   left: calc((100% - 80%) / 2);
   top: 70px;
   pointer-events: all;
-  background: var(--at-color-bg);
+  background: var(--atk-admin-surface);
   width: 80%;
   max-height: 40%;
   margin: 0 auto;
-  border: 1px solid var(--at-color-border);
-  border-radius: 4px;
+  border: 1px solid var(--atk-admin-border);
+  border-radius: var(--atk-admin-radius);
+  box-shadow: 0 6px 16px rgba(72, 60, 46, 0.08);
   overflow-y: auto;
   transition: all 0.2s ease;
 
@@ -154,23 +155,23 @@ function logout() {
         width: 20px;
         height: 20px;
         line-height: 20px;
-        background: #5b6f7e;
+        background: var(--atk-admin-sage);
         margin: 10px;
-        border-radius: 3px;
+        border-radius: 50%;
         text-align: center;
         color: #fff;
         font-size: 12px;
       }
 
       .atk-site-name {
-        color: var(--at-color-deep);
+        color: var(--atk-admin-ink);
         font-size: 17px;
         margin-left: 7px;
       }
 
       &.atk-active,
       &:hover {
-        background: var(--at-color-bg-grey);
+        background: var(--atk-admin-surface-muted);
       }
     }
   }

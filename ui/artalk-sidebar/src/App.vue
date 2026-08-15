@@ -38,8 +38,8 @@ $maxWidth: 1100px;
 $sidebarWidth: 280px;
 
 .app-wrap {
-  background: var(--at-color-bg);
-  color: var(--at-color-font);
+  background: var(--atk-admin-canvas);
+  color: var(--atk-admin-ink);
   min-height: 100vh;
 }
 

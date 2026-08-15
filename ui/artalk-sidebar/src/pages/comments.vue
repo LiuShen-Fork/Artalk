@@ -96,15 +96,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="wrapEl" class="comments-wrap">
+  <div ref="wrapEl" class="comments-wrap admin-page">
     <div ref="listEl" />
   </div>
 </template>
 
 <style scoped lang="scss">
 .comments-wrap {
+  :deep(.atk-list) {
+    overflow: hidden;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: var(--atk-admin-radius);
+    background: var(--atk-admin-surface);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+  }
+
   :deep(.atk-comment-wrap) {
-    border-bottom: 1px solid var(--at-color-border);
+    border-bottom: 1px solid var(--atk-admin-border);
   }
 }
 </style>

@@ -48,7 +48,7 @@ const getIconCSSAttribute = (icon: string) => `url('${icon.replace(/'/g, "\\'")}
 </template>
 
 <style lang="scss" scoped>
-$colorMain: #8ecee2;
+$colorMain: var(--atk-admin-sage);
 
 .sidebar-navigation {
   z-index: 10;
@@ -58,8 +58,8 @@ $colorMain: #8ecee2;
   top: 61px;
   height: calc(100vh - 61px - 41px);
   padding: 20px;
-  background: var(--at-color-bg);
-  border-right: 1px solid var(--at-color-border);
+  background: var(--atk-admin-canvas);
+  border-right: 1px solid var(--atk-admin-border);
 
   @media (max-width: 1023px) {
     display: none;
@@ -71,7 +71,7 @@ $colorMain: #8ecee2;
     align-items: center;
     padding: 6px 12px;
     font-size: 15px;
-    border-radius: 6px;
+    border-radius: 999px;
     cursor: pointer;
     user-select: none;
     transition: background 0.2s;
@@ -82,24 +82,12 @@ $colorMain: #8ecee2;
 
     &.active {
       font-weight: bold;
-      color: var(--at-color-deep);
-
-      &::before {
-        content: '';
-        display: block;
-        position: absolute;
-        left: -8px;
-        top: 5%;
-        background: $colorMain;
-        height: 90%;
-        width: 4px;
-        border-radius: 1000px;
-      }
+      color: var(--atk-admin-ink);
     }
 
     &:hover,
     &.active {
-      background: var(--at-color-bg-grey-transl);
+      background: var(--atk-admin-surface-muted);
     }
 
     .icon {
@@ -124,7 +112,7 @@ $colorMain: #8ecee2;
   height: 50px;
   margin: 0 auto;
   padding: 0 8px;
-  border-bottom: 1px solid var(--at-color-border);
+  border-bottom: 1px solid var(--atk-admin-border);
 
   .item-wrap {
     margin-bottom: -2px;
@@ -160,9 +148,9 @@ $colorMain: #8ecee2;
     }
 
     .item {
-      border-radius: 4px;
+      border-radius: 999px;
       padding: 5px 16px;
-      transition: background 0.2s;
+      transition: background-color 0.2s ease;
 
       .icon {
         width: 20px;
