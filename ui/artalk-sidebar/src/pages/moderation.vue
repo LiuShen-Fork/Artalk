@@ -216,21 +216,20 @@ onMounted(() => {
 
 <template>
   <div class="moderation-page admin-page">
-    <section class="page-head admin-page-head">
-      <div>
-        <div class="admin-eyebrow">Moderation</div>
-        <h1>{{ t('moderation') }}</h1>
-        <p>{{ t('moderationIntro') }}</p>
-      </div>
-      <div class="head-actions">
+    <AdminPageHeader
+      eyebrow="Moderation"
+      :title="t('moderation')"
+      :description="t('moderationIntro')"
+    >
+      <template #actions>
         <button class="admin-button danger" :disabled="clearing || !total" @click="clearLogs">
           {{ clearing ? t('refreshing') : t('moderationClear') }}
         </button>
         <button class="admin-button" :disabled="loading" @click="fetchLogs">
           {{ loading ? t('refreshing') : t('refresh') }}
         </button>
-      </div>
-    </section>
+      </template>
+    </AdminPageHeader>
 
     <section class="log-panel admin-panel">
       <div class="log-summary">
@@ -301,84 +300,6 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-.moderation-page {
-  padding: 24px 28px 70px;
-}
-
-.page-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  margin: 2px 0 18px;
-  padding: 22px 24px;
-  border: 1px solid var(--at-color-border);
-  border-radius: 8px;
-  background: var(--at-color-bg);
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
-
-  h1 {
-    margin: 4px 0 8px;
-    font-size: 26px;
-  }
-
-  p {
-    margin: 0;
-    color: var(--at-color-sub);
-  }
-
-}
-
-.head-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-button {
-  border: 1px solid var(--at-color-border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  background: var(--at-color-bg);
-  color: var(--at-color-font);
-  font: inherit;
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-  }
-}
-
-.refresh-btn {
-  border-color: rgba(54, 171, 207, 0.42);
-  color: var(--at-color-main);
-}
-
-.clear-btn,
-.delete-btn {
-  border-color: rgba(170, 70, 70, 0.34);
-  color: #9b3f3f;
-}
-
-.approve-comment-btn {
-  border-color: rgba(73, 125, 89, 0.34);
-  color: #3f704d;
-}
-
-.delete-comment-btn {
-  border-color: rgba(170, 70, 70, 0.34);
-  color: #9b3f3f;
-}
-
-.eyebrow {
-  color: var(--at-color-main);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
 .log-panel {
   border-top: 1px solid var(--at-color-border);
 }
@@ -404,30 +325,30 @@ button {
   background: var(--at-color-bg);
 
   &.replace {
-    border-left-color: #5b8a65;
+    border-left-color: var(--atk-admin-sage);
   }
 
   &.block {
-    border-left-color: #a87a36;
+    border-left-color: var(--atk-admin-terracotta);
   }
 
   &.error {
-    border-left-color: #a95555;
+    border-left-color: var(--atk-admin-danger);
   }
 
   &.replace .status-icon {
-    background: rgba(91, 138, 101, 0.12);
-    color: #4c7656;
+    background: var(--atk-admin-sage-soft);
+    color: var(--atk-admin-sage);
   }
 
   &.block .status-icon {
-    background: rgba(168, 122, 54, 0.14);
-    color: #8b6329;
+    background: rgba(168, 95, 72, 0.12);
+    color: var(--atk-admin-terracotta);
   }
 
   &.error .status-icon {
-    background: rgba(169, 85, 85, 0.12);
-    color: #964848;
+    background: rgba(157, 81, 71, 0.12);
+    color: var(--atk-admin-danger);
   }
 }
 
@@ -513,27 +434,13 @@ button {
     padding: 16px 14px 70px;
   }
 
-  .page-head {
-    display: block;
-    padding: 18px;
-  }
-
-  .head-actions {
-    margin-top: 16px;
-  }
 }
 
-.moderation-page .page-head,
 .moderation-page .log-panel,
 .moderation-page .log-item {
   border-color: var(--atk-admin-border);
   background: var(--atk-admin-surface);
   box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
-}
-
-.moderation-page .page-head {
-  background: var(--atk-admin-surface-muted);
-  box-shadow: 0 2px 8px rgba(72, 60, 46, 0.05);
 }
 
 .moderation-page .log-panel {

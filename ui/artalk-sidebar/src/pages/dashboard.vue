@@ -101,16 +101,13 @@ onMounted(() => {
 
 <template>
   <div class="dashboard-page admin-page">
-    <section class="dashboard-head admin-page-head">
-      <div>
-        <div class="admin-eyebrow">Overview</div>
-        <h1>总览</h1>
-        <p>最近 90 天趋势、评论增长、用户增长和审核概况。</p>
-      </div>
-      <button class="admin-button primary" :disabled="loading" @click="fetchDashboard">
-        {{ loading ? '刷新中' : '刷新' }}
-      </button>
-    </section>
+    <AdminPageHeader eyebrow="Overview" title="总览" description="最近 90 天趋势、评论增长、用户增长和审核概况。">
+      <template #actions>
+        <button class="admin-button primary" :disabled="loading" @click="fetchDashboard">
+          {{ loading ? '刷新中' : '刷新' }}
+        </button>
+      </template>
+    </AdminPageHeader>
 
     <section class="metric-grid">
       <div class="metric-card admin-panel primary">
@@ -224,55 +221,6 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-.dashboard-page {
-  padding: 24px 28px 70px;
-}
-
-.hero-panel,
-.panel,
-.metric-card {
-  border: 1px solid var(--at-color-border);
-  background: var(--at-color-bg);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-}
-
-.hero-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 28px;
-  border-radius: 10px;
-  background: var(--at-color-bg);
-
-  h1 {
-    margin: 4px 0 8px;
-    font-size: 30px;
-  }
-
-  p {
-    margin: 0;
-    color: var(--at-color-sub);
-  }
-}
-
-.eyebrow {
-  color: var(--at-color-main);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.refresh-btn {
-  border: 0;
-  background: var(--atk-admin-sage);
-  color: #fff;
-  border-radius: 6px;
-  padding: 9px 18px;
-  cursor: pointer;
-}
-
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -535,30 +483,21 @@ onMounted(() => {
     padding: 16px 14px 70px;
   }
 
-  .hero-panel,
   .content-grid {
     display: block;
-  }
-
-  .refresh-btn {
-    margin-top: 18px;
   }
 
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .panel {
+  .dashboard-panel {
     margin-bottom: 14px;
   }
 }
 
 .dashboard-page {
   color: var(--atk-admin-ink);
-}
-
-.dashboard-page .dashboard-head {
-  margin-bottom: 18px;
 }
 
 .dashboard-page .metric-card,

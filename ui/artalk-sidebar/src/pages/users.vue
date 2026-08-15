@@ -236,7 +236,7 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
             }
 
             &.in-conf {
-              background: #89b1a5;
+              background: var(--atk-admin-sage);
             }
           }
         }
