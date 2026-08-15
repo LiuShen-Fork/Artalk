@@ -122,7 +122,7 @@ const versionInfo = computed(() => {
   justify-content: center;
   top: 0;
   left: 0;
-  background: var(--at-color-bg);
+  background: var(--atk-admin-canvas);
   width: 100%;
   height: 100%;
 
@@ -133,12 +133,12 @@ const versionInfo = computed(() => {
     height: 50px;
     margin-bottom: 50px;
     margin-top: -50px;
-    border-radius: 2px;
+    border-radius: 50%;
   }
 
   .copyright {
     font-size: 13px;
-    color: var(--at-color-meta);
+    color: var(--atk-admin-subtle);
     position: fixed;
     height: 30px;
     bottom: 0;
@@ -154,22 +154,25 @@ const versionInfo = computed(() => {
 
   input {
     display: block;
-    border: 0;
-    background: transparent;
-    border-bottom: 1px solid var(--at-color-border);
-    padding: 0 20px;
-    line-height: 40px;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: 999px;
+    color: var(--atk-admin-ink);
+    background: var(--atk-admin-surface);
+    padding: 0 16px;
+    line-height: 42px;
     margin-bottom: 10px;
 
     &:focus {
-      outline: none;
+      outline: 2px solid rgba(113, 128, 100, 0.35);
+      outline-offset: 1px;
+      border-color: var(--atk-admin-sage);
     }
   }
 
   button {
-    color: #fff;
-    background: #6e8392;
-    border-radius: 2px;
+    color: var(--atk-admin-surface);
+    background: var(--atk-admin-ink);
+    border-radius: 999px;
     cursor: pointer;
     border: 0;
     line-height: 35px;
@@ -178,7 +181,7 @@ const versionInfo = computed(() => {
     display: block;
 
     &:hover {
-      opacity: 0.95;
+      background: var(--atk-admin-sage);
     }
   }
 
@@ -210,7 +213,7 @@ const versionInfo = computed(() => {
   position: fixed;
   width: 100%;
   height: 100%;
-  background: var(--at-color-bg-transl);
+  background: rgba(63, 59, 53, 0.24);
 }
 
 .user-selector {
@@ -219,9 +222,11 @@ const versionInfo = computed(() => {
   left: 50%;
   top: 43.5%;
   transform: translate(-50%, -50%);
-  background: var(--at-color-bg);
-  border: 1px solid var(--at-color-border);
-  padding-bottom: 10px;
+  background: var(--atk-admin-surface);
+  border: 1px solid var(--atk-admin-border);
+  border-radius: var(--atk-admin-radius);
+  padding: 10px;
+  box-shadow: 0 6px 16px rgba(72, 60, 46, 0.08);
   width: 280px;
 
   & > .text {
@@ -233,11 +238,11 @@ const versionInfo = computed(() => {
     & > .item {
       cursor: pointer;
       padding: 10px 20px;
-      transition: border 0.3s ease;
-      border-left: 2px solid transparent;
+      transition: background-color 0.2s ease;
+      border-radius: 999px;
 
       &:hover {
-        border-left: 2px solid #6e8392;
+        background: var(--atk-admin-surface-muted);
       }
     }
   }

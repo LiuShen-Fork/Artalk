@@ -161,44 +161,51 @@ const artransferToolHint = computed(() =>
     :req-params="importTaskParams"
     @back="importTaskDone()"
   />
-  <div v-show="!importTaskStarted" class="atk-form">
-    <div class="atk-label atk-data-file-label">Artrans {{ t('dataFile') }}</div>
-    <FileUploader :api-url="uploadApiURL" @done="fileUploaded">
-      <template #tip>
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <span v-html="artransferToolHint" />
-      </template>
-      <template #done-msg>
-        {{ t('uploadReadyToImport') }}
-      </template>
-    </FileUploader>
-    <div class="atk-label">{{ t('targetSiteName') }}</div>
-    <input
-      v-model="importParams.siteName"
-      type="text"
-      name="AtkSiteName"
-      :placeholder="t('inputHint')"
-      autocomplete="off"
-    />
-    <div class="atk-label">{{ t('targetSiteURL') }}</div>
-    <input
-      v-model="importParams.siteURL"
-      type="text"
-      name="AtkSiteURL"
-      :placeholder="t('inputHint')"
-      autocomplete="off"
-    />
-    <div class="atk-label">{{ t('payload') }} ({{ t('optional') }})</div>
-    <textarea v-model="importParams.payload" name="AtkPayload"></textarea>
-    <span class="atk-desc">
-      <a href="https://artalk.js.org/guide/transfer.html" target="_blank">
-        {{ t('moreDetails') }}
-      </a>
-    </span>
-    <button class="atk-btn" name="AtkSubmit" @click="startImportTask()">
-      {{ t('import') }}
-    </button>
+  <div v-show="!importTaskStarted" class="transfer-page admin-page">
+    <AdminPageHeader :title="t('transfer')" />
+    <div class="atk-form admin-panel admin-form">
+      <div class="atk-label atk-data-file-label">Artrans {{ t('dataFile') }}</div>
+      <FileUploader :api-url="uploadApiURL" @done="fileUploaded">
+        <template #tip>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span v-html="artransferToolHint" />
+        </template>
+        <template #done-msg>
+          {{ t('uploadReadyToImport') }}
+        </template>
+      </FileUploader>
+      <div class="atk-label">{{ t('targetSiteName') }}</div>
+      <input
+        v-model="importParams.siteName"
+        type="text"
+        name="AtkSiteName"
+        :placeholder="t('inputHint')"
+        autocomplete="off"
+      />
+      <div class="atk-label">{{ t('targetSiteURL') }}</div>
+      <input
+        v-model="importParams.siteURL"
+        type="text"
+        name="AtkSiteURL"
+        :placeholder="t('inputHint')"
+        autocomplete="off"
+      />
+      <div class="atk-label">{{ t('payload') }} ({{ t('optional') }})</div>
+      <textarea v-model="importParams.payload" name="AtkPayload"></textarea>
+      <span class="atk-desc">
+        <a href="https://artalk.js.org/guide/transfer.html" target="_blank">
+          {{ t('moreDetails') }}
+        </a>
+      </span>
+      <button class="atk-btn" name="AtkSubmit" @click="startImportTask()">
+        {{ t('import') }}
+      </button>
+    </div>
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.admin-form {
+  max-width: 760px;
+}
+</style>

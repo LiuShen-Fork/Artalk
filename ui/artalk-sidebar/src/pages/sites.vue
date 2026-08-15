@@ -192,7 +192,7 @@ function onSiteItemRemove(id: number) {
         height: 65px;
         width: 65px;
         line-height: 65px;
-        background: #5b6f7e;
+        background: var(--atk-admin-sage);
         color: #fff;
         border-radius: 4px;
       }

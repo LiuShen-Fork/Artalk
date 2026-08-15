@@ -41,7 +41,7 @@ body {
   --atk-admin-danger: #df8e82;
 
   .atk-comment-wrap.atk-openable:hover {
-    background: #1e1e1e;
+    background: var(--atk-admin-surface-muted);
   }
 }
 
@@ -162,6 +162,80 @@ body {
       background: rgba(157, 81, 71, 0.08);
     }
   }
+}
+
+.atk-sidebar .atk-form {
+  color: var(--atk-admin-ink);
+
+  .atk-label {
+    color: var(--atk-admin-ink);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .atk-desc {
+    color: var(--atk-admin-subtle);
+  }
+
+  input,
+  textarea,
+  select {
+    border: 1px solid var(--atk-admin-border);
+    border-radius: 9px;
+    color: var(--atk-admin-ink);
+    background: var(--atk-admin-surface);
+
+    &:focus {
+      border-color: var(--atk-admin-sage);
+    }
+  }
+
+  input,
+  select {
+    min-height: 38px;
+  }
+
+  textarea {
+    padding: 9px 11px;
+  }
+
+  .atk-btn,
+  button[type='submit'] {
+    width: auto;
+    min-width: 116px;
+    min-height: 38px;
+    margin: 0;
+    border-color: var(--atk-admin-ink);
+    border-radius: 999px;
+    color: var(--atk-admin-surface);
+    background: var(--atk-admin-ink);
+
+    &:hover {
+      border-color: var(--atk-admin-sage);
+      background: var(--atk-admin-sage);
+    }
+  }
+}
+
+.atk-sidebar .user-editor-layer,
+.atk-sidebar .atk-page-edit-layer,
+.atk-sidebar .atk-site-add,
+.atk-sidebar .atk-site-edit {
+  background: var(--atk-admin-canvas);
+  color: var(--atk-admin-ink);
+}
+
+.atk-sidebar .user-editor-layer .header,
+.atk-sidebar .atk-site-add > .atk-header,
+.atk-sidebar .atk-site-edit > .atk-header {
+  background: var(--atk-admin-surface);
+  border-bottom: 1px solid var(--atk-admin-border);
+}
+
+.atk-sidebar .user-editor-layer .user-log {
+  background: var(--atk-admin-surface-muted);
+  border: 1px solid var(--atk-admin-border);
+  border-radius: var(--atk-admin-radius-sm);
 }
 
 @media (max-width: 850px) {

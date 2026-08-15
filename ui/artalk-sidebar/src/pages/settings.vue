@@ -117,13 +117,7 @@ function save() {
       <LoadingLayer v-if="isLoading" />
     </div>
     <div v-if="tree" class="settings-layout">
-      <section class="settings-head admin-page-head">
-        <div>
-          <div class="admin-eyebrow">Config</div>
-          <h1>{{ t('settings') }}</h1>
-          <p>{{ t('settingNotice') }}</p>
-        </div>
-      </section>
+      <AdminPageHeader eyebrow="Config" :title="t('settings')" :description="t('settingNotice')" />
 
       <aside class="settings-index admin-panel">
         <div class="settings-index-title">{{ t('config') }}</div>
@@ -224,32 +218,8 @@ function save() {
     align-items: start;
   }
 
-  .settings-head {
+  :deep(.admin-page-head) {
     grid-column: 1 / -1;
-    border: 1px solid var(--at-color-border);
-    background: var(--at-color-bg);
-    border-radius: 10px;
-    padding: 24px 26px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-
-    h1 {
-      margin: 4px 0 8px;
-      font-size: 28px;
-    }
-
-    p {
-      margin: 0;
-      color: var(--at-color-sub);
-      font-size: 13px;
-    }
-  }
-
-  .eyebrow {
-    color: var(--at-color-main);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0;
   }
 
   .settings-index,
@@ -368,17 +338,11 @@ function save() {
 }
 
 .settings {
-  .settings-head,
   .settings-index,
   .settings-content {
     border-color: var(--atk-admin-border);
     background: var(--atk-admin-surface);
     box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
-  }
-
-  .settings-head {
-    background: var(--atk-admin-surface-muted);
-    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.05);
   }
 
   .settings-index,
