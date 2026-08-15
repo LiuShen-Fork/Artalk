@@ -86,7 +86,7 @@ const hiddenNodes = ['admin_users']
         content: '';
         height: 10px;
         width: 10px;
-        background: #8ecee2;
+        background: var(--atk-admin-sage);
         border-radius: 2px;
       }
     }

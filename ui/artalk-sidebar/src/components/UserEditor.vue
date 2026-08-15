@@ -63,7 +63,7 @@ function submit() {
 
   // The default badge color
   if (editUser.value!.badge_name !== '' && editUser.value!.badge_color === '') {
-    editUser.value!.badge_color = '#0083ff'
+    editUser.value!.badge_color = '#a85f48'
   }
 
   if (isCreateMode.value) {

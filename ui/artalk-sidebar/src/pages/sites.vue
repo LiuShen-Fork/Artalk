@@ -88,8 +88,8 @@ function onSiteItemRemove(id: number) {
 </script>
 
 <template>
-  <div class="atk-site-list">
-    <div class="atk-header">
+  <div class="atk-site-list admin-page">
+    <div class="atk-header admin-panel">
       <div class="atk-title">{{ t('siteCount', { count: sites.length }) }}</div>
       <div class="atk-actions">
         <div class="atk-item atk-site-add-btn" @click="create()">
@@ -348,6 +348,83 @@ function onSiteItemRemove(id: number) {
     .atk-form {
       padding: 20px 40px;
     }
+  }
+}
+
+.atk-site-list {
+  & > .atk-header {
+    margin-bottom: 14px;
+    padding: 16px 18px;
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+    border-radius: var(--atk-admin-radius);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .atk-title {
+      color: var(--atk-admin-ink);
+      font-family: Georgia, 'Songti SC', 'STSong', serif;
+      font-size: 19px;
+    }
+
+    .atk-actions .atk-item {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: 50%;
+
+      &:hover {
+        background: var(--atk-admin-sage-soft);
+      }
+    }
+  }
+
+  .atk-site-rows-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+
+    .atk-site-row {
+      display: contents;
+      padding: 0;
+    }
+
+    .atk-site-item {
+      min-height: 152px;
+      justify-content: center;
+      padding: 14px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: var(--atk-admin-radius);
+      background: var(--atk-admin-surface);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+
+      .atk-site-logo {
+        margin: 0 0 12px;
+        background: var(--atk-admin-sage);
+        border-radius: 50%;
+      }
+
+      .atk-site-name {
+        color: var(--atk-admin-subtle);
+      }
+
+      &.atk-active,
+      &:hover {
+        margin-top: 0;
+        background: var(--atk-admin-surface-muted);
+        border-color: var(--atk-admin-sage);
+        border-radius: var(--atk-admin-radius);
+
+        .atk-site-name {
+          color: var(--atk-admin-ink);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  .atk-site-list .atk-site-rows-wrap {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

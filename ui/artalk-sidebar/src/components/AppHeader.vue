@@ -68,7 +68,7 @@ const logout = () => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-bottom: 1px solid var(--at-color-border);
+  border-bottom: 1px solid var(--atk-admin-border);
 
   @media (min-width: 1024px) {
     background: var(--at-sidebar-header-bg);
@@ -85,11 +85,11 @@ const logout = () => {
 
     .site {
       user-select: none;
-      color: #fff;
-      background: #697182;
+      color: var(--atk-admin-surface);
+      background: var(--atk-admin-sage);
       height: 30px;
       width: 30px;
-      border-radius: 2px;
+      border-radius: 50%;
       text-align: center;
       line-height: 30px;
       font-size: 13px;
@@ -100,15 +100,15 @@ const logout = () => {
 
       &:hover,
       &.active {
-        background: var(--at-color-bg-grey);
-        border-right: 1px solid var(--at-color-border);
+        background: var(--atk-admin-surface-muted);
+        border-right: 1px solid var(--atk-admin-border);
       }
 
       &::after {
         content: '';
         margin-left: 10px;
         vertical-align: middle;
-        border-top: 5px solid #747474;
+        border-top: 5px solid var(--atk-admin-subtle);
         border-left: 3px solid transparent;
         border-right: 3px solid transparent;
         margin-top: -1px;
@@ -119,12 +119,12 @@ const logout = () => {
     img {
       height: 30px;
       width: 30px;
-      border-radius: 2px;
-      background: #697182;
+      border-radius: 50%;
+      background: var(--atk-admin-sage);
       text-align: center;
       line-height: 30px;
       font-size: 13px;
-      color: #fff;
+      color: var(--atk-admin-surface);
     }
   }
 
@@ -136,7 +136,7 @@ const logout = () => {
     .text {
       display: inline-block;
       position: relative;
-      color: var(--at-color-deep);
+      color: var(--atk-admin-ink);
       font-size: 20px;
 
       &.show-mobile {
@@ -168,16 +168,16 @@ const logout = () => {
         left: 0;
         width: 100%;
         height: 6px;
-        background: #0083ff;
+        background: var(--atk-admin-sage);
         opacity: 0.4;
       }
     }
 
     .artalk-logo {
-      border-radius: 2px;
+      border-radius: 9px;
       height: 40px;
       width: 40px;
-      background: #697182;
+      background: var(--atk-admin-sage);
       text-align: center;
       line-height: 30px;
       font-size: 13px;

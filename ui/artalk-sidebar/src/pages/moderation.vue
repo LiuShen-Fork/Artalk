@@ -215,24 +215,24 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="moderation-page">
-    <section class="page-head">
+  <div class="moderation-page admin-page">
+    <section class="page-head admin-page-head">
       <div>
-        <div class="eyebrow">Moderation</div>
+        <div class="admin-eyebrow">Moderation</div>
         <h1>{{ t('moderation') }}</h1>
         <p>{{ t('moderationIntro') }}</p>
       </div>
       <div class="head-actions">
-        <button class="clear-btn" :disabled="clearing || !total" @click="clearLogs">
+        <button class="admin-button danger" :disabled="clearing || !total" @click="clearLogs">
           {{ clearing ? t('refreshing') : t('moderationClear') }}
         </button>
-        <button class="refresh-btn" :disabled="loading" @click="fetchLogs">
+        <button class="admin-button" :disabled="loading" @click="fetchLogs">
           {{ loading ? t('refreshing') : t('refresh') }}
         </button>
       </div>
     </section>
 
-    <section class="log-panel">
+    <section class="log-panel admin-panel">
       <div class="log-summary">
         {{ t('moderationSummary', { total, count: logs.length }) }}
       </div>
@@ -254,7 +254,7 @@ onMounted(() => {
               <div class="row-actions">
                 <button
                   v-if="item.comment_pending"
-                  class="approve-comment-btn"
+                  class="admin-button approve-comment-btn"
                   :disabled="!canOperateComment(item) || !!commentAction"
                   @click="approveComment(item)"
                 >
@@ -265,7 +265,7 @@ onMounted(() => {
                   }}
                 </button>
                 <button
-                  class="delete-comment-btn"
+                  class="admin-button danger delete-comment-btn"
                   :disabled="!canOperateComment(item) || !!commentAction"
                   @click="deleteComment(item)"
                 >
@@ -276,7 +276,7 @@ onMounted(() => {
                   }}
                 </button>
                 <button
-                  class="delete-btn"
+                  class="admin-button delete-btn"
                   :disabled="deletingID === item.id"
                   @click="deleteLog(item)"
                 >
@@ -521,5 +521,92 @@ button {
   .head-actions {
     margin-top: 16px;
   }
+}
+
+.moderation-page .page-head,
+.moderation-page .log-panel,
+.moderation-page .log-item {
+  border-color: var(--atk-admin-border);
+  background: var(--atk-admin-surface);
+  box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+}
+
+.moderation-page .page-head {
+  background: var(--atk-admin-surface-muted);
+  box-shadow: 0 2px 8px rgba(72, 60, 46, 0.05);
+}
+
+.moderation-page .log-panel {
+  overflow: hidden;
+  border-top: 1px solid var(--atk-admin-border);
+  border-radius: var(--atk-admin-radius);
+}
+
+.moderation-page .log-summary {
+  padding: 14px 16px;
+  color: var(--atk-admin-subtle);
+  background: var(--atk-admin-surface-muted);
+}
+
+.moderation-page .log-list {
+  gap: 0;
+}
+
+.moderation-page .log-item {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--atk-admin-border);
+  border-left: 0;
+}
+
+.moderation-page .log-item:last-child {
+  border-bottom: 0;
+}
+
+.moderation-page .log-item.replace,
+.moderation-page .log-item.block,
+.moderation-page .log-item.error {
+  border-left: 0;
+}
+
+.moderation-page .log-item.replace .status-icon {
+  background: var(--atk-admin-sage-soft);
+  color: var(--atk-admin-sage);
+}
+
+.moderation-page .log-item.block .status-icon {
+  background: rgba(168, 95, 72, 0.12);
+  color: var(--atk-admin-terracotta);
+}
+
+.moderation-page .log-item.error .status-icon {
+  background: rgba(157, 81, 71, 0.12);
+  color: var(--atk-admin-danger);
+}
+
+.moderation-page .log-main p,
+.moderation-page .meta,
+.moderation-page .log-title span,
+.moderation-page .log-title em,
+.moderation-page .empty {
+  color: var(--atk-admin-subtle);
+}
+
+.moderation-page .log-main blockquote,
+.moderation-page .log-title span,
+.moderation-page .log-title em {
+  border-color: var(--atk-admin-border);
+  background: var(--atk-admin-surface-muted);
+}
+
+.moderation-page .approve-comment-btn {
+  border-color: var(--atk-admin-sage);
+  color: var(--atk-admin-sage);
+}
+
+.moderation-page .delete-btn {
+  min-height: 32px;
+  padding: 5px 10px;
+  color: var(--atk-admin-subtle);
 }
 </style>

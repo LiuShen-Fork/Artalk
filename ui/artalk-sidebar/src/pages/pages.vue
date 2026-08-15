@@ -177,7 +177,7 @@ function openPage(url: string) {
 </script>
 
 <template>
-  <div class="atk-page-list-wrap">
+  <div class="atk-page-list-wrap admin-page">
     <div class="atk-header-action-bar" :class="{ bordered: showActBarBorder }">
       <span class="atk-update-all-title-btn" @click="refreshAllPages()">
         <i class="atk-icon atk-icon-sync" :class="{ 'atk-rotate': refreshBtn.isRun }"></i>
@@ -192,7 +192,7 @@ function openPage(url: string) {
         <span class="atk-text">{{ t('cacheWarm') }}</span>
       </span>
     </div>
-    <div class="atk-page-list">
+    <div class="atk-page-list admin-panel">
       <div v-for="page in pages" :key="page.id" class="atk-page-item">
         <div class="atk-page-main">
           <div class="atk-title" @click="openPage(page.url)">
@@ -266,6 +266,74 @@ function openPage(url: string) {
         background: var(--at-color-bg-grey);
       }
     }
+  }
+}
+
+.atk-page-list-wrap {
+  .atk-header-action-bar {
+    position: static;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+
+    &.bordered {
+      padding-bottom: 0;
+      border: 0;
+    }
+
+    & > span {
+      padding: 7px 12px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: 999px;
+      color: var(--atk-admin-ink);
+      background: var(--atk-admin-surface);
+
+      &:hover {
+        background: var(--atk-admin-surface-muted);
+      }
+    }
+  }
+
+  .atk-page-list {
+    overflow: hidden;
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+    border-radius: var(--atk-admin-radius);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .atk-page-item {
+      min-height: 96px;
+      border-color: var(--atk-admin-border);
+    }
+
+    .atk-page-main {
+      padding: 18px 20px;
+
+      .atk-title {
+        color: var(--atk-admin-ink);
+        font-size: 18px;
+      }
+
+      .atk-sub {
+        color: var(--atk-admin-subtle);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .atk-page-list-wrap .atk-header-action-bar {
+    flex-wrap: wrap;
+  }
+
+  .atk-page-list-wrap .atk-header-action-bar > span {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 }
 

@@ -203,11 +203,11 @@ defineExpose({ prev, next, reset })
   & > .atk-input {
     font-size: 15px;
     height: 30px;
-    border: 1px solid var(--at-color-border);
-    border-radius: 3px;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: 999px;
     padding: 0 5px;
     text-align: center;
-    background: var(--at-color-bg);
+    background: var(--atk-admin-surface);
   }
 
   & > .atk-btn {
@@ -219,7 +219,7 @@ defineExpose({ prev, next, reset })
     align-items: center;
 
     &:hover {
-      background: var(--at-color-bg-grey);
+      background: var(--atk-admin-surface-muted);
     }
 
     &.atk-disabled {
@@ -234,13 +234,13 @@ defineExpose({ prev, next, reset })
 
   & > .atk-input {
     background: transparent;
-    color: var(--at-color-font);
+    color: var(--atk-admin-ink);
     font-size: 18px;
     width: 60px;
     outline: none;
 
     &:focus {
-      border-color: var(--at-color-main);
+      border-color: var(--atk-admin-sage);
     }
   }
 

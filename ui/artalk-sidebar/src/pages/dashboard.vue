@@ -100,25 +100,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="dashboard-page">
-    <section class="hero-panel">
+  <div class="dashboard-page admin-page">
+    <section class="dashboard-head admin-page-head">
       <div>
-        <div class="eyebrow">Overview</div>
+        <div class="admin-eyebrow">Overview</div>
         <h1>总览</h1>
         <p>最近 90 天趋势、评论增长、用户增长和审核概况。</p>
       </div>
-      <button class="refresh-btn" :disabled="loading" @click="fetchDashboard">
+      <button class="admin-button primary" :disabled="loading" @click="fetchDashboard">
         {{ loading ? '刷新中' : '刷新' }}
       </button>
     </section>
 
     <section class="metric-grid">
-      <div class="metric-card primary">
+      <div class="metric-card admin-panel primary">
         <span>累计 PV</span>
         <strong>{{ formatNumber(data?.pv.total) }}</strong>
         <small>保留页面 PV 的永久累计记录</small>
       </div>
-      <div class="metric-card">
+      <div class="metric-card admin-panel">
         <span>评论</span>
         <strong>{{ formatNumber(data?.comments.total) }}</strong>
         <small>
@@ -127,7 +127,7 @@ onMounted(() => {
           }}
         </small>
       </div>
-      <div class="metric-card">
+      <div class="metric-card admin-panel">
         <span>用户</span>
         <strong>{{ formatNumber(data?.users.total) }}</strong>
         <small>
@@ -136,7 +136,7 @@ onMounted(() => {
           }}
         </small>
       </div>
-      <div class="metric-card">
+      <div class="metric-card admin-panel">
         <span>待审评论</span>
         <strong>{{ formatNumber(data?.pending_comments) }}</strong>
         <small>当前需要人工处理</small>
@@ -144,7 +144,7 @@ onMounted(() => {
     </section>
 
     <section class="content-grid">
-      <div class="panel trend-panel">
+      <div class="dashboard-panel admin-panel trend-panel">
         <div class="panel-head">
           <div>
             <h2>90 天趋势</h2>
@@ -163,7 +163,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="panel moderation-panel">
+      <div class="dashboard-panel admin-panel moderation-panel">
         <div class="panel-head">
           <div>
             <h2>审核概况</h2>
@@ -201,7 +201,7 @@ onMounted(() => {
       </div>
     </section>
 
-    <section class="panel top-pages">
+    <section class="dashboard-panel admin-panel top-pages">
       <div class="panel-head">
         <div>
           <h2>热门页面</h2>
@@ -266,7 +266,7 @@ onMounted(() => {
 
 .refresh-btn {
   border: 0;
-  background: #36abcf;
+  background: var(--atk-admin-sage);
   color: #fff;
   border-radius: 6px;
   padding: 9px 18px;
@@ -298,7 +298,7 @@ onMounted(() => {
   }
 
   &.primary {
-    border-color: rgba(54, 171, 207, 0.35);
+    border-color: var(--atk-admin-sage);
   }
 }
 
@@ -361,11 +361,11 @@ onMounted(() => {
   border-radius: 4px 4px 0 0;
 
   &.comments {
-    background: #36abcf;
+    background: var(--atk-admin-sage);
   }
 
   &.users {
-    background: #f59f00;
+    background: var(--atk-admin-terracotta);
   }
 }
 
@@ -384,11 +384,11 @@ onMounted(() => {
     margin-right: 6px;
 
     &.comments {
-      background: #36abcf;
+      background: var(--atk-admin-sage);
     }
 
     &.users {
-      background: #f59f00;
+      background: var(--atk-admin-terracotta);
     }
   }
 }
@@ -417,7 +417,7 @@ onMounted(() => {
 
   a:hover {
     transform: translateY(-1px);
-    background: rgba(54, 171, 207, 0.08);
+    background: var(--atk-admin-sage-soft);
   }
 
   .review-icon {
@@ -433,18 +433,18 @@ onMounted(() => {
   }
 
   .ok .review-icon {
-    background: rgba(47, 158, 68, 0.12);
-    color: #2f9e44;
+    background: var(--atk-admin-sage-soft);
+    color: var(--atk-admin-sage);
   }
 
   .warn .review-icon {
-    background: rgba(240, 140, 0, 0.14);
-    color: #f08c00;
+    background: rgba(168, 95, 72, 0.12);
+    color: var(--atk-admin-terracotta);
   }
 
   .bad .review-icon {
-    background: rgba(224, 49, 49, 0.12);
-    color: #e03131;
+    background: rgba(157, 81, 71, 0.12);
+    color: var(--atk-admin-danger);
   }
 
   b,
@@ -485,15 +485,15 @@ onMounted(() => {
   flex: none;
 
   &.pass {
-    background: #2f9e44;
+    background: var(--atk-admin-sage);
   }
 
   &.block {
-    background: #f08c00;
+    background: var(--atk-admin-terracotta);
   }
 
   &.error {
-    background: #e03131;
+    background: var(--atk-admin-danger);
   }
 }
 
@@ -551,5 +551,98 @@ onMounted(() => {
   .panel {
     margin-bottom: 14px;
   }
+}
+
+.dashboard-page {
+  color: var(--atk-admin-ink);
+}
+
+.dashboard-page .dashboard-head {
+  margin-bottom: 18px;
+}
+
+.dashboard-page .metric-card,
+.dashboard-page .dashboard-panel {
+  border-color: var(--atk-admin-border);
+  background: var(--atk-admin-surface);
+  box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+}
+
+.dashboard-page .metric-card {
+  border-radius: var(--atk-admin-radius-sm);
+}
+
+.dashboard-page .metric-card.primary {
+  border-color: var(--atk-admin-sage);
+}
+
+.dashboard-page .metric-card span,
+.dashboard-page .metric-card small,
+.dashboard-page .panel-head p,
+.dashboard-page .legend,
+.dashboard-page .review-row p,
+.dashboard-page .page-row span,
+.dashboard-page .page-row em,
+.dashboard-page .empty {
+  color: var(--atk-admin-subtle);
+}
+
+.dashboard-page .metric-card strong {
+  color: var(--atk-admin-ink);
+}
+
+.dashboard-page .dashboard-panel {
+  border-radius: var(--atk-admin-radius);
+}
+
+.dashboard-page .panel-head a {
+  color: var(--atk-admin-sage);
+}
+
+.dashboard-page .trend-chart,
+.dashboard-page .review-row,
+.dashboard-page .page-row {
+  border-color: var(--atk-admin-border);
+}
+
+.dashboard-page .bar.comments,
+.dashboard-page .legend i.comments,
+.dashboard-page .status-dot.pass {
+  background: var(--atk-admin-sage);
+}
+
+.dashboard-page .bar.users,
+.dashboard-page .legend i.users,
+.dashboard-page .status-dot.block {
+  background: var(--atk-admin-terracotta);
+}
+
+.dashboard-page .status-dot.error {
+  background: var(--atk-admin-danger);
+}
+
+.dashboard-page .review-summary > a {
+  background: var(--atk-admin-surface-muted);
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-page .review-summary a:hover {
+  transform: none;
+  background: var(--atk-admin-sage-soft);
+}
+
+.dashboard-page .review-summary .ok .review-icon {
+  background: var(--atk-admin-sage-soft);
+  color: var(--atk-admin-sage);
+}
+
+.dashboard-page .review-summary .warn .review-icon {
+  background: rgba(168, 95, 72, 0.12);
+  color: var(--atk-admin-terracotta);
+}
+
+.dashboard-page .review-summary .bad .review-icon {
+  background: rgba(157, 81, 71, 0.12);
+  color: var(--atk-admin-danger);
 }
 </style>
