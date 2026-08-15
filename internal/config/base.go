@@ -1,6 +1,6 @@
 package config
 
-//go:generate go run ./meta/gen --format go --locale en --pkg config -o ./cache.go
+//go:generate go run ./meta/gen --format go --locale zh-CN --pkg config -o ./cache.go
 
 import (
 	"fmt"
@@ -168,10 +168,9 @@ func (conf *Config) normalPatch() {
 // 多语言配置修补
 func (conf *Config) i18nPatch() {
 	if conf.Locale == "" {
-		conf.Locale = "en"
+		conf.Locale = "zh-CN"
 
-		// zh-CN default patch (for 历史兼容)
-		// 判断配置文件中是否有中文，若有中文则将 locale 设置为 zh-CN
+		// Keep old configuration files without an explicit locale in Simplified Chinese.
 		if confRaw, err := os.ReadFile(conf.GetCfgFileLoaded()); err == nil {
 			containsHan := false
 			for _, runeValue := range string(confRaw) {

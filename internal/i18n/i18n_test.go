@@ -36,7 +36,7 @@ func TestT(t *testing.T) {
 func TestLoad(t *testing.T) {
 	t.Run("DefaultLocale", func(t *testing.T) {
 		Load("", func(locale string) ([]byte, error) {
-			assert.Equal(t, locale, "en") // default is en locale
+			assert.Equal(t, locale, "zh-CN") // default is zh-CN locale
 			return []byte("hello: Hello"), nil
 		})
 		assert.Equal(t, map[string]string{"hello": "Hello"}, Locales)
@@ -52,7 +52,7 @@ func TestLoad(t *testing.T) {
 
 	t.Run("InvalidLocale", func(t *testing.T) {
 		Load("xxxx", func(locale string) ([]byte, error) {
-			if locale == "en" {
+			if locale == "zh-CN" {
 				return []byte("Bonjour: Hello"), nil
 			}
 

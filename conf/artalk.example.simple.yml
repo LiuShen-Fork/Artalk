@@ -2,7 +2,7 @@ host: "0.0.0.0"
 port: 23366
 app_key: ""
 debug: false
-locale: en
+locale: zh-CN
 timezone: Asia/Shanghai
 site_default: Default Site
 site_url: ""
