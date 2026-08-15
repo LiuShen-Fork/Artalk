@@ -12,7 +12,10 @@ const CONF_TPL_DEFAULT_PATH = "conf/artalk.example.yml"
 // Template is get config template file with specified locale
 func Template(locale string) string {
 	var filename string
-	if locale == "en" || locale == "" {
+	if locale == "" {
+		locale = "zh-CN"
+	}
+	if locale == "en" {
 		filename = CONF_TPL_DEFAULT_PATH
 	} else {
 		filename = fmt.Sprintf("conf/artalk.example.%s.yml", locale)

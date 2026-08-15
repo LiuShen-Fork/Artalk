@@ -20,7 +20,7 @@ func TestI18nPatch(t *testing.T) {
 		})
 	}
 
-	test("", "en")
+	test("", "zh-CN")
 	test("en", "en")
 	test("en-US", "en")
 
