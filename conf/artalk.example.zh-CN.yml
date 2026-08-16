@@ -137,7 +137,7 @@ moderator:
   ai:
     # 启用 AI 内容审核
     enabled: false
-    # AI 接口类型 ["responses", "chat_completions", "deepseek_json_output"] (responses: OpenAI 兼容 /v1/responses，使用 JSON Schema 强约束；chat_completions: OpenAI 兼容 /v1/chat/completions，使用 JSON Schema 强约束；deepseek_json_output: DeepSeek /v1/chat/completions，使用 JSON Output)
+    # AI 接口类型 ["responses", "chat_completions", "deepseek_json_output"]
     api_type: responses
     # API 基础地址，必须以 /v1 结尾 (例如 "https://api.openai.com/v1")
     base_url: "https://api.openai.com/v1"
@@ -147,7 +147,7 @@ moderator:
     model: ""
     # 最大输出 Token 数 (填 0 时不发送该参数；评论审核通常 256 已足够)
     max_tokens: 256
-    # 关闭模型思考以节省 Token (默认开启；仅当服务商不支持该参数时设为 false)
+    # 思考模式
     disable_thinking: true
     # 审核规则提示词 (Artalk 自动提供结构化 JSON 输出要求，这里不需要编写 Schema)
     prompt: |-

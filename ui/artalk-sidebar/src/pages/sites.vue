@@ -89,14 +89,14 @@ function onSiteItemRemove(id: number) {
 
 <template>
   <div class="atk-site-list admin-page">
-    <div class="atk-header admin-panel">
-      <div class="atk-title">{{ t('siteCount', { count: sites.length }) }}</div>
-      <div class="atk-actions">
-        <div class="atk-item atk-site-add-btn" @click="create()">
-          <i class="atk-icon atk-icon-plus"></i>
-        </div>
-      </div>
-    </div>
+    <AdminPageHeader eyebrow="Sites" :title="t('siteManage')" :description="t('siteCount', { count: sites.length })">
+      <template #actions>
+        <button class="admin-button" type="button" @click="create()">
+          <i class="atk-icon atk-icon-plus" />
+          {{ t('createSite') }}
+        </button>
+      </template>
+    </AdminPageHeader>
     <SiteCreate
       v-if="showSiteCreate"
       :init-val="siteCreateInitVal"
@@ -105,15 +105,6 @@ function onSiteItemRemove(id: number) {
     />
     <div class="atk-site-rows-wrap">
       <template v-for="(ss, i) in sitesGrouped" :key="i">
-        <template v-if="curtEditSite !== null">
-          <SiteEditor
-            v-if="!!ss.includes(curtEditSite)"
-            :site="curtEditSite"
-            @close="curtEditSite = null"
-            @update="onSiteItemUpdate"
-            @remove="onSiteItemRemove"
-          />
-        </template>
         <div class="atk-site-row">
           <div
             v-for="site in ss"
@@ -126,6 +117,13 @@ function onSiteItemRemove(id: number) {
             <div class="atk-site-name">{{ site.name }}</div>
           </div>
         </div>
+        <SiteEditor
+          v-if="curtEditSite !== null && ss.includes(curtEditSite)"
+          :site="curtEditSite"
+          @close="curtEditSite = null"
+          @update="onSiteItemUpdate"
+          @remove="onSiteItemRemove"
+        />
       </template>
     </div>
   </div>
@@ -417,6 +415,91 @@ function onSiteItemRemove(id: number) {
         .atk-site-name {
           color: var(--atk-admin-ink);
         }
+      }
+    }
+  }
+
+  :deep(.atk-site-edit) {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin: 0;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: var(--atk-admin-radius);
+    background: var(--atk-admin-surface);
+    overflow: hidden;
+
+    .atk-header {
+      padding: 20px 24px 10px;
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    .atk-site-info .atk-site-name {
+      font-size: 21px;
+      font-weight: 600;
+
+      &::after {
+        display: none;
+      }
+    }
+
+    .atk-site-info .atk-site-urls {
+      margin-top: 8px;
+      margin-bottom: 0;
+
+      .atk-url-item {
+        margin-right: 6px;
+        padding: 4px 9px;
+        border: 1px solid var(--atk-admin-border);
+        border-radius: 999px;
+        background: var(--atk-admin-surface-muted);
+        color: var(--atk-admin-subtle);
+      }
+    }
+
+    .atk-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+
+      &:hover {
+        background: var(--atk-admin-surface-muted);
+      }
+    }
+
+    .atk-main {
+      align-items: center;
+      padding: 12px 24px 22px;
+    }
+
+    .atk-site-text-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: auto;
+      padding: 0;
+
+      .atk-item {
+        margin: 0;
+        padding: 7px 12px;
+        border: 1px solid var(--atk-admin-border);
+        border-radius: 999px;
+        color: var(--atk-admin-ink);
+
+        &:hover {
+          background: var(--atk-admin-surface-muted);
+        }
+      }
+    }
+
+    .atk-site-btn-actions {
+      margin-left: auto;
+      padding: 0;
+
+      .atk-item {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
       }
     }
   }

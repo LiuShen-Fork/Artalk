@@ -337,9 +337,9 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | Env | Default | Desc | Path |
 | --- | --- | --- | --- |
 | **ATK_MODERATOR_AI_API_KEY** | `""` | API Key (e.g. "sk-...") | moderator.ai.api_key (Moderator > AI content moderation > API Key) |
-| **ATK_MODERATOR_AI_API_TYPE** | `"responses"` | AI API type (responses: OpenAI-compatible /v1/responses with JSON Schema; chat_completions: OpenAI-compatible /v1/chat/completions with JSON Schema; deepseek_json_output: DeepSeek /v1/chat/completions with JSON Output) (可选：`["responses", "chat_completions", "deepseek_json_output"]`) | moderator.ai.api_type (Moderator > AI content moderation > AI API type) |
+| **ATK_MODERATOR_AI_API_TYPE** | `"responses"` | AI API type (可选：`["responses", "chat_completions", "deepseek_json_output"]`) | moderator.ai.api_type (Moderator > AI content moderation > AI API type) |
 | **ATK_MODERATOR_AI_BASE_URL** | `"https://api.openai.com/v1"` | API base URL ending in /v1 (e.g. "https://api.openai.com/v1") | moderator.ai.base_url (Moderator > AI content moderation > API base URL ending in /v1) |
-| **ATK_MODERATOR_AI_DISABLE_THINKING** | `true` | Disable model thinking to save tokens (enabled by default; set false only when the provider rejects this option) | moderator.ai.disable_thinking (Moderator > AI content moderation > Disable model thinking to save tokens) |
+| **ATK_MODERATOR_AI_DISABLE_THINKING** | `true` | Model thinking mode | moderator.ai.disable_thinking (Moderator > AI content moderation > Model thinking mode) |
 | **ATK_MODERATOR_AI_ENABLED** | `false` | Enable AI content moderation | moderator.ai.enabled (Moderator > AI content moderation > Enable AI content moderation) |
 | **ATK_MODERATOR_AI_MAX_TOKENS** | `256` | Maximum output tokens (0 omits this parameter; 256 is sufficient for moderation) | moderator.ai.max_tokens (Moderator > AI content moderation > Maximum output tokens) |
 | **ATK_MODERATOR_AI_MODEL** | `""` | Model ID (e.g. "gpt-4.1-mini" or the ID supplied by your provider) | moderator.ai.model (Moderator > AI content moderation > Model ID) |

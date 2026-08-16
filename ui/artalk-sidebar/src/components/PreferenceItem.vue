@@ -11,7 +11,7 @@ const props = defineProps<{
   node: OptionNode
 }>()
 
-const value = ref('')
+const value = ref<any>('')
 const disabled = ref(false)
 const sensitiveHidden = ref(true)
 
@@ -22,6 +22,8 @@ const isKeywordFileSeparator = computed(() => props.node.path === KEYWORD_FILE_S
 const separatorListId = computed(() =>
   isKeywordFileSeparator.value ? 'atk-keyword-separator-options' : undefined,
 )
+const isThinkingMode = computed(() => props.node.path === 'moderator.ai.disable_thinking')
+const booleanValue = computed(() => value.value === true || value.value === 'true')
 
 onBeforeMount(() => {
   // initial value
@@ -41,6 +43,12 @@ function onChange(event: Event) {
   const v = patchOptionValue(value.value, props.node)
   settings.get().setCustom(props.node.path, v)
   // console.log('[SET]', props.node.path, v)
+}
+
+function onBooleanChange(event: Event) {
+  const checked = event.currentTarget instanceof HTMLInputElement && event.currentTarget.checked
+  value.value = isThinkingMode.value ? !checked : checked
+  onChange(event)
 }
 
 const envVariableName = computed(() => `ATK_${props.node.path.replace(/\./g, '_').toUpperCase()}`)
@@ -79,7 +87,12 @@ function toggleSensitiveHidden() {
 
       <!-- Toggle -->
       <template v-else-if="node.type === 'boolean'">
-        <input v-model="value" type="checkbox" :disabled="disabled" @change="onChange" />
+        <input
+          :checked="isThinkingMode ? !booleanValue : booleanValue"
+          type="checkbox"
+          :disabled="disabled"
+          @change="onBooleanChange"
+        />
       </template>
 
       <!-- Textarea -->

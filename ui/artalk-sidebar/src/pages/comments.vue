@@ -111,8 +111,54 @@ onMounted(() => {
     box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
   }
 
-  :deep(.atk-comment-wrap) {
+  :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
+    margin: 0 10px;
+    border: 0;
     border-bottom: 1px solid var(--atk-admin-border);
+    border-radius: var(--atk-admin-radius-sm);
+    background: transparent;
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover {
+      background: var(--atk-admin-surface-muted);
+    }
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    & > .atk-comment {
+      padding: 18px 14px;
+    }
+  }
+
+  :deep(.atk-comment > .atk-avatar img) {
+    border-radius: 50%;
+  }
+
+  :deep(.atk-comment > .atk-main > .atk-header .atk-nick),
+  :deep(.atk-comment > .atk-main > .atk-header .atk-nick a) {
+    color: var(--atk-admin-sage);
+    font-weight: 650;
+  }
+
+  :deep(.atk-comment > .atk-main > .atk-body > .atk-content) {
+    color: var(--atk-admin-ink);
+    line-height: 1.7;
+  }
+
+  :deep(.atk-comment > .atk-main > .atk-footer) {
+    margin-top: 10px;
+  }
+
+  @media (max-width: 560px) {
+    :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
+      margin: 0 4px;
+
+      & > .atk-comment {
+        padding: 15px 10px;
+      }
+    }
   }
 }
 </style>

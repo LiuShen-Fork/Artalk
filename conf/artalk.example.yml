@@ -136,7 +136,7 @@ moderator:
   ai:
     # Enable AI content moderation
     enabled: false
-    # AI API type ["responses", "chat_completions", "deepseek_json_output"] (responses: OpenAI-compatible /v1/responses with JSON Schema; chat_completions: OpenAI-compatible /v1/chat/completions with JSON Schema; deepseek_json_output: DeepSeek /v1/chat/completions with JSON Output)
+    # AI API type ["responses", "chat_completions", "deepseek_json_output"]
     api_type: responses
     # API base URL ending in /v1 (e.g. "https://api.openai.com/v1")
     base_url: "https://api.openai.com/v1"
@@ -146,7 +146,7 @@ moderator:
     model: ""
     # Maximum output tokens (0 omits this parameter; 256 is sufficient for moderation)
     max_tokens: 256
-    # Disable model thinking to save tokens (enabled by default; set false only when the provider rejects this option)
+    # Model thinking mode
     disable_thinking: true
     # Moderation rules (Artalk provides the structured JSON requirement automatically; do not write a schema here)
     prompt: |-

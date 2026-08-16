@@ -1,134 +1,200 @@
-<p align="center">
-<img src="https://user-images.githubusercontent.com/22412567/171680920-6e74b77c-c565-487b-bff1-4f94976ecbe7.png" alt="Artalk" width="100%">
-</p>
+# Artalk Fork
 
-# Artalk
+这是基于 [ArtalkJS/Artalk](https://github.com/ArtalkJS/Artalk) 的个人维护版本。Artalk 是一个可自托管的评论系统，后端使用 Go，前端使用原生 JavaScript，支持 Docker、SQLite/MySQL/PostgreSQL 等部署方式。
 
-[![npm version](https://img.shields.io/npm/v/artalk.svg?style=flat-square)](https://www.npmjs.com/package/artalk)
-[![npm downloads](https://img.shields.io/npm/dt/artalk.svg?style=flat-square)](https://www.npmjs.com/package/artalk)
-[![Docker Pulls](https://img.shields.io/docker/pulls/artalk/artalk-go?style=flat-square)](https://hub.docker.com/r/artalk/artalk-go)
-[![Go Reference](https://pkg.go.dev/badge/github.com/artalkjs/artalk/v2.svg)](https://pkg.go.dev/github.com/artalkjs/artalk/v2)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ArtalkJS/Artalk?style=flat-square)](https://goreportcard.com/report/github.com/ArtalkJS/Artalk)
-[![CircleCI](https://img.shields.io/circleci/build/gh/ArtalkJS/Artalk?style=flat-square)](https://circleci.com/gh/ArtalkJS/Artalk/tree/master)
-[![Codecov](https://img.shields.io/codecov/c/gh/ArtalkJS/Artalk?style=flat-square)](https://codecov.io/gh/ArtalkJS/Artalk)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/artalk?style=flat-square)](https://bundlephobia.com/package/artalk)
+本仓库主要面向后端功能和自用部署场景。前端评论组件、公开 API 以及上游的基础功能保持兼容；Fork 自定义内容集中在评论审核、管理端、登录、图片上传、IP 属地和发布流程。
 
-[官方网站](https://artalk.js.org) • [最新版本](https://github.com/ArtalkJS/Artalk/releases) • [更新日志](https://github.com/ArtalkJS/Artalk/blob/master/CHANGELOG.md) • [English](./README.md) • [日本語](./README.ja.md)
+## 与上游的关系
 
-Artalk 是一款简单易用但功能丰富的评论系统，你可以开箱即用地部署并置入任何博客、网站、Web 应用。
+- 上游仓库：[ArtalkJS/Artalk](https://github.com/ArtalkJS/Artalk)
+- 本仓库：[LiuShen-Fork/Artalk](https://github.com/LiuShen-Fork/Artalk)
+- 上游文档：[artalk.js.org](https://artalk.js.org)
+- 上游变更会持续通过 `upstream` 远程同步，Fork 的定制提交会保留在本仓库自己的分支上。
+- 本 Fork 不发布 npm 前端包；前端评论包仍以当前上游版本为基础，主要维护服务端和管理端。
 
-- 🍃 前端 ~40KB，纯天然 Vanilla JS
-- 🍱 后端 Golang，高效轻量跨平台
-- 🐳 通过 Docker 一键部署，方便快捷
-- 🌈 开源程序，自托管，隐私至上
+## 相对上游的改动
 
-## 特性
+### AI 评论审核
 
-<!-- prettier-ignore-start -->
+在原有审核器基础上增加了可选的 AI 审核。AI 审核默认异步执行，评论提交后先按原有流程显示，检测结果返回后再根据结果设置待审或更新内容。
 
-<!-- features -->
-* [侧边栏](https://artalk.js.org/guide/frontend/sidebar.html): 快速管理、直观浏览
-* [社交登录](https://artalk.js.org/guide/frontend/auth.html): 通过社交账号快速登录
-* [邮件通知](https://artalk.js.org/guide/backend/email.html): 多种发送方式、邮件模板
-* [多元推送](https://artalk.js.org/guide/backend/admin_notify.html): 多种推送方式、通知模版
-* [站内通知](https://artalk.js.org/guide/frontend/sidebar.html): 红点标记、提及列表
-* [验证码](https://artalk.js.org/guide/backend/captcha.html): 多种验证类型、频率限制
-* [评论审核](https://artalk.js.org/guide/backend/moderator.html): 内容检测、垃圾拦截
-* [图片上传](https://artalk.js.org/guide/backend/img-upload.html): 自定义上传、支持图床
-* [Markdown](https://artalk.js.org/guide/intro.html): 支持 Markdown 语法
-* [表情包](https://artalk.js.org/guide/frontend/emoticons.html): 兼容 OwO，快速集成
-* [多站点](https://artalk.js.org/guide/backend/multi-site.html): 站点隔离、集中管理
-* [管理员](https://artalk.js.org/guide/backend/multi-site.html): 密码验证、徽章标识
-* [页面管理](https://artalk.js.org/guide/frontend/sidebar.html): 快速查看、标题一键跳转
-* [浏览量统计](https://artalk.js.org/guide/frontend/pv.html): 轻松统计网页浏览量
-* [层级结构](https://artalk.js.org/guide/frontend/config.html#nestmax): 嵌套分页列表、滚动加载
-* [评论投票](https://artalk.js.org/guide/frontend/config.html#vote): 赞同或反对评论
-* [评论排序](https://artalk.js.org/guide/frontend/config.html#listsort): 多种排序方式，自由选择
-* [评论搜索](https://artalk.js.org/guide/frontend/sidebar.html): 快速搜索评论内容
-* [评论置顶](https://artalk.js.org/guide/frontend/sidebar.html): 重要消息置顶显示
-* [仅看作者](https://artalk.js.org/guide/frontend/config.html): 仅显示作者的评论
-* [评论跳转](https://artalk.js.org/guide/intro.html): 快速跳转到引用的评论
-* [自动保存](https://artalk.js.org/guide/frontend/config.html): 输入内容防丢功能
-* [IP 属地](https://artalk.js.org/guide/frontend/ip-region.html): 用户 IP 属地展示
-* [数据迁移](https://artalk.js.org/guide/transfer.html): 自由迁移、快速备份
-* [图片灯箱](https://artalk.js.org/guide/frontend/lightbox.html): 图片灯箱快速集成
-* [图片懒加载](https://artalk.js.org/guide/frontend/img-lazy-load.html): 延迟加载图片，优化体验
-* [Latex](https://artalk.js.org/guide/frontend/latex.html): Latex 公式解析集成
-* [夜间模式](https://artalk.js.org/guide/frontend/config.html#darkmode): 夜间模式切换
-* [扩展插件](https://artalk.js.org/develop/plugin.html): 创造更多可能性
-* [多语言](https://artalk.js.org/guide/frontend/i18n.html): 多国语言切换
-* [命令行](https://artalk.js.org/guide/backend/config.html): 命令行操作管理能力
-* [API 文档](https://artalk.js.org/http-api.html): 提供 OpenAPI 格式文档
-* [程序升级](https://artalk.js.org/guide/backend/update.html): 版本检测，一键升级
-<!-- /features -->
+- 昵称和评论正文会一起发送给审核器，审核输入形如 `昵称: 评论正文`。
+- 只将评论正文中的命中内容替换为 `***`；昵称命中时不修改昵称，直接将评论设为待审。
+- 审核前会生成适合模型理解的纯文本：Markdown 超链接保留链接文本，图片替换为 `[图片]`，表情包图片和 HTML 标签不会作为语义内容发送。
+- 支持三种接口模式：
+  - `responses`：OpenAI Responses API 的 JSON Schema。
+  - `chat_completions`：OpenAI Chat Completions API 的 JSON Schema。
+  - `deepseek_json_output`：DeepSeek Chat Completions API 的 JSON Output。
+- JSON Schema 和输出结构由 Artalk 内置，固定返回 `sensitive` 与非空的 `reason`，用户只需要填写提示词、模型、API 地址和密钥。
+- AI 审核提示词可编辑，默认规则覆盖广告推广、垃圾信息、违法、色情、暴力威胁、仇恨骚扰、隐私泄露和政治敏感内容。
+- 思考模式可以配置，默认关闭，以减少审核请求的 token 消耗。
+- AI 请求失败时可按 `moderator.api_fail_block` 决定放行或转为待审。
 
-<!-- prettier-ignore-end -->
+示例配置：
 
-## 安装
+~~~yaml
+moderator:
+  ai:
+    enabled: true
+    api_type: responses
+    base_url: https://api.openai.com/v1
+    api_key: "sk-..."
+    model: gpt-5-mini
+    max_tokens: 256
+    disable_thinking: true
+    prompt: >-
+      你是评论内容审核分类器。仅判断昵称和评论正文是否敏感，普通交流和技术讨论返回正常。
+~~~
 
-通过 Docker 一键部署 Artalk 服务器：
+`base_url` 必须填写到 `/v1`，不要在末尾增加斜杠。详细字段可参考 [中文配置示例](./conf/artalk.example.zh-CN.yml) 和 [环境变量文档](./docs/docs/zh/guide/env.md)。
 
-```bash
+### 审核记录和管理端
+
+- 新增审核记录页面，用于查看异常审核、审核失败和内容替换记录。
+- 正常通过的审核结果不再写入列表，避免每条评论产生多条无用记录。
+- 审核记录默认保留 90 天，也支持管理员单条删除和批量清空。
+- 审核记录中提供“通过评论”和“删除评论”的快捷操作，便于处理误判和广告评论。
+- 管理员总览页、评论页、审核页、站点页和设置页统一了页面头部、卡片、按钮、间距和响应式样式。
+- 设置页支持展开并编辑配置项，默认配置和管理端界面使用中文。
+- 管理员进入控制中心时默认显示最近评论，Dashboard 仍可从管理端导航进入。
+
+### 通用 OAuth 2.0 登录
+
+新增可配置的通用 OAuth 2.0 授权码登录，可用于 GitHub 之外的 OAuth 2.0 服务。需要配置：
+
+- 客户端 ID 和客户端密钥
+- 授权端点地址
+- 令牌端点地址
+- 用户信息端点地址
+- 授权范围 `scopes`
+- 登录方式显示名称 `label`
+
+OAuth 应用的回调地址为：
+
+~~~text
+https://你的 Artalk 地址/api/v2/auth/generic/callback
+~~~
+
+登录弹窗会显示 `label` 的值，默认是 `OAuth 2.0`，可以改成“公司账号”“自建登录”等名称。用户信息端点需要返回 JSON，并提供可用于创建或匹配 Artalk 用户的身份和邮箱信息。
+
+另外保留了面向已有 OIDC 登录态的 SSO 令牌交换功能。SSO 的 `issuer` 应填写 OIDC 服务的 issuer 或基础地址，Artalk 会调用该服务的 `/userinfo` 校验访问令牌；它适合外部页面已经完成 OIDC 登录、无需再次显示 Artalk 登录弹窗的场景。
+
+### 图片上传
+
+- 新增 Lsky Pro 兰空图床 API 上传，Artalk 会直接以 multipart 请求将图片发送到兰空，不依赖 Upgit 的本地路径上传方式。
+- 支持配置兰空的 API 地址、Token、权限、相册 ID、策略 ID 和上传成功后删除本地文件。
+- Upgit 上传方式继续保留，适合必须通过本地文件路径处理的场景。
+
+### IPv6 IP 属地
+
+IP 属地支持单独配置 IPv6 的 ip2region `.xdb` 数据库：
+
+~~~yaml
+ip_region:
+  db_path: ./data/ip2region.xdb
+  db_path_v6: ./data/ip2region_v6.xdb
+~~~
+
+IPv4 使用 `db_path`，IPv6 在配置了 `db_path_v6` 且文件存在时使用 IPv6 数据库；未配置时继续使用原有逻辑。
+
+### CI/CD 和 Docker 发布
+
+Fork 清理了不适合本仓库的 npm 包、文档、E2E 和部分强绑定上游的 Action，并将发布流程改为手动触发。
+
+在 GitHub Actions 中手动执行发布工作流时填写版本号，例如 `v1.0.0`，流程会：
+
+1. 创建或更新对应版本标签。
+2. 构建各平台二进制文件。
+3. 创建 GitHub Release 并上传二进制文件。
+4. 构建并推送 Docker 镜像 `willowgod/artalk`。
+
+仓库需要配置 Docker Hub 密钥：
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+`dry_run` 用于只执行构建和检查、不创建 Release 或推送镜像。正常发布时保持关闭。
+
+## 本地调试
+
+### 环境要求
+
+- Go 版本以 [go.mod](./go.mod) 为准。
+- Node.js 和 pnpm 版本以根目录 [package.json](./package.json) 为准。
+
+启动后端服务：
+
+~~~powershell
+go run . -c .\artalk.yml server --host 127.0.0.1 --port 23366
+~~~
+
+启动管理端开发服务器：
+
+~~~powershell
+pnpm dev:sidebar
+~~~
+
+开发调试时不需要先构建整个项目。管理端开发服务器会提供热更新；只有发布或验证产物时才需要执行构建。
+
+### 创建管理员
+
+首次启动前可以执行：
+
+~~~powershell
+go run . -c .\artalk.yml admin --name admin --email admin@example.com --password "替换成强密码"
+~~~
+
+仓库不提供固定的默认管理员密码。管理员账号由上述命令创建，密码应使用自己的强密码。
+
+默认本地数据位置为：
+
+~~~text
+.\data\artalk.db
+.\data\artalk.log
+~~~
+
+`data/`、`artalk.yml` 和日志文件已加入 `.gitignore`，不会进入 Git 提交。
+
+## Docker 使用
+
+~~~bash
 docker run -d \
-    --name artalk \
-    -p 8080:23366 \
-    -v $(pwd)/data:/data \
-    -e "TZ=Asia/Shanghai" \
-    -e "ATK_LOCALE=zh-CN" \
-    -e "ATK_SITE_DEFAULT=Artalk 的博客" \
-    -e "ATK_SITE_URL=https://example.com" \
-    artalk/artalk-go
-```
+  --name artalk \
+  -p 8080:23366 \
+  -v "$(pwd)/data:/data" \
+  -e TZ=Asia/Shanghai \
+  -e ATK_LOCALE=zh-CN \
+  -e ATK_SITE_DEFAULT="我的站点" \
+  -e ATK_SITE_URL="https://example.com" \
+  willowgod/artalk
+~~~
 
-在你的网页中引入 Artalk 客户端:
+生产环境建议挂载独立的数据目录，并通过环境变量或配置文件注入数据库、管理员、邮件、OAuth 和 AI 密钥，不要把密钥提交到仓库。
 
-<!-- prettier-ignore-start -->
+## 使用原版功能
 
-```ts
-Artalk.init({
-  el:      '#Comments',
-  site:    'Artalk 的博客',
-  server:  'https://artalk.example.com',
-  pageKey: '/2018/10/02/hello-world.html'
-})
-```
+本 Fork 继续包含上游的基础能力，包括：
 
-<!-- prettier-ignore-end -->
+- Markdown、表情包、图片上传和评论回复
+- 多站点、页面管理、评论搜索、置顶和投票
+- 邮件通知、Webhook 和多种管理员通知方式
+- 验证码、关键词审核、Akismet、腾讯云和阿里云审核
+- SQLite、MySQL、PostgreSQL、SQL Server
+- Docker、二进制和源码部署
+- 多语言、暗色模式、懒加载、灯箱和 IP 属地
 
-我们提供多种安装方法，包括二进制文件、`go install` 和通过 Linux 发行版的包管理器安装。
+完整的原版配置和 API 说明请以上游 [文档](https://artalk.js.org) 为准。
 
-[**了解更多 →**](https://artalk.js.org/zh/guide/deploy.html)
+## 同步上游
 
-## 参与开发
+~~~powershell
+git remote add upstream https://github.com/ArtalkJS/Artalk.git
+git fetch upstream
+git rebase upstream/master
+~~~
 
-我们欢迎你的 Pull Request！
+如果上游改动与 Fork 的定制功能发生冲突，应优先检查审核器、配置结构、管理端页面和发布工作流。完成 rebase 后重新执行后端测试和管理端构建。
 
-有关如何使用代码库、设置本地开发环境和贡献更改的信息，请参阅 [开发文档](https://artalk.js.org/zh/develop/) 和 [贡献指南](./CONTRIBUTING.md)。
+## 许可证
 
-## 贡献者们
-
-你的贡献丰富了开源社区，促进了学习、灵感和创新。我们非常重视你的参与。感谢你成为我们社区的重要一员！🥰
-
-[![](https://contrib.rocks/image?repo=ArtalkJS/Artalk)](https://github.com/ArtalkJS/Artalk/graphs/contributors)
-
-## 支持者们
-
-[![Stargazers repo roster for @ArtalkJS/Artalk](https://reporoster.com/stars/ArtalkJS/Artalk)](https://github.com/ArtalkJS/Artalk/stargazers)
-
-## Repobeats 分析
-
-![Alt](https://repobeats.axiom.co/api/embed/a9fc9191ac561bc5a8ee2cddc81e635ecaebafb6.svg 'Repobeats analytics image')
-
-## Star 趋势
-
-<a href="https://trendshift.io/repositories/6290" target="_blank"><img src="https://trendshift.io/api/badge/repositories/6290" alt="ArtalkJS%2FArtalk | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
-[![Stargazers over time](https://starchart.cc/ArtalkJS/Artalk.svg)](https://starchart.cc/ArtalkJS/Artalk)
-
-## 开源许可协议
-
-[MIT](./LICENSE) (麻省理工学院许可证)
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FArtalkJS%2FArtalk.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FArtalkJS%2FArtalk?ref=badge_shield)
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FArtalkJS%2FArtalk.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FArtalkJS%2FArtalk?ref=badge_large)
+本项目遵循 [MIT License](./LICENSE)。
