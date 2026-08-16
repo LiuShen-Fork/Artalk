@@ -224,13 +224,14 @@ onMounted(() => {
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin: 18px 0;
+  gap: 16px;
+  margin: 0 0 18px;
 }
 
 .metric-card {
   border-radius: 8px;
-  padding: 18px;
+  min-height: 132px;
+  padding: 20px 22px;
 
   span,
   small {
@@ -253,7 +254,15 @@ onMounted(() => {
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
-  gap: 16px;
+  gap: 18px;
+}
+
+.dashboard-panel {
+  padding: 22px;
+}
+
+.top-pages {
+  margin-top: 18px;
 }
 
 .panel {
@@ -492,7 +501,11 @@ onMounted(() => {
   }
 
   .dashboard-panel {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .top-pages {
+    margin-top: 0;
   }
 }
 

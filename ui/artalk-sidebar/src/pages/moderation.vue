@@ -464,6 +464,8 @@ onMounted(() => {
   border-radius: 0;
   border-bottom: 1px solid var(--atk-admin-border);
   border-left: 0;
+  gap: 16px;
+  padding: 19px 20px;
 }
 
 .moderation-page .log-item:last-child {
@@ -491,6 +493,41 @@ onMounted(() => {
   color: var(--atk-admin-danger);
 }
 
+.moderation-page .status-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 15px;
+}
+
+.moderation-page .log-title b {
+  color: var(--atk-admin-ink);
+  font-size: 15px;
+}
+
+.moderation-page .log-main p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.moderation-page .log-main blockquote {
+  border-left-width: 2px;
+  border-radius: var(--atk-admin-radius-sm);
+  line-height: 1.6;
+}
+
+.moderation-page .meta span {
+  padding: 3px 8px;
+  border: 1px solid var(--atk-admin-border);
+  border-radius: 999px;
+  background: var(--atk-admin-surface-muted);
+}
+
+.moderation-page .row-actions .admin-button {
+  min-height: 32px;
+  padding: 5px 10px;
+}
+
 .moderation-page .log-main p,
 .moderation-page .meta,
 .moderation-page .log-title span,
@@ -515,5 +552,21 @@ onMounted(() => {
   min-height: 32px;
   padding: 5px 10px;
   color: var(--atk-admin-subtle);
+}
+
+@media (max-width: 680px) {
+  .moderation-page .log-item {
+    align-items: flex-start;
+    padding: 16px 14px;
+  }
+
+  .moderation-page .log-top {
+    display: block;
+  }
+
+  .moderation-page .row-actions {
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
 }
 </style>

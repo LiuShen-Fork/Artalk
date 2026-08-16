@@ -119,6 +119,14 @@ function save() {
     <div v-if="tree" class="settings-layout">
       <AdminPageHeader eyebrow="Config" :title="t('settings')" :description="t('settingNotice')" />
 
+      <div class="settings-mobile-index">
+        <select v-model="selectedRootPath" :aria-label="t('config')">
+          <option v-for="node in rootGroups" :key="node.path" :value="node.path">
+            {{ node.title }}
+          </option>
+        </select>
+      </div>
+
       <aside class="settings-index admin-panel">
         <div class="settings-index-title">{{ t('config') }}</div>
         <button
@@ -214,7 +222,7 @@ function save() {
   .settings-layout {
     display: grid;
     grid-template-columns: 240px minmax(0, 1fr);
-    gap: 18px;
+    gap: 20px;
     align-items: start;
   }
 
@@ -228,6 +236,10 @@ function save() {
     background: var(--at-color-bg);
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  }
+
+  .settings-mobile-index {
+    display: none;
   }
 
   .settings-index {
@@ -252,7 +264,7 @@ function save() {
     border: 0;
     background: transparent;
     color: var(--at-color-font);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 10px;
     margin-bottom: 4px;
     cursor: pointer;
@@ -285,10 +297,29 @@ function save() {
 
   .settings-content {
     min-width: 0;
-    padding: 6px 24px 20px;
+    padding: 10px 26px 26px;
 
     :deep(.pf-grp.level-1 > .pf-head) {
       margin-top: 18px;
+    }
+
+    :deep(.pf-grp),
+    :deep(.pf-body) {
+      background: transparent;
+    }
+
+    :deep(.pf-body) {
+      display: block !important;
+    }
+
+    :deep(.pf-item) {
+      padding: 14px 0;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--atk-admin-border);
+    }
+
+    :deep(.pf-item:last-child) {
+      border-bottom: 0;
     }
   }
 
@@ -323,16 +354,47 @@ function save() {
     padding: 12px 14px 80px;
 
     .settings-layout {
-      display: block;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 14px;
     }
 
     .settings-index {
-      position: static;
-      margin-bottom: 12px;
+      top: 12px;
     }
 
     .settings-index-item {
       margin-bottom: 6px;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .settings {
+    .settings-layout {
+      display: block;
+    }
+
+    .settings-index {
+      display: none;
+    }
+
+    .settings-mobile-index {
+      display: block;
+      margin-bottom: 12px;
+
+      select {
+        width: 100%;
+        min-height: 42px;
+        padding: 8px 12px;
+        border: 1px solid var(--atk-admin-border);
+        border-radius: var(--atk-admin-radius-sm);
+        color: var(--atk-admin-ink);
+        background: var(--atk-admin-surface);
+      }
+    }
+
+    .settings-content {
+      padding: 8px 16px 20px;
     }
   }
 }
@@ -351,7 +413,7 @@ function save() {
   }
 
   .settings-index-item {
-    border-radius: 999px;
+    border-radius: 8px;
     color: var(--atk-admin-ink);
 
     small {
@@ -397,6 +459,10 @@ function save() {
     &:focus {
       border-color: var(--atk-admin-sage);
     }
+  }
+
+  .settings-content {
+    background: var(--atk-admin-canvas);
   }
 }
 </style>
