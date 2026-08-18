@@ -13,6 +13,18 @@ const { site: curtSite } = storeToRefs(user)
 
 const search = ref('')
 
+const normalizeEmptyCommentState = (comments: unknown[]) => {
+  nextTick(() => {
+    const commentsWrap = artalk!.ctx.inject('list').getCommentsWrapEl()
+    const noComment = commentsWrap.querySelector<HTMLElement>('.atk-list-no-comment')
+
+    if (comments.length > 0 || !noComment) return
+
+    commentsWrap.querySelectorAll('.atk-comment-wrap').forEach((item) => item.remove())
+    noComment.textContent = '暂无评论'
+  })
+}
+
 onMounted(() => {
   // 初始化导航条
   if (user.is_admin) {
@@ -51,7 +63,10 @@ onMounted(() => {
     comment.getRender().setOpenURL(`${pageURL}#atk-comment-${comment.getID()}`)
   })
 
+  artalk!.ctx.on('list-loaded', normalizeEmptyCommentState)
+
   artalk!.ctx.updateConf({
+    noComment: '暂无评论',
     listFetchParamsModifier: (params) => {
       params.site_name = curtSite.value
 
@@ -104,32 +119,61 @@ onMounted(() => {
 <style scoped lang="scss">
 .comments-wrap {
   :deep(.atk-list) {
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--atk-admin-border);
     border-radius: var(--atk-admin-radius);
     background: var(--atk-admin-surface);
-    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+    box-shadow: var(--atk-admin-shadow-sm);
+  }
+
+  :deep(.atk-list-body) {
+    min-height: 190px;
+  }
+
+  :deep(.atk-list-comments-wrap) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
   }
 
   :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
-    margin: 0 10px;
-    border: 0;
-    border-bottom: 1px solid var(--atk-admin-border);
-    border-radius: var(--atk-admin-radius-sm);
-    background: transparent;
-    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+    margin: 0;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: 16px;
+    background: var(--atk-admin-card);
+    box-shadow: 0 12px 28px rgba(29, 36, 51, 0.06);
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
 
     &:hover {
-      background: var(--atk-admin-surface-muted);
-    }
-
-    &:last-child {
-      border-bottom: 0;
+      border-color: var(--atk-admin-border-strong);
+      background: var(--atk-admin-card-hover);
+      box-shadow: 0 16px 34px rgba(29, 36, 51, 0.1);
+      transform: translateY(-1px);
     }
 
     & > .atk-comment {
-      padding: 18px 14px;
+      padding: 18px;
     }
+  }
+
+  :deep(.atk-list-no-comment) {
+    min-height: 210px;
+    height: auto;
+    border: 1px dashed var(--atk-admin-border-strong);
+    border-radius: 18px;
+    color: var(--atk-admin-subtle);
+    background:
+      linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 34%),
+      linear-gradient(315deg, rgba(20, 184, 166, 0.1), transparent 36%),
+      var(--atk-admin-card);
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: 0;
   }
 
   :deep(.atk-comment > .atk-avatar img) {
@@ -152,11 +196,14 @@ onMounted(() => {
   }
 
   @media (max-width: 560px) {
-    :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
-      margin: 0 4px;
+    :deep(.atk-list-comments-wrap) {
+      gap: 10px;
+      padding: 10px;
+    }
 
+    :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
       & > .atk-comment {
-        padding: 15px 10px;
+        padding: 15px 12px;
       }
     }
   }
