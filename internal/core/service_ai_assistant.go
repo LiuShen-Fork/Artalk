@@ -46,6 +46,9 @@ func (s *AIAssistantService) Dispose() error {
 // It is intentionally synchronous within the caller's background job so a
 // failed request can be recorded with the triggering comment ID.
 func (s *AIAssistantService) ReplyToComment(comment *entity.Comment) {
+	if comment == nil {
+		return
+	}
 	conf := s.app.Conf().AIAssistant
 	trigger := strings.TrimSpace(conf.Trigger)
 	if !conf.Enabled || trigger == "" || !strings.Contains(comment.Content, trigger) {
@@ -129,7 +132,11 @@ func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.userID != 0 {
-		return s.app.Dao().FindUserByID(s.userID), nil
+		user := s.app.Dao().FindUserByID(s.userID)
+		if !user.IsEmpty() {
+			return user, nil
+		}
+		s.userID = 0
 	}
 	name := strings.TrimSpace(conf.Name)
 	email := strings.TrimSpace(conf.Email)
@@ -162,9 +169,9 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 	if err != nil {
 		return "", err
 	}
-	apiType := conf.APIType
-	if apiType == "" {
-		apiType = config.AIAPITypeResponses
+	apiType, err := assistantAPIType(conf)
+	if err != nil {
+		return "", err
 	}
 	maxTokens := conf.MaxTokens
 	if maxTokens < 0 {
@@ -204,7 +211,11 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 	if key := strings.TrimSpace(conf.APIKey); key != "" {
 		req.Header.Set("Authorization", "Bearer "+key)
 	}
-	resp, err := s.client.Do(req)
+	client := s.client
+	if client == nil {
+		client = &http.Client{Timeout: s.timeout()}
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("request assistant API: %w", err)
 	}
@@ -231,14 +242,27 @@ func assistantEndpoint(conf config.AIAssistantConf) (string, error) {
 	if strings.TrimSpace(conf.Model) == "" {
 		return "", fmt.Errorf("ai_assistant model is required")
 	}
-	apiType := conf.APIType
-	if apiType == "" {
-		apiType = config.AIAPITypeResponses
+	apiType, err := assistantAPIType(conf)
+	if err != nil {
+		return "", err
 	}
 	if apiType == config.AIAPITypeResponses {
 		return base + "/responses", nil
 	}
 	return base + "/chat/completions", nil
+}
+
+func assistantAPIType(conf config.AIAssistantConf) (config.AIAPIType, error) {
+	apiType := config.AIAPIType(strings.TrimSpace(string(conf.APIType)))
+	if apiType == "" {
+		return config.AIAPITypeResponses, nil
+	}
+	switch apiType {
+	case config.AIAPITypeResponses, config.AIAPITypeChatCompletions, config.AIAPITypeDeepSeekJSON:
+		return apiType, nil
+	default:
+		return "", fmt.Errorf("unknown ai_assistant api_type %q", conf.APIType)
+	}
 }
 
 func extractAssistantText(apiType config.AIAPIType, body []byte) (string, error) {
@@ -333,6 +357,9 @@ func fetchPageText(client *http.Client, pageURL string, maxChars int) (string, e
 	}
 	if !strings.HasPrefix(pageURL, "http://") && !strings.HasPrefix(pageURL, "https://") {
 		return "", nil
+	}
+	if client == nil {
+		client = http.DefaultClient
 	}
 	resp, err := client.Get(pageURL)
 	if err != nil {

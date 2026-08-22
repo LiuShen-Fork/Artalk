@@ -129,6 +129,43 @@ func (conf *Config) normalPatch() {
 		}
 	}
 
+	// AI comment assistant defaults. These also apply when it is enabled via
+	// environment variables without a complete YAML section.
+	if strings.TrimSpace(conf.AIAssistant.Trigger) == "" {
+		conf.AIAssistant.Trigger = "@清羽酱"
+	}
+	if strings.TrimSpace(conf.AIAssistant.Name) == "" {
+		conf.AIAssistant.Name = "清羽酱"
+	}
+	if strings.TrimSpace(conf.AIAssistant.Email) == "" {
+		conf.AIAssistant.Email = "ai-assistant@example.com"
+	}
+	if strings.TrimSpace(string(conf.AIAssistant.APIType)) == "" {
+		conf.AIAssistant.APIType = AIAPITypeResponses
+	}
+	if strings.TrimSpace(conf.AIAssistant.BaseURL) == "" {
+		conf.AIAssistant.BaseURL = "https://api.openai.com/v1"
+	}
+	if conf.AIAssistant.MaxTokens == 0 {
+		conf.AIAssistant.MaxTokens = 512
+	}
+	if conf.AIAssistant.MaxReplyChars == 0 {
+		conf.AIAssistant.MaxReplyChars = 300
+	}
+	if conf.AIAssistant.MaxContextComments == 0 {
+		conf.AIAssistant.MaxContextComments = 12
+	}
+	if conf.AIAssistant.MaxPageChars == 0 {
+		conf.AIAssistant.MaxPageChars = 12000
+	}
+	if conf.AIAssistant.TimeoutSeconds == 0 {
+		conf.AIAssistant.TimeoutSeconds = 30
+	}
+	if conf.AIAssistant.DisableThinking == nil {
+		disableThinking := true
+		conf.AIAssistant.DisableThinking = &disableThinking
+	}
+
 	// 默认将验证码类型设置为 image
 	if strings.TrimSpace(string(conf.Captcha.CaptchaType)) == "" {
 		conf.Captcha.CaptchaType = TypeImage

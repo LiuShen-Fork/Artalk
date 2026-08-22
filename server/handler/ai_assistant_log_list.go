@@ -9,6 +9,7 @@ import (
 
 type ParamsAIAssistantLogList struct {
 	SiteName string `query:"site_name" json:"site_name" validate:"optional"`
+	PageKey  string `query:"page_key" json:"page_key" validate:"optional"`
 	Status   string `query:"status" json:"status" validate:"optional"`
 	Limit    int    `query:"limit" json:"limit" validate:"optional"`
 	Offset   int    `query:"offset" json:"offset" validate:"optional"`
@@ -29,13 +30,20 @@ func AIAssistantLogList(app *core.App, router fiber.Router) {
 		if p.SiteName != "" {
 			q = q.Where("site_name = ?", p.SiteName)
 		}
+		if p.PageKey != "" {
+			q = q.Where("page_key = ?", p.PageKey)
+		}
 		if p.Status != "" {
 			q = q.Where("status = ?", p.Status)
 		}
 		var total int64
-		q.Count(&total)
+		if err := q.Count(&total).Error; err != nil {
+			return common.RespError(c, fiber.StatusInternalServerError, "AI assistant log count failed")
+		}
 		var logs []entity.AIAssistantLog
-		q.Scopes(Paginate(p.Offset, p.Limit)).Find(&logs)
+		if err := q.Scopes(Paginate(p.Offset, p.Limit)).Find(&logs).Error; err != nil {
+			return common.RespError(c, fiber.StatusInternalServerError, "AI assistant log query failed")
+		}
 		return common.RespData(c, ResponseAIAssistantLogList{Total: total, Logs: logs})
 	}))
 }
