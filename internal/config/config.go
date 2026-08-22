@@ -24,6 +24,7 @@ type Config struct {
 	AdminUsers     []AdminUserConf        `koanf:"admin_users" json:"admin_users"`         // 管理员账户
 	LoginTimeout   int                    `koanf:"login_timeout" json:"login_timeout"`     // 登录超时
 	Moderator      ModeratorConf          `koanf:"moderator" json:"moderator"`             // 评论审查
+	AIAssistant    AIAssistantConf        `koanf:"ai_assistant" json:"ai_assistant"`       // AI 评论助手
 	Captcha        CaptchaConf            `koanf:"captcha" json:"captcha"`                 // 验证码
 	Email          EmailConf              `koanf:"email" json:"email"`                     // 邮箱提醒
 	IPRegion       IPRegionConf           `koanf:"ip_region" json:"ip_region"`             // IP 属地展示
@@ -174,6 +175,29 @@ type AIAntispamConf struct {
 	MaxTokens       int            `koanf:"max_tokens" json:"max_tokens"`
 	DisableThinking *bool          `koanf:"disable_thinking" json:"disable_thinking"`
 }
+
+// AIAssistantConf configures the optional comment assistant.
+type AIAssistantConf struct {
+	Enabled            bool      `koanf:"enabled" json:"enabled"`
+	Trigger            string    `koanf:"trigger" json:"trigger"`
+	Name               string    `koanf:"name" json:"name"`
+	Email              string    `koanf:"email" json:"email"`
+	Link               string    `koanf:"link" json:"link"`
+	APIType            AIAPIType `koanf:"api_type" json:"api_type"`
+	BaseURL            string    `koanf:"base_url" json:"base_url"`
+	APIKey             string    `koanf:"api_key" json:"api_key"`
+	Model              string    `koanf:"model" json:"model"`
+	Prompt             string    `koanf:"prompt" json:"prompt"`
+	MaxTokens          int       `koanf:"max_tokens" json:"max_tokens"`
+	MaxReplyChars      int       `koanf:"max_reply_chars" json:"max_reply_chars"`
+	MaxContextComments int       `koanf:"max_context_comments" json:"max_context_comments"`
+	MaxPageChars       int       `koanf:"max_page_chars" json:"max_page_chars"`
+	TimeoutSeconds     int       `koanf:"timeout_seconds" json:"timeout_seconds"`
+	ReplyToPending     bool      `koanf:"reply_to_pending" json:"reply_to_pending"`
+	DisableThinking    *bool     `koanf:"disable_thinking" json:"disable_thinking"`
+}
+
+const DefaultAIAssistantPrompt = `你是网站评论区的 AI 助手，名字是清羽酱。仅根据页面内容、已有评论和当前评论回答用户问题，不要编造页面中不存在的事实。使用简洁、自然、友善的中文回复，直接回答问题，不要解释你的身份，不要输出 Markdown 标题，不要超过 300 字。如果无法确定，请明确说不知道并建议用户补充信息。`
 
 const DefaultAIModerationPrompt = `You are a comment moderation classifier. Classify the supplied nickname and comment as sensitive or non-sensitive only.
 Set sensitive=true when either field contains advertising or promotional spam, illegal content, sexual content, violence or threats, hate or harassment, personal data exposure, politically sensitive content, or content that clearly requires manual review. Otherwise set sensitive=false for normal conversation and technical discussion.

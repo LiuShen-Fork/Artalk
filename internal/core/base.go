@@ -47,6 +47,7 @@ func (app *App) injectDefaultServices() {
 	AppInject(app, NewIPRegionService(app))
 	AppInject(app, NewNotifyService(app))
 	AppInject(app, NewAntiSpamService(app))
+	AppInject(app, NewAIAssistantService(app))
 }
 
 func (app *App) registerDefaultHooks() {

@@ -509,3 +509,19 @@ frontend:
   versionCheck: true
   # 插件
   pluginURLs: []
+
+ai_assistant:
+  enabled: false
+  trigger: "@清羽酱"
+  name: "清羽酱"
+  email: "ai-assistant@example.com"
+  api_type: responses
+  base_url: "https://api.openai.com/v1"
+  api_key: ""
+  model: ""
+  max_tokens: 512
+  max_reply_chars: 300
+  max_context_comments: 12
+  max_page_chars: 12000
+  timeout_seconds: 30
+  reply_to_pending: false
