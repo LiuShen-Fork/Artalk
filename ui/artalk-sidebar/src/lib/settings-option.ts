@@ -47,6 +47,10 @@ const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placehold
     placeholder:
       '默认审核规则已内置；如需覆盖，只写敏感/非敏感判断规则，不需要写 JSON Schema。',
   },
+  'ai_assistant.prompt': {
+    control: 'textarea',
+    placeholder: '默认提示词已内置；可按需自定义助手的回复风格和行为。',
+  },
 }
 
 function extractItemComment(item: Pair, index: number, parentPair?: Pair): string {

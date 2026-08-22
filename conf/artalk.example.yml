@@ -525,20 +525,36 @@ frontend:
 
 # AI comment assistant
 ai_assistant:
+  # Enable AI comment assistant (Enable the assistant)
   enabled: false
+  # Assistant name (Displayed in comments)
   name: "清羽酱"
+  # Assistant email (Used to create the assistant user)
   email: "ai-assistant@example.com"
+  # Assistant link (Profile URL)
   link: ""
+  # API type (Select the API protocol) ["responses", "chat_completions", "anthropic_messages"]
   api_type: responses
+  # API base URL (Must end with /v1)
   base_url: "https://api.openai.com/v1"
+  # API key (Provider API key)
   api_key: ""
+  # Model name (Provider model ID)
   model: ""
+  # Maximum output tokens (Limit reply generation)
   max_tokens: 512
+  # Maximum reply characters (Limit the final reply)
   max_reply_chars: 300
+  # Context comment count (Comments sent to the model)
   max_context_comments: 12
+  # Maximum page characters (Page content sent to the model)
   max_page_chars: 12000
+  # Request timeout seconds (AI request timeout)
   timeout_seconds: 30
+  # Reply to pending comments (Process pending comments)
   reply_to_pending: false
+  # Disable thinking (Disable the model thinking process)
   disable_thinking: true
+  # Prompt (Customize assistant behavior)
   prompt: |-
     You are the Artalk comment assistant named Qingyu-chan. Answer only from the page content, existing comments, and the current comment. Reply naturally and briefly, without discussing your identity or inventing facts. Keep the reply under 300 Chinese characters.

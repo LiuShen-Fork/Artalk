@@ -535,20 +535,36 @@ frontend:
 
 # AI 评论助手
 ai_assistant:
+  # 启用 AI 评论助手 (启用评论助手)
   enabled: false
+  # 助手名称 (评论区显示名称)
   name: "清羽酱"
+  # 助手邮箱 (用于创建助手用户)
   email: "ai-assistant@example.com"
+  # 助手链接 (评论者资料链接)
   link: ""
+  # API 类型 (选择接口协议) ["responses", "chat_completions", "anthropic_messages"]
   api_type: responses
+  # API 基础地址 (以 /v1 结尾)
   base_url: "https://api.openai.com/v1"
+  # API 密钥 (服务商 API 密钥)
   api_key: ""
+  # 模型名称 (服务商提供的模型 ID)
   model: ""
+  # 最大输出 Token 数 (限制回复长度)
   max_tokens: 512
+  # 最大回复字符数 (限制最终回复长度)
   max_reply_chars: 300
+  # 上下文评论数 (发送给模型的评论数量)
   max_context_comments: 12
+  # 页面内容字数上限 (发送给模型的页面内容)
   max_page_chars: 12000
+  # 请求超时秒数 (AI 请求超时时间)
   timeout_seconds: 30
+  # 回复待审核评论 (是否处理待审核评论)
   reply_to_pending: false
+  # 禁用思考 (关闭模型思考过程)
   disable_thinking: true
+  # 提示词 (自定义助手行为)
   prompt: |-
     你是网站评论区的 AI 助手，名字是清羽酱。仅根据页面内容、已有评论和当前评论回答用户问题，不要编造页面中不存在的事实。使用简洁、自然、友善的中文回复，不要超过 300 字。

@@ -153,6 +153,7 @@ type AIAPIType string
 const (
 	AIAPITypeResponses       AIAPIType = "responses"
 	AIAPITypeChatCompletions AIAPIType = "chat_completions"
+	AIAPITypeAnthropic       AIAPIType = "anthropic_messages"
 	AIAPITypeDeepSeekJSON    AIAPIType = "deepseek_json_output"
 )
 
