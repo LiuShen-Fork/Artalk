@@ -41,6 +41,12 @@ func TestAssistantAPITypeAndEndpoint(t *testing.T) {
 	assert.ErrorContains(t, err, "unknown ai_assistant api_type")
 }
 
+func TestAssistantTriggerUsesFixedAtPrefixAndName(t *testing.T) {
+	assert.Equal(t, "@清羽酱", assistantTrigger(config.AIAssistantConf{}))
+	assert.Equal(t, "@小助手", assistantTrigger(config.AIAssistantConf{Name: "小助手"}))
+	assert.Equal(t, "@小助手", assistantTrigger(config.AIAssistantConf{Name: "@小助手"}))
+}
+
 func TestExtractAssistantText(t *testing.T) {
 	responsesBody := []byte(`{"output":[{"content":[{"type":"output_text","text":"响应内容"}]}]}`)
 	text, err := extractAssistantText(config.AIAPITypeResponses, responsesBody)

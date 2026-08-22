@@ -131,9 +131,6 @@ func (conf *Config) normalPatch() {
 
 	// AI comment assistant defaults. These also apply when it is enabled via
 	// environment variables without a complete YAML section.
-	if strings.TrimSpace(conf.AIAssistant.Trigger) == "" {
-		conf.AIAssistant.Trigger = "@清羽酱"
-	}
 	if strings.TrimSpace(conf.AIAssistant.Name) == "" {
 		conf.AIAssistant.Name = "清羽酱"
 	}
