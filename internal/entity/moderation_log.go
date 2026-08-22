@@ -49,7 +49,6 @@ type AIAssistantLogStatus string
 
 const (
 	AIAssistantLogStatusSuccess AIAssistantLogStatus = "success"
-	AIAssistantLogStatusSkipped AIAssistantLogStatus = "skipped"
 	AIAssistantLogStatusError   AIAssistantLogStatus = "error"
 )
 

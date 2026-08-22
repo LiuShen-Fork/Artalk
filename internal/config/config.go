@@ -179,7 +179,6 @@ type AIAntispamConf struct {
 // AIAssistantConf configures the optional comment assistant.
 type AIAssistantConf struct {
 	Enabled            bool      `koanf:"enabled" json:"enabled"`
-	Trigger            string    `koanf:"trigger" json:"trigger"`
 	Name               string    `koanf:"name" json:"name"`
 	Email              string    `koanf:"email" json:"email"`
 	Link               string    `koanf:"link" json:"link"`

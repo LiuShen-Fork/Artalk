@@ -72,7 +72,6 @@ func TestAIAssistantDefaults(t *testing.T) {
 	conf.historyPatch()
 	conf.normalPatch()
 
-	assert.Equal(t, "@\u6e05\u7fbd\u9171", conf.AIAssistant.Trigger)
 	assert.Equal(t, "\u6e05\u7fbd\u9171", conf.AIAssistant.Name)
 	assert.Equal(t, "ai-assistant@example.com", conf.AIAssistant.Email)
 	assert.Equal(t, AIAPITypeResponses, conf.AIAssistant.APIType)

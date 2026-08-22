@@ -536,7 +536,6 @@ frontend:
 # AI 评论助手
 ai_assistant:
   enabled: false
-  trigger: "@清羽酱"
   name: "清羽酱"
   email: "ai-assistant@example.com"
   link: ""

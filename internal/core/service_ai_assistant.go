@@ -20,6 +20,8 @@ import (
 
 var _ Service = (*AIAssistantService)(nil)
 
+const aiAssistantLogRetention = 90 * 24 * time.Hour
+
 type AIAssistantService struct {
 	app    *App
 	client *http.Client
@@ -33,6 +35,7 @@ func NewAIAssistantService(app *App) *AIAssistantService {
 
 func (s *AIAssistantService) Init() error {
 	s.client = &http.Client{Timeout: s.timeout()}
+	s.pruneLogs()
 	return nil
 }
 
@@ -50,7 +53,7 @@ func (s *AIAssistantService) ReplyToComment(comment *entity.Comment) {
 		return
 	}
 	conf := s.app.Conf().AIAssistant
-	trigger := strings.TrimSpace(conf.Trigger)
+	trigger := assistantTrigger(conf)
 	if !conf.Enabled || trigger == "" || !strings.Contains(comment.Content, trigger) {
 		return
 	}
@@ -67,7 +70,6 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 		return fmt.Errorf("trigger comment %d not found", comment.ID)
 	}
 	if latest.IsPending && !conf.ReplyToPending {
-		s.record(&latest, nil, trigger, entity.AIAssistantLogStatusSkipped, "", "trigger comment is pending")
 		return nil
 	}
 
@@ -138,7 +140,7 @@ func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.
 		}
 		s.userID = 0
 	}
-	name := strings.TrimSpace(conf.Name)
+	name := assistantName(conf)
 	email := strings.TrimSpace(conf.Email)
 	if name == "" || email == "" {
 		return entity.User{}, fmt.Errorf("ai_assistant name and email are required")
@@ -149,6 +151,23 @@ func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.
 	}
 	s.userID = user.ID
 	return user, nil
+}
+
+func assistantName(conf config.AIAssistantConf) string {
+	name := strings.TrimSpace(conf.Name)
+	name = strings.TrimLeft(name, "@")
+	if name == "" {
+		name = "清羽酱"
+	}
+	return name
+}
+
+func assistantTrigger(conf config.AIAssistantConf) string {
+	name := assistantName(conf)
+	if name == "" {
+		return ""
+	}
+	return "@" + name
 }
 
 func (s *AIAssistantService) recentComments(trigger *entity.Comment, limit int) []entity.Comment {
@@ -342,6 +361,14 @@ func (s *AIAssistantService) record(comment, reply *entity.Comment, trigger stri
 	row.PageURL = s.app.Dao().GetPageAccessibleURL(&page)
 	if err := s.app.Dao().DB().Create(&row).Error; err != nil {
 		log.Errorf("[AIAssistant] record log failed: %v", err)
+	}
+	s.pruneLogs()
+}
+
+func (s *AIAssistantService) pruneLogs() {
+	cutoff := time.Now().Add(-aiAssistantLogRetention)
+	if err := s.app.Dao().DB().Where("created_at < ? OR status = ?", cutoff, "skipped").Delete(&entity.AIAssistantLog{}).Error; err != nil {
+		log.Errorf("[AIAssistant] prune logs failed: %v", err)
 	}
 }
 
