@@ -67,6 +67,26 @@ func TestAIDisableThinkingDefault(t *testing.T) {
 	})
 }
 
+func TestAIAssistantDefaults(t *testing.T) {
+	conf := &Config{}
+	conf.historyPatch()
+	conf.normalPatch()
+
+	assert.Equal(t, "@\u6e05\u7fbd\u9171", conf.AIAssistant.Trigger)
+	assert.Equal(t, "\u6e05\u7fbd\u9171", conf.AIAssistant.Name)
+	assert.Equal(t, "ai-assistant@example.com", conf.AIAssistant.Email)
+	assert.Equal(t, AIAPITypeResponses, conf.AIAssistant.APIType)
+	assert.Equal(t, "https://api.openai.com/v1", conf.AIAssistant.BaseURL)
+	assert.Equal(t, 512, conf.AIAssistant.MaxTokens)
+	assert.Equal(t, 300, conf.AIAssistant.MaxReplyChars)
+	assert.Equal(t, 12, conf.AIAssistant.MaxContextComments)
+	assert.Equal(t, 12000, conf.AIAssistant.MaxPageChars)
+	assert.Equal(t, 30, conf.AIAssistant.TimeoutSeconds)
+	if assert.NotNil(t, conf.AIAssistant.DisableThinking) {
+		assert.True(t, *conf.AIAssistant.DisableThinking)
+	}
+}
+
 func mockCheckFileExist(mockFiles map[string]bool) func(string) bool {
 	return func(filename string) bool {
 		return mockFiles[filename]
