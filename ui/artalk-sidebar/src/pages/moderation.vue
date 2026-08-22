@@ -450,7 +450,7 @@ onMounted(() => {
 }
 
 .moderation-page .log-summary {
-  padding: 14px 16px;
+  padding: 16px 20px;
   color: var(--atk-admin-subtle);
   background: var(--atk-admin-surface-muted);
 }
@@ -465,7 +465,7 @@ onMounted(() => {
   border-bottom: 1px solid var(--atk-admin-border);
   border-left: 0;
   gap: 16px;
-  padding: 19px 20px;
+  padding: 18px 20px;
 }
 
 .moderation-page .log-item:last-child {

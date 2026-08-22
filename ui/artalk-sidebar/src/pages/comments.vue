@@ -123,25 +123,26 @@ onMounted(() => {
     border: 1px solid var(--atk-admin-border);
     border-radius: var(--atk-admin-radius);
     background: var(--atk-admin-surface);
-    box-shadow: var(--atk-admin-shadow-sm);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
   }
 
   :deep(.atk-list-body) {
     min-height: 190px;
+    padding: 16px;
   }
 
   :deep(.atk-list-comments-wrap) {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 14px;
+    padding: 0;
   }
 
   :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
     margin: 0;
     border: 1px solid var(--atk-admin-border);
-    border-radius: 16px;
-    background: var(--atk-admin-card);
+    border-radius: var(--atk-admin-radius-sm);
+    background: var(--atk-admin-surface-muted);
     box-shadow: 0 12px 28px rgba(29, 36, 51, 0.06);
     transition:
       background-color 0.18s ease,
@@ -150,27 +151,24 @@ onMounted(() => {
       transform 0.18s ease;
 
     &:hover {
-      border-color: var(--atk-admin-border-strong);
-      background: var(--atk-admin-card-hover);
+      border-color: var(--atk-admin-sage);
+      background: var(--atk-admin-sage-soft);
       box-shadow: 0 16px 34px rgba(29, 36, 51, 0.1);
       transform: translateY(-1px);
     }
 
     & > .atk-comment {
-      padding: 18px;
+      padding: 16px;
     }
   }
 
   :deep(.atk-list-no-comment) {
-    min-height: 210px;
+    min-height: 158px;
     height: auto;
-    border: 1px dashed var(--atk-admin-border-strong);
-    border-radius: 18px;
     color: var(--atk-admin-subtle);
-    background:
-      linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 34%),
-      linear-gradient(315deg, rgba(20, 184, 166, 0.1), transparent 36%),
-      var(--atk-admin-card);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     font-size: 15px;
     font-weight: 650;
     letter-spacing: 0;
@@ -196,14 +194,17 @@ onMounted(() => {
   }
 
   @media (max-width: 560px) {
+    :deep(.atk-list-body) {
+      padding: 12px;
+    }
+
     :deep(.atk-list-comments-wrap) {
       gap: 10px;
-      padding: 10px;
     }
 
     :deep(.atk-list-comments-wrap > .atk-comment-wrap) {
       & > .atk-comment {
-        padding: 15px 12px;
+        padding: 14px 12px;
       }
     }
   }
