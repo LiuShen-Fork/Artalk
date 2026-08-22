@@ -20,6 +20,7 @@ func TestAssistantAPITypeAndEndpoint(t *testing.T) {
 		{name: "default", path: "/responses", expected: config.AIAPITypeResponses},
 		{name: "responses", apiType: config.AIAPITypeResponses, path: "/responses", expected: config.AIAPITypeResponses},
 		{name: "chat completions", apiType: config.AIAPITypeChatCompletions, path: "/chat/completions", expected: config.AIAPITypeChatCompletions},
+		{name: "anthropic messages", apiType: config.AIAPITypeAnthropic, path: "/messages", expected: config.AIAPITypeAnthropic},
 		{name: "deepseek", apiType: config.AIAPITypeDeepSeekJSON, path: "/chat/completions", expected: config.AIAPITypeDeepSeekJSON},
 	}
 
@@ -57,6 +58,11 @@ func TestExtractAssistantText(t *testing.T) {
 	text, err = extractAssistantText(config.AIAPITypeChatCompletions, chatBody)
 	require.NoError(t, err)
 	assert.Equal(t, "聊天回复", text)
+
+	anthropicBody := []byte(`{"content":[{"type":"text","text":"Claude 回复"}]}`)
+	text, err = extractAssistantText(config.AIAPITypeAnthropic, anthropicBody)
+	require.NoError(t, err)
+	assert.Equal(t, "Claude 回复", text)
 
 	_, err = extractAssistantText(config.AIAPITypeChatCompletions, []byte(`{"choices":[]}`))
 	assert.ErrorContains(t, err, "no choices")

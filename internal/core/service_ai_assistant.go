@@ -201,7 +201,8 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 		{"role": "user", "content": prompt},
 	}
 	bodyMap := map[string]any{"model": strings.TrimSpace(conf.Model)}
-	if apiType == config.AIAPITypeResponses {
+	switch apiType {
+	case config.AIAPITypeResponses:
 		bodyMap["input"] = messages
 		if maxTokens > 0 {
 			bodyMap["max_output_tokens"] = maxTokens
@@ -209,7 +210,15 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 		if conf.DisableThinking != nil && *conf.DisableThinking {
 			bodyMap["reasoning"] = map[string]any{"effort": "none"}
 		}
-	} else {
+	case config.AIAPITypeAnthropic:
+		bodyMap["system"] = assistantPrompt(conf)
+		bodyMap["messages"] = []map[string]string{{"role": "user", "content": prompt}}
+		if maxTokens > 0 {
+			bodyMap["max_tokens"] = maxTokens
+		} else {
+			bodyMap["max_tokens"] = 1024
+		}
+	default:
 		bodyMap["messages"] = messages
 		if maxTokens > 0 {
 			bodyMap["max_tokens"] = maxTokens
@@ -228,7 +237,14 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if key := strings.TrimSpace(conf.APIKey); key != "" {
-		req.Header.Set("Authorization", "Bearer "+key)
+		if apiType == config.AIAPITypeAnthropic {
+			req.Header.Set("x-api-key", key)
+		} else {
+			req.Header.Set("Authorization", "Bearer "+key)
+		}
+	}
+	if apiType == config.AIAPITypeAnthropic {
+		req.Header.Set("anthropic-version", "2023-06-01")
 	}
 	client := s.client
 	if client == nil {
@@ -265,10 +281,14 @@ func assistantEndpoint(conf config.AIAssistantConf) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if apiType == config.AIAPITypeResponses {
+	switch apiType {
+	case config.AIAPITypeResponses:
 		return base + "/responses", nil
+	case config.AIAPITypeAnthropic:
+		return base + "/messages", nil
+	default:
+		return base + "/chat/completions", nil
 	}
-	return base + "/chat/completions", nil
 }
 
 func assistantAPIType(conf config.AIAssistantConf) (config.AIAPIType, error) {
@@ -277,7 +297,7 @@ func assistantAPIType(conf config.AIAssistantConf) (config.AIAPIType, error) {
 		return config.AIAPITypeResponses, nil
 	}
 	switch apiType {
-	case config.AIAPITypeResponses, config.AIAPITypeChatCompletions, config.AIAPITypeDeepSeekJSON:
+	case config.AIAPITypeResponses, config.AIAPITypeChatCompletions, config.AIAPITypeAnthropic, config.AIAPITypeDeepSeekJSON:
 		return apiType, nil
 	default:
 		return "", fmt.Errorf("unknown ai_assistant api_type %q", conf.APIType)
@@ -310,6 +330,25 @@ func extractAssistantText(apiType config.AIAPIType, body []byte) (string, error)
 		}
 		return "", fmt.Errorf("assistant response contains no output text")
 	}
+
+	if apiType == config.AIAPITypeAnthropic {
+		var response struct {
+			Content []struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"content"`
+		}
+		if err := json.Unmarshal(body, &response); err != nil {
+			return "", fmt.Errorf("decode assistant anthropic response: %w", err)
+		}
+		for _, content := range response.Content {
+			if content.Type == "text" && strings.TrimSpace(content.Text) != "" {
+				return content.Text, nil
+			}
+		}
+		return "", fmt.Errorf("assistant anthropic response contains no text")
+	}
+
 	var response struct {
 		Choices []struct {
 			Message struct {
