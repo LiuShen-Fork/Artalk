@@ -2,7 +2,7 @@
 <img src="https://user-images.githubusercontent.com/22412567/171680920-6e74b77c-c565-487b-bff1-4f94976ecbe7.png" alt="Artalk" width="100%">
 </p>
 
-# Artalk
+# Artalk Fork
 
 [![npm version](https://img.shields.io/npm/v/artalk.svg?style=flat-square)](https://www.npmjs.com/package/artalk)
 [![npm downloads](https://img.shields.io/npm/dt/artalk.svg?style=flat-square)](https://www.npmjs.com/package/artalk)
@@ -21,6 +21,46 @@ Artalk is an intuitive yet feature-rich comment system, ready for immediate depl
 - 🍱 Server powered by Golang, offering efficient and lightweight cross-platform performance
 - 🐳 One-click deployment via Docker, ensuring ease and speed
 - 🌈 Open-source software, self-hosted with privacy as a priority
+
+This repository is a personal-maintained fork of [ArtalkJS/Artalk](https://github.com/ArtalkJS/Artalk). The upstream client API and core comment functionality remain compatible; this fork focuses on backend features, the administration console, and self-hosted deployments.
+
+## Fork and Upstream
+
+- Upstream repository: [ArtalkJS/Artalk](https://github.com/ArtalkJS/Artalk)
+- Current repository: [LiuShen-Fork/Artalk](https://github.com/LiuShen-Fork/Artalk)
+- Upstream documentation: [artalk.js.org](https://artalk.js.org)
+- `master` is based on `upstream/master`; fork-specific commits are kept here and synchronized manually.
+- The fork does not publish a separate npm client package. The frontend client remains based on the upstream package, while the server and administration console are maintained here.
+
+## Differences from Upstream
+
+### AI comment moderation
+
+The fork adds optional asynchronous AI moderation to the existing moderation pipeline. It supports OpenAI Responses, OpenAI Chat Completions, and DeepSeek JSON Output, with built-in JSON Schema output, editable prompts, configurable thinking mode, and configurable behavior when the provider request fails.
+
+### AI comment assistant
+
+The fork provides an optional assistant that answers comments when mentioned with its configured name. It uses page content, recent comments, and the current comment as context, avoids duplicate replies in nested threads, and supports OpenAI Responses, OpenAI Chat Completions, DeepSeek JSON Output, and Claude Messages. `reply_to_pending` controls whether comments awaiting moderation can trigger a reply, and the prompt is editable as a multiline field in the administration console.
+
+### Other fork-specific changes
+
+- Moderation and AI assistant logs, review actions, dashboard pages, and a Chinese-default administration console.
+- Generic OAuth 2.0 login and OIDC SSO token exchange.
+- Direct Lsky Pro image hosting uploads, while Upgit remains available.
+- Separate IPv6 ip2region database configuration.
+- Fork-specific CI/CD and Docker publishing workflows, with releases triggered manually.
+
+The upstream comment API and basic capabilities remain available, including Markdown, nested comments, multi-site management, notifications, CAPTCHA, keyword moderation, database options, Docker deployment, localization, dark mode, lazy loading, lightbox support, and IP region display.
+
+## Syncing Upstream
+
+~~~bash
+git remote add upstream https://github.com/ArtalkJS/Artalk.git
+git fetch upstream
+git rebase upstream/master
+~~~
+
+After rebasing, review conflicts in the moderation pipeline, configuration metadata, administration console, and release workflows. Run the backend tests and administration console build before publishing.
 
 ## Features
 
