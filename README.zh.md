@@ -48,6 +48,16 @@ moderator:
 
 `base_url` 必须填写到 `/v1`，不要在末尾增加斜杠。详细字段可参考 [中文配置示例](./conf/artalk.example.zh-CN.yml) 和 [环境变量文档](./docs/docs/zh/guide/env.md)。
 
+### AI 评论助手
+
+新增可选的 AI 评论助手。评论中提及配置的助手名称时，助手会结合页面内容、近期评论和当前评论生成回复，并避免在嵌套评论中重复回复。
+
+- 支持 `responses`、`chat_completions`、`deepseek_json_output` 和 `anthropic_messages` 四种接口模式，最后一种对应 Claude Messages API。
+- `reply_to_pending` 控制待审核评论是否可以触发 AI 回复。
+- AI 助手提示词可在管理端设置页编辑，并使用多行输入框。
+
+示例配置和环境变量说明可参考 [中文配置示例](./conf/artalk.example.zh-CN.yml) 和 [环境变量文档](./docs/docs/zh/guide/env.md)。
+
 ### 审核记录和管理端
 
 - 新增审核记录页面，用于查看异常审核、审核失败和内容替换记录。

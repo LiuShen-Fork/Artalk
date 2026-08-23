@@ -2,7 +2,7 @@
 <img src="https://user-images.githubusercontent.com/22412567/171680920-6e74b77c-c565-487b-bff1-4f94976ecbe7.png" alt="Artalk" width="100%">
 </p>
 
-# Artalk
+# Artalk Fork
 
 [![npm version](https://img.shields.io/npm/v/artalk.svg?style=flat-square)](https://www.npmjs.com/package/artalk)
 [![npm downloads](https://img.shields.io/npm/dt/artalk.svg?style=flat-square)](https://www.npmjs.com/package/artalk)
@@ -21,6 +21,46 @@ Artalk は直感的かつ高機能なコメントシステムで、あらゆる�
 - 🍱 サーバーは Golang を採用し、効率的かつ軽量なクロスプラットフォーム性能を提供します
 - 🐳 Docker によるワンクリックデプロイで、手軽かつ高速に導入できます
 - 🌈 オープンソースソフトウェアで、プライバシーを最優先にセルフホストできます
+
+このリポジトリは [ArtalkJS/Artalk](https://github.com/ArtalkJS/Artalk) をベースにした個人メンテナンスの Fork です。上流のクライアント API と基本的なコメント機能との互換性を維持し、バックエンド、管理コンソール、セルフホスト運用向けの機能を中心に変更しています。
+
+## Fork と上流リポジトリ
+
+- 上流リポジトリ: [ArtalkJS/Artalk](https://github.com/ArtalkJS/Artalk)
+- 現在のリポジトリ: [LiuShen-Fork/Artalk](https://github.com/LiuShen-Fork/Artalk)
+- 上流ドキュメント: [artalk.js.org](https://artalk.js.org)
+- `master` は `upstream/master` をベースとしており、Fork 固有のコミットはこのリポジトリに保持して手動で同期しています。
+- 独自の npm クライアントパッケージは公開していません。フロントエンドクライアントは上流版をベースとし、サーバーと管理コンソールをこのリポジトリで保守しています。
+
+## 上流との差分
+
+### AI コメントモデレーション
+
+既存のモデレーション処理に、任意で利用できる非同期 AI モデレーションを追加しています。OpenAI Responses、OpenAI Chat Completions、DeepSeek JSON Output に対応し、JSON Schema 出力、編集可能なプロンプト、思考モード、API リクエスト失敗時の処理を設定できます。
+
+### AI コメントアシスタント
+
+設定した名前でメンションされたコメントに返信する、任意利用の AI アシスタントを追加しています。ページ内容、最近のコメント、現在のコメントを文脈として利用し、ネストされたコメントでの重複返信を避けます。OpenAI Responses、OpenAI Chat Completions、DeepSeek JSON Output、Claude Messages に対応しています。`reply_to_pending` で、モデレーション待ちのコメントから返信を生成するかどうかを制御できます。プロンプトは管理コンソールの複数行入力欄から編集できます。
+
+### その他の Fork 固有の変更
+
+- モデレーションと AI アシスタントのログ、レビュー操作、ダッシュボード、中文をデフォルトとした管理コンソール。
+- 汎用 OAuth 2.0 ログインと OIDC SSO トークン交換。
+- Upgit を残したまま、Lsky Pro への直接画像アップロードに対応。
+- IPv6 用 ip2region データベースを個別に設定可能。
+- Fork 向けの CI/CD と Docker 公開ワークフロー。リリースは手動実行です。
+
+Markdown、ネストされたコメント、マルチサイト、通知、CAPTCHA、キーワードモデレーション、各種データベース、Docker、ローカライズ、ダークモード、遅延読み込み、ライトボックス、IP 地域表示など、上流の基本機能は引き続き利用できます。
+
+## 上流との同期
+
+~~~bash
+git remote add upstream https://github.com/ArtalkJS/Artalk.git
+git fetch upstream
+git rebase upstream/master
+~~~
+
+rebase 後は、モデレーション処理、設定メタデータ、管理コンソール、リリースワークフローの競合を確認し、バックエンドのテストと管理コンソールのビルドを実行してください。
 
 ## 機能
 
