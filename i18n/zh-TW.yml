@@ -7,6 +7,7 @@
 "Comment": "評論"
 "Comment count": "評論數"
 "Comment failed": "評論失敗"
+"Comment blocked by keyword": "評論包含禁止關鍵詞：{{keyword}}"
 "Config file read failed": "配置文件讀取失敗"
 "Confirm to continue?": "確認繼續？"
 "Contains invalid URL": "包含無效的 URL"

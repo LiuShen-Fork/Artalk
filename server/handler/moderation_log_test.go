@@ -94,3 +94,50 @@ func TestModerationLogManagement(t *testing.T) {
 func jsonNumber(value uint) string {
 	return strconv.FormatUint(uint64(value), 10)
 }
+
+func TestModerationLogForRejectedUnsavedComment(t *testing.T) {
+	app, fiberApp := NewApiTestApp()
+	defer app.Cleanup()
+
+	admin := app.Dao().FindUserByID(1000)
+	token, err := common.LoginGetUserToken(admin, app.Conf().AppKey, 3600)
+	require.NoError(t, err)
+
+	logRow := entity.ModerationLog{
+		SiteName:       "Site A",
+		PageKey:        "page-a",
+		UserName:       "blocked-user",
+		UserEmail:      "blocked@example.com",
+		CommentContent: "contains blocked",
+		Checker:        "intercept",
+		Status:         string(entity.ModerationLogStatusBlock),
+		Action:         string(entity.ModerationLogActionReject),
+		Message:        "keyword matched: blocked",
+	}
+	require.NoError(t, app.Dao().DB().Create(&logRow).Error)
+
+	handler.ModerationLogList(app.App, fiberApp)
+	resp, err := fiberApp.Test(httptest.NewRequest(http.MethodGet, "/moderation/logs?site_name=Site%20A&token="+token, nil))
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var body struct {
+		Logs []struct {
+			CommentID        uint   `json:"comment_id"`
+			CommentAvailable bool   `json:"comment_available"`
+			CommentContent   string `json:"comment_content"`
+			UserName         string `json:"user_name"`
+			Checker          string `json:"checker"`
+			Action           string `json:"action"`
+		} `json:"logs"`
+	}
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
+	require.Len(t, body.Logs, 1)
+	assert.Zero(t, body.Logs[0].CommentID)
+	assert.False(t, body.Logs[0].CommentAvailable)
+	assert.Equal(t, "contains blocked", body.Logs[0].CommentContent)
+	assert.Equal(t, "blocked-user", body.Logs[0].UserName)
+	assert.Equal(t, "intercept", body.Logs[0].Checker)
+	assert.Equal(t, "reject", body.Logs[0].Action)
+}

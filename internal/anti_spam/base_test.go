@@ -176,6 +176,32 @@ func TestAntiSpam(t *testing.T) {
 		assert.Equal(t, "third", results[2].Checker)
 		assert.Equal(t, CheckStatusPass, results[2].Status)
 	})
+
+	t.Run("CheckIntercept records a rejected result", func(t *testing.T) {
+		var result CheckResult
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			ModeratorConf: config.ModeratorConf{
+				Intercept: config.CommentInterceptConf{Enabled: true, Keywords: "blocked"},
+			},
+			OnCheckResult: func(value CheckResult) { result = value },
+		})
+
+		blocked, keyword := antiSpam.CheckIntercept(&CheckerParams{
+			SiteName:      "Site A",
+			PageKey:       "page-a",
+			UserName:      "Alice",
+			UserEmail:     "alice@example.com",
+			RawContent:    "contains blocked",
+			ReviewContent: "contains blocked",
+		})
+
+		assert.True(t, blocked)
+		assert.Equal(t, "blocked", keyword)
+		assert.Equal(t, "intercept", result.Checker)
+		assert.Equal(t, CheckStatusBlock, result.Status)
+		assert.Equal(t, CheckActionReject, result.Action)
+		assert.Equal(t, "contains blocked", result.CommentContent)
+	})
 }
 
 // -------------------------------------------------------------------

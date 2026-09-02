@@ -17,6 +17,7 @@ func TestShouldRecordModerationResult(t *testing.T) {
 		{name: "blocked", result: anti_spam.CheckResult{Status: anti_spam.CheckStatusBlock, Action: anti_spam.CheckActionPending}, want: true},
 		{name: "checker error", result: anti_spam.CheckResult{Status: anti_spam.CheckStatusError, Action: anti_spam.CheckActionPending}, want: true},
 		{name: "replaced keyword", result: anti_spam.CheckResult{Status: anti_spam.CheckStatusPass, Action: anti_spam.CheckActionReplace}, want: true},
+		{name: "synchronous rejection", result: anti_spam.CheckResult{Status: anti_spam.CheckStatusBlock, Action: anti_spam.CheckActionReject}, want: true},
 	}
 
 	for _, tt := range tests {

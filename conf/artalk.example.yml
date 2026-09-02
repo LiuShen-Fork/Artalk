@@ -166,6 +166,11 @@ moderator:
       - ./data/keywords_1.txt
     file_sep: "\n"
     replace_to: x
+  # Comment interception (synchronous rejection; comments are not saved)
+  intercept:
+    enabled: false
+    # Keywords (comma-separated; matched against nickname and comment content)
+    keywords: ""
 
 # Captcha
 captcha:

@@ -286,7 +286,7 @@ onMounted(() => {
             <p>{{ item.message || t('moderationNoMessage') }}</p>
             <blockquote>{{ item.comment_content || t('moderationCommentUnavailable') }}</blockquote>
             <div class="meta">
-              <span>#{{ item.comment_id }}</span>
+              <span v-if="item.comment_id">#{{ item.comment_id }}</span>
               <span>{{ item.user_name || item.user_email || t('unknownUser') }}</span>
               <span>{{ item.site_name }}</span>
               <span>{{ item.date }}</span>

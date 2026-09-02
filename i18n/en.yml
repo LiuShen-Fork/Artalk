@@ -7,6 +7,7 @@
 "Comment": ""
 "Comment count": ""
 "Comment failed": ""
+"Comment blocked by keyword": "Comment contains a blocked keyword: {{keyword}}"
 "Config file read failed": ""
 "Confirm to continue?": ""
 "Contains invalid URL": ""

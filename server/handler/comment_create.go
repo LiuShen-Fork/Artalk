@@ -137,6 +137,25 @@ func CommentCreate(app *core.App, router fiber.Router) {
 			comment.IsPending = true
 		}
 
+		// Synchronously reject comments matching local interception keywords.
+		// This runs before persistence and notification so rejected comments are never published.
+		if !isAdmin {
+			if antiSpamService, err := core.AppService[*core.AntiSpamService](app); err == nil {
+				blocked, keyword := antiSpamService.CheckIntercept(&core.AntiSpamCheckPayload{
+					Comment:      &comment,
+					ReqReferer:   referer,
+					ReqIP:        ip,
+					ReqUserAgent: ua,
+				})
+				if blocked {
+					return common.RespError(c, fiber.StatusBadRequest,
+						i18n.T("Comment blocked by keyword", Map{"keyword": keyword}))
+				}
+			} else {
+				log.Error("[AntiSpamService] err: ", err)
+			}
+		}
+
 		// Save the comment
 		if err := app.Dao().CreateComment(&comment); err != nil {
 			log.Error("Save Comment error: ", err)

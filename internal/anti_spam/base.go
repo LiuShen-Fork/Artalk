@@ -41,6 +41,36 @@ func (as AntiSpam) CheckAndBlock(params *CheckerParams) {
 	as.checkAndBlockWithCheckers(params, as.getEnabledCheckers())
 }
 
+func (as AntiSpam) CheckIntercept(params *CheckerParams) (bool, string) {
+	if !as.conf.Intercept.Enabled {
+		return false, ""
+	}
+
+	interceptor := NewCommentInterceptor(as.conf.Intercept.Keywords)
+	blocked, keyword := interceptor.Check(params)
+	if !blocked {
+		return false, ""
+	}
+
+	if as.conf.OnCheckResult != nil {
+		as.conf.OnCheckResult(CheckResult{
+			CommentID:      params.CommentID,
+			SiteName:       params.SiteName,
+			PageKey:        params.PageKey,
+			UserID:         params.UserID,
+			UserName:       params.UserName,
+			UserEmail:      params.UserEmail,
+			CommentContent: params.RawContent,
+			Checker:        "intercept",
+			Status:         CheckStatusBlock,
+			Action:         CheckActionReject,
+			Message:        fmt.Sprintf("keyword matched: %s", keyword),
+		})
+	}
+
+	return true, keyword
+}
+
 func (as AntiSpam) checkAndBlockWithCheckers(params *CheckerParams, checkers []Checker) {
 	shouldBlock := false
 
@@ -98,14 +128,17 @@ func (as AntiSpam) checkerTrigger(checker Checker, params *CheckerParams) bool {
 
 	if as.conf.OnCheckResult != nil {
 		as.conf.OnCheckResult(CheckResult{
-			CommentID: params.CommentID,
-			SiteName:  params.SiteName,
-			PageKey:   params.PageKey,
-			UserID:    params.UserID,
-			Checker:   checker.Name(),
-			Status:    status,
-			Action:    action,
-			Message:   message,
+			CommentID:      params.CommentID,
+			SiteName:       params.SiteName,
+			PageKey:        params.PageKey,
+			UserID:         params.UserID,
+			UserName:       params.UserName,
+			UserEmail:      params.UserEmail,
+			CommentContent: params.RawContent,
+			Checker:        checker.Name(),
+			Status:         status,
+			Action:         action,
+			Message:        message,
 		})
 	}
 
@@ -224,15 +257,19 @@ const (
 	CheckActionAllow   CheckAction = "allow"
 	CheckActionPending CheckAction = "pending"
 	CheckActionReplace CheckAction = "replace"
+	CheckActionReject  CheckAction = "reject"
 )
 
 type CheckResult struct {
-	CommentID uint
-	SiteName  string
-	PageKey   string
-	UserID    uint
-	Checker   string
-	Status    CheckStatus
-	Action    CheckAction
-	Message   string
+	CommentID      uint
+	SiteName       string
+	PageKey        string
+	UserID         uint
+	UserName       string
+	CommentContent string
+	UserEmail      string
+	Checker        string
+	Status         CheckStatus
+	Action         CheckAction
+	Message        string
 }

@@ -8,6 +8,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCommentInterceptor(t *testing.T) {
+	interceptor := NewCommentInterceptor(" spam,广告, ,spam ")
+
+	blocked, keyword := interceptor.Check(&CheckerParams{
+		UserName:      "Alice",
+		ReviewContent: "This comment contains 广告 content",
+	})
+	assert.True(t, blocked)
+	assert.Equal(t, "广告", keyword)
+
+	blocked, keyword = interceptor.Check(&CheckerParams{
+		UserName:      "spam-user",
+		ReviewContent: "normal content",
+	})
+	assert.True(t, blocked)
+	assert.Equal(t, "spam", keyword)
+
+	blocked, keyword = interceptor.Check(&CheckerParams{
+		UserName:      "Alice",
+		ReviewContent: "normal content",
+	})
+	assert.False(t, blocked)
+	assert.Empty(t, keyword)
+
+	assert.Equal(t, []string{"spam", "广告", "spam"}, interceptor.Keywords())
+}
+
 func TestNewKeywordsChecker(t *testing.T) {
 	kwFile1 := fmt.Sprintf("%s/keywords_1.txt", t.TempDir())
 	_ = os.WriteFile(kwFile1, []byte("关键词A\n关键词B"), 0644)
@@ -136,6 +163,7 @@ func TestNewKeywordsChecker(t *testing.T) {
 		assert.False(t, ok)
 	})
 }
+
 func TestKeywordsCheckerFieldAware(t *testing.T) {
 	keywordFile := fmt.Sprintf("%s/keywords.txt", t.TempDir())
 	assert.NoError(t, os.WriteFile(keywordFile, []byte("广告"), 0644))

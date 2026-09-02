@@ -130,6 +130,13 @@ type ModeratorConf struct {
 	Aliyun         AliyunAntispamConf   `koanf:"aliyun" json:"aliyun"`
 	AI             AIAntispamConf       `koanf:"ai" json:"ai"`
 	Keywords       KeyWordsAntispamConf `koanf:"keywords" json:"keywords"`
+	Intercept      CommentInterceptConf `koanf:"intercept" json:"intercept"`
+}
+
+// CommentInterceptConf configures synchronous local keyword interception.
+type CommentInterceptConf struct {
+	Enabled  bool   `koanf:"enabled" json:"enabled"`
+	Keywords string `koanf:"keywords" json:"keywords"`
 }
 
 // 腾讯云反垃圾

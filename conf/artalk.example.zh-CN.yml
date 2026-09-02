@@ -168,6 +168,11 @@ moderator:
     file_sep: "\n"
     # 替换字符
     replace_to: x
+  # 评论拦截 (命中后同步拒绝，评论不会保存)
+  intercept:
+    enabled: false
+    # 关键词 (使用英文逗号分隔，匹配昵称和评论内容)
+    keywords: ""
 
 # 验证码
 captcha:

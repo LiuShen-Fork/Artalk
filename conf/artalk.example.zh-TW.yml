@@ -145,6 +145,11 @@ moderator:
     file_sep: "\n"
     # 替換字符
     replace_to: x
+  # 評論攔截 (命中後同步拒絕，評論不會保存)
+  intercept:
+    enabled: false
+    # 關鍵詞 (使用英文逗號分隔，匹配暱稱和評論內容)
+    keywords: ""
 
 # 驗證碼
 captcha:

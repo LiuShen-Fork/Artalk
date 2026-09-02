@@ -143,6 +143,9 @@ moderator:
       - ./data/keywords_1.txt
     file_sep: "\n"
     replace_to: x
+  intercept:
+    enabled: false
+    keywords: ""
 
 # Doğrulama (Captcha)
 captcha:

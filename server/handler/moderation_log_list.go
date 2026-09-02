@@ -66,9 +66,9 @@ func ModerationLogList(app *core.App, router fiber.Router) {
 
 func moderationLogAttentionQuery(q *gorm.DB) *gorm.DB {
 	return q.Where(
-		"(status IN ? OR action = ?)",
+		"(status IN ? OR action IN ?)",
 		[]string{string(entity.ModerationLogStatusBlock), string(entity.ModerationLogStatusError)},
-		entity.ModerationLogActionReplace,
+		[]string{string(entity.ModerationLogActionReplace), string(entity.ModerationLogActionReject)},
 	)
 }
 
@@ -119,6 +119,9 @@ func loadModerationLogItems(app *core.App, q *gorm.DB) []ModerationLogItem {
 	items := make([]ModerationLogItem, 0, len(logs))
 	for _, logRow := range logs {
 		item := ModerationLogItem{CookedModerationLog: cookModerationLog(logRow)}
+		item.CommentContent = logRow.CommentContent
+		item.UserName = logRow.UserName
+		item.UserEmail = logRow.UserEmail
 		comment := app.Dao().FindComment(logRow.CommentID)
 		if !comment.IsEmpty() {
 			item.CommentAvailable = true
@@ -141,15 +144,18 @@ func loadModerationLogItems(app *core.App, q *gorm.DB) []ModerationLogItem {
 
 func cookModerationLog(logRow entity.ModerationLog) entity.CookedModerationLog {
 	return entity.CookedModerationLog{
-		ID:        logRow.ID,
-		CommentID: logRow.CommentID,
-		SiteName:  logRow.SiteName,
-		PageKey:   logRow.PageKey,
-		UserID:    logRow.UserID,
-		Checker:   logRow.Checker,
-		Status:    logRow.Status,
-		Action:    logRow.Action,
-		Message:   logRow.Message,
-		Date:      logRow.CreatedAt.Format("2006-01-02 15:04:05"),
+		ID:             logRow.ID,
+		CommentID:      logRow.CommentID,
+		SiteName:       logRow.SiteName,
+		PageKey:        logRow.PageKey,
+		UserID:         logRow.UserID,
+		UserName:       logRow.UserName,
+		UserEmail:      logRow.UserEmail,
+		CommentContent: logRow.CommentContent,
+		Checker:        logRow.Checker,
+		Status:         logRow.Status,
+		Action:         logRow.Action,
+		Message:        logRow.Message,
+		Date:           logRow.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
