@@ -16,6 +16,7 @@ const (
 	ModerationLogActionAllow   ModerationLogAction = "allow"
 	ModerationLogActionPending ModerationLogAction = "pending"
 	ModerationLogActionReplace ModerationLogAction = "replace"
+	ModerationLogActionReject  ModerationLogAction = "reject"
 )
 
 type ModerationLog struct {
@@ -25,6 +26,11 @@ type ModerationLog struct {
 	SiteName  string `gorm:"index;size:255" json:"site_name"`
 	PageKey   string `gorm:"index;size:255" json:"page_key"`
 	UserID    uint   `gorm:"index" json:"user_id"`
+	UserName  string `gorm:"size:255" json:"user_name"`
+	UserEmail string `gorm:"size:255" json:"user_email"`
+
+	// Snapshots are retained for checks that happen before a comment is saved.
+	CommentContent string `json:"comment_content"`
 
 	Checker string `gorm:"index;size:64" json:"checker"`
 	Status  string `gorm:"index;size:32" json:"status"`
@@ -33,16 +39,19 @@ type ModerationLog struct {
 }
 
 type CookedModerationLog struct {
-	ID        uint   `json:"id"`
-	CommentID uint   `json:"comment_id"`
-	SiteName  string `json:"site_name"`
-	PageKey   string `json:"page_key"`
-	UserID    uint   `json:"user_id"`
-	Checker   string `json:"checker"`
-	Status    string `json:"status"`
-	Action    string `json:"action"`
-	Message   string `json:"message"`
-	Date      string `json:"date"`
+	ID             uint   `json:"id"`
+	CommentID      uint   `json:"comment_id"`
+	SiteName       string `json:"site_name"`
+	PageKey        string `json:"page_key"`
+	UserID         uint   `json:"user_id"`
+	UserName       string `json:"user_name"`
+	UserEmail      string `json:"user_email"`
+	CommentContent string `json:"comment_content"`
+	Checker        string `json:"checker"`
+	Status         string `json:"status"`
+	Action         string `json:"action"`
+	Message        string `json:"message"`
+	Date           string `json:"date"`
 }
 
 type AIAssistantLogStatus string
