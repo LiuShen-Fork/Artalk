@@ -98,6 +98,7 @@ export const tr: MessageSchema = {
   badgeColor: 'Rozet Rengi',
   role: 'Rol',
   normal: 'Normal',
+  aiAssistant: 'Yapay zeka asistanı',
   password: 'Şifre',
   passwordEmptyHint: 'şifrenizi değiştirmeyecekseniz boş bırakın',
   emailNotify: 'E-posta bildirimi',
