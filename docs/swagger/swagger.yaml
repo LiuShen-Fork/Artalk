@@ -1710,6 +1710,7 @@ paths:
         - mentions
         - mine
         - pending
+        - ai
         in: query
         name: type
         type: string
