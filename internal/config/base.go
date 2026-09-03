@@ -146,6 +146,15 @@ func (conf *Config) normalPatch() {
 	if conf.AIAssistant.MaxTokens == 0 {
 		conf.AIAssistant.MaxTokens = 512
 	}
+	if conf.AIAssistant.DailyLimit == 0 {
+		conf.AIAssistant.DailyLimit = 40
+	}
+	if conf.AIAssistant.UserHourlyLimit == 0 {
+		conf.AIAssistant.UserHourlyLimit = 5
+	}
+	if strings.TrimSpace(conf.AIAssistant.RateLimitMessage) == "" {
+		conf.AIAssistant.RateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
+	}
 	if conf.AIAssistant.MaxReplyChars == 0 {
 		conf.AIAssistant.MaxReplyChars = 300
 	}
