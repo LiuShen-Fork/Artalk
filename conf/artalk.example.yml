@@ -552,6 +552,10 @@ ai_assistant:
   max_reply_chars: 300
   # Context comment count (Comments sent to the model)
   max_context_comments: 12
+  # CSS selector for the article content (empty scans the whole page)
+  content_selector: ""
+  # CSS selectors excluded from the article content
+  exclude_selectors: []
   # Maximum page characters (Page content sent to the model)
   max_page_chars: 12000
   # Request timeout seconds (AI request timeout)

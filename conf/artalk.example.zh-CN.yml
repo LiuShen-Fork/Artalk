@@ -562,6 +562,10 @@ ai_assistant:
   max_reply_chars: 300
   # 上下文评论数 (发送给模型的评论数量)
   max_context_comments: 12
+  # 正文 CSS 选择器（留空时扫描整个页面）
+  content_selector: ""
+  # 排除的 CSS 选择器
+  exclude_selectors: []
   # 页面内容字数上限 (发送给模型的页面内容)
   max_page_chars: 12000
   # 请求超时秒数 (AI 请求超时时间)

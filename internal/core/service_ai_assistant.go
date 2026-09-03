@@ -92,12 +92,12 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 
 	page := s.app.Dao().FindPage(latest.PageKey, latest.SiteName)
 	pageURL := s.app.Dao().GetPageAccessibleURL(&page)
-	pageText, err := fetchPageText(s.client, pageURL, conf.MaxPageChars)
+	pageText, err := fetchPageTextWithSelectors(s.client, pageURL, conf.MaxPageChars, conf.ContentSelector, conf.ExcludeSelectors)
 	if err != nil {
 		return fmt.Errorf("fetch page context: %w", err)
 	}
 
-	comments := s.recentComments(&latest, conf.MaxContextComments)
+	comments := s.parentCommentContext(&latest)
 	prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
 	response, err := s.request(prompt, conf)
 	if err != nil {
@@ -183,17 +183,15 @@ func assistantTrigger(conf config.AIAssistantConf) string {
 	return "@" + name
 }
 
-func (s *AIAssistantService) recentComments(trigger *entity.Comment, limit int) []entity.Comment {
-	if limit <= 0 {
-		limit = 12
+func (s *AIAssistantService) parentCommentContext(trigger *entity.Comment) []entity.Comment {
+	if trigger == nil || trigger.Rid == 0 {
+		return nil
 	}
-	if limit > 50 {
-		limit = 50
+	parent := s.app.Dao().FindComment(trigger.Rid)
+	if parent.IsEmpty() {
+		return nil
 	}
-	var comments []entity.Comment
-	s.app.Dao().DB().Where("site_name = ? AND page_key = ?", trigger.SiteName, trigger.PageKey).
-		Order("created_at DESC").Limit(limit).Find(&comments)
-	return comments
+	return []entity.Comment{parent}
 }
 
 func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf) (string, error) {
@@ -425,6 +423,10 @@ func (s *AIAssistantService) pruneLogs() {
 }
 
 func fetchPageText(client *http.Client, pageURL string, maxChars int) (string, error) {
+	return fetchPageTextWithSelectors(client, pageURL, maxChars, "", nil)
+}
+
+func fetchPageTextWithSelectors(client *http.Client, pageURL string, maxChars int, contentSelector string, excludeSelectors []string) (string, error) {
 	if pageURL == "" {
 		return "", nil
 	}
@@ -456,11 +458,30 @@ func fetchPageText(client *http.Client, pageURL string, maxChars int) (string, e
 	if err != nil {
 		return "", err
 	}
+	root := doc
+	if strings.TrimSpace(contentSelector) != "" {
+		matches := findHTMLNodes(doc, contentSelector)
+		if len(matches) == 0 {
+			return "", nil
+		}
+		root = matches[0]
+	}
+	excludes := make([]string, 0, len(excludeSelectors)+3)
+	excludes = append(excludes, "script", "style", "noscript")
+	for _, selector := range excludeSelectors {
+		if strings.TrimSpace(selector) != "" {
+			excludes = append(excludes, selector)
+		}
+	}
 	var b strings.Builder
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && (n.Data == "script" || n.Data == "style" || n.Data == "noscript") {
-			return
+		if n.Type == html.ElementNode {
+			for _, selector := range excludes {
+				if matchesHTMLSelector(n, selector) {
+					return
+				}
+			}
 		}
 		if n.Type == html.TextNode {
 			b.WriteString(n.Data)
@@ -470,8 +491,117 @@ func fetchPageText(client *http.Client, pageURL string, maxChars int) (string, e
 			walk(child)
 		}
 	}
-	walk(doc)
+	walk(root)
 	return limitRunes(strings.Join(strings.Fields(b.String()), " "), maxChars), nil
+}
+
+// findHTMLNodes implements the small, predictable selector subset useful for
+// article extraction: comma groups, descendant selectors, tag, #id and .class.
+func findHTMLNodes(root *html.Node, selector string) []*html.Node {
+	var result []*html.Node
+	for _, group := range strings.Split(selector, ",") {
+		parts := strings.Fields(strings.TrimSpace(group))
+		if len(parts) == 0 {
+			continue
+		}
+		var walk func(*html.Node)
+		walk = func(n *html.Node) {
+			if n.Type == html.ElementNode && matchesSelectorChain(n, parts) {
+				result = append(result, n)
+			}
+			for child := n.FirstChild; child != nil; child = child.NextSibling {
+				walk(child)
+			}
+		}
+		walk(root)
+	}
+	return result
+}
+
+func matchesHTMLSelector(n *html.Node, selector string) bool {
+	parts := strings.Fields(strings.TrimSpace(selector))
+	if len(parts) == 0 {
+		return false
+	}
+	for _, group := range strings.Split(selector, ",") {
+		parts = strings.Fields(strings.TrimSpace(group))
+		if len(parts) > 0 && matchesSelectorChain(n, parts) {
+			return true
+		}
+	}
+	return false
+}
+
+func matchesSelectorChain(n *html.Node, parts []string) bool {
+	if !matchesSimpleSelector(n, parts[len(parts)-1]) {
+		return false
+	}
+	ancestor := n.Parent
+	for i := len(parts) - 2; i >= 0; i-- {
+		for ancestor != nil && (ancestor.Type != html.ElementNode || !matchesSimpleSelector(ancestor, parts[i])) {
+			ancestor = ancestor.Parent
+		}
+		if ancestor == nil {
+			return false
+		}
+		ancestor = ancestor.Parent
+	}
+	return true
+}
+
+func matchesSimpleSelector(n *html.Node, selector string) bool {
+	selector = strings.TrimSpace(selector)
+	if selector == "" || n == nil || n.Type != html.ElementNode {
+		return false
+	}
+	tag := selector
+	if i := strings.IndexAny(tag, "#."); i >= 0 {
+		tag = tag[:i]
+	}
+	if tag != "" && tag != "*" && !strings.EqualFold(tag, n.Data) {
+		return false
+	}
+	attrs := make(map[string]string, len(n.Attr))
+	for _, attr := range n.Attr {
+		attrs[strings.ToLower(attr.Key)] = attr.Val
+	}
+	if id := selectorPart(selector, '#'); id != "" && attrs["id"] != id {
+		return false
+	}
+	if classes := selectorParts(selector, '.'); len(classes) > 0 {
+		present := map[string]bool{}
+		for _, class := range strings.Fields(attrs["class"]) {
+			present[class] = true
+		}
+		for _, class := range classes {
+			if !present[class] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func selectorPart(selector string, prefix byte) string {
+	parts := selectorParts(selector, prefix)
+	if len(parts) == 0 {
+		return ""
+	}
+	return parts[0]
+}
+
+func selectorParts(selector string, prefix byte) []string {
+	var result []string
+	for _, part := range strings.Split(selector, string(prefix))[1:] {
+		part = strings.Trim(part, "#.")
+		if i := strings.IndexAny(part, "#."); i >= 0 {
+			part = part[:i]
+		}
+		if part != "" {
+			result = append(result, part)
+		}
+	}
+	return result
 }
 
 func limitRunes(value string, max int) string {

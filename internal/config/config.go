@@ -195,6 +195,8 @@ type AIAssistantConf struct {
 	APIKey             string    `koanf:"api_key" json:"api_key"`
 	Model              string    `koanf:"model" json:"model"`
 	Prompt             string    `koanf:"prompt" json:"prompt"`
+	ContentSelector    string    `koanf:"content_selector" json:"content_selector"`
+	ExcludeSelectors   []string  `koanf:"exclude_selectors" json:"exclude_selectors"`
 	MaxTokens          int       `koanf:"max_tokens" json:"max_tokens"`
 	MaxReplyChars      int       `koanf:"max_reply_chars" json:"max_reply_chars"`
 	MaxContextComments int       `koanf:"max_context_comments" json:"max_context_comments"`
