@@ -106,7 +106,7 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_ADMIN_NOTIFY_LINE_ENABLED** | `false` | 启用 | admin_notify.line.enabled (多元推送 > LINE > Enabled) |
 | **ATK_ADMIN_NOTIFY_LINE_RECEIVERS** | `[USER_ID_1 GROUP_ID_1]` | Receivers | admin_notify.line.receivers (多元推送 > LINE > Receivers) |
 | **ATK_ADMIN_NOTIFY_NOISE_MODE** | `false` | 嘈杂模式 | admin_notify.noise_mode (多元推送 > 嘈杂模式) |
-| **ATK_ADMIN_NOTIFY_NOTIFY_PENDING** | `false` | 待审评论仍然发送通知 (当评论被拦截时仍然发送通知) | admin_notify.notify_pending (多元推送 > 待审评论仍然发送通知) |
+| **ATK_ADMIN_NOTIFY_NOTIFY_PENDING** | `false` | 待审评论仍然发送通知 | admin_notify.notify_pending (多元推送 > 待审评论仍然发送通知) |
 | **ATK_ADMIN_NOTIFY_NOTIFY_TPL** | `"default"` | 通知模版 (填入文件路径使用自定义模板) | admin_notify.notify_tpl (多元推送 > 通知模版) |
 | **ATK_ADMIN_NOTIFY_SLACK_ENABLED** | `false` | 启用 | admin_notify.slack.enabled (多元推送 > Slack > Enabled) |
 | **ATK_ADMIN_NOTIFY_SLACK_OAUTH_TOKEN** | `""` | OauthToken | admin_notify.slack.oauth_token (多元推送 > Slack > OauthToken) |

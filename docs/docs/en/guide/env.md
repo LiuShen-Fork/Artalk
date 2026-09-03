@@ -105,7 +105,7 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_ADMIN_NOTIFY_LINE_ENABLED** | `false` | 启用 | admin_notify.line.enabled (Multi-Push > LINE > Enabled) |
 | **ATK_ADMIN_NOTIFY_LINE_RECEIVERS** | `[USER_ID_1 GROUP_ID_1]` | Receivers | admin_notify.line.receivers (Multi-Push > LINE > Receivers) |
 | **ATK_ADMIN_NOTIFY_NOISE_MODE** | `false` | Noise mode | admin_notify.noise_mode (Multi-Push > Noise mode) |
-| **ATK_ADMIN_NOTIFY_NOTIFY_PENDING** | `false` | Pending comment still send notification (notifications are still sent when comments are intercepted) | admin_notify.notify_pending (Multi-Push > Pending comment still send notification) |
+| **ATK_ADMIN_NOTIFY_NOTIFY_PENDING** | `false` | Pending comments still send notifications | admin_notify.notify_pending (Multi-Push > Pending comments still send notifications) |
 | **ATK_ADMIN_NOTIFY_NOTIFY_TPL** | `"default"` | Notification template (set to file path to use custom template) | admin_notify.notify_tpl (Multi-Push > Notification template) |
 | **ATK_ADMIN_NOTIFY_SLACK_ENABLED** | `false` | 启用 | admin_notify.slack.enabled (Multi-Push > Slack > Enabled) |
 | **ATK_ADMIN_NOTIFY_SLACK_OAUTH_TOKEN** | `""` | OauthToken | admin_notify.slack.oauth_token (Multi-Push > Slack > OauthToken) |

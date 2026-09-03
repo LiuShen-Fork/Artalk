@@ -202,6 +202,20 @@ func TestAntiSpam(t *testing.T) {
 		assert.Equal(t, CheckActionReject, result.Action)
 		assert.Equal(t, "contains blocked", result.CommentContent)
 	})
+
+	t.Run("CheckIntercept reuses the parsed keywords", func(t *testing.T) {
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			ModeratorConf: config.ModeratorConf{
+				Intercept: config.CommentInterceptConf{Enabled: true, Keywords: "blocked"},
+			},
+		})
+
+		antiSpam.conf.Intercept.Keywords = "changed"
+		blocked, keyword := antiSpam.CheckIntercept(&CheckerParams{ReviewContent: "blocked"})
+
+		assert.True(t, blocked)
+		assert.Equal(t, "blocked", keyword)
+	})
 }
 
 // -------------------------------------------------------------------

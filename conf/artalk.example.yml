@@ -282,7 +282,7 @@ email:
 admin_notify:
   # Notification template (set to file path to use custom template)
   notify_tpl: default
-  # Pending comment still send notification (notifications are still sent when comments are intercepted)
+  # Pending comments still send notifications
   notify_pending: false
   # Noise mode
   # -- noise_mode is disabled by default. --

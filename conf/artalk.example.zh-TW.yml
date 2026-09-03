@@ -272,7 +272,7 @@ email:
 admin_notify:
   # 通知模板 (填入文件路徑使用自定義模板)
   notify_tpl: default
-  # 待審評論仍然發送通知 (當評論被攔截時仍然發送通知)
+  # 待審評論仍然發送通知
   notify_pending: false
   # 嘈雜模式
   noise_mode: false
