@@ -10,10 +10,17 @@ type CommentInterceptor struct {
 func NewCommentInterceptor(keywords string) *CommentInterceptor {
 	items := strings.Split(keywords, ",")
 	filtered := make([]string, 0, len(items))
+	seen := make(map[string]struct{}, len(items))
 	for _, item := range items {
-		if keyword := strings.TrimSpace(item); keyword != "" {
-			filtered = append(filtered, keyword)
+		keyword := strings.TrimSpace(item)
+		if keyword == "" {
+			continue
 		}
+		if _, exists := seen[keyword]; exists {
+			continue
+		}
+		seen[keyword] = struct{}{}
+		filtered = append(filtered, keyword)
 	}
 	return &CommentInterceptor{keywords: filtered}
 }

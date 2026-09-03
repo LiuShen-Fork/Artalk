@@ -25,13 +25,15 @@ type AntiSpamConf struct {
 }
 
 type AntiSpam struct {
-	conf *AntiSpamConf
+	conf        *AntiSpamConf
+	interceptor *CommentInterceptor
 }
 
 // Create new AntiSpam instance
 func NewAntiSpam(conf *AntiSpamConf) *AntiSpam {
 	return &AntiSpam{
-		conf: conf,
+		conf:        conf,
+		interceptor: NewCommentInterceptor(conf.Intercept.Keywords),
 	}
 }
 
@@ -46,8 +48,7 @@ func (as AntiSpam) CheckIntercept(params *CheckerParams) (bool, string) {
 		return false, ""
 	}
 
-	interceptor := NewCommentInterceptor(as.conf.Intercept.Keywords)
-	blocked, keyword := interceptor.Check(params)
+	blocked, keyword := as.interceptor.Check(params)
 	if !blocked {
 		return false, ""
 	}

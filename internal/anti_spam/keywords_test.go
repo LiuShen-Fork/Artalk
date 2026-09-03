@@ -32,7 +32,7 @@ func TestCommentInterceptor(t *testing.T) {
 	assert.False(t, blocked)
 	assert.Empty(t, keyword)
 
-	assert.Equal(t, []string{"spam", "广告", "spam"}, interceptor.Keywords())
+	assert.Equal(t, []string{"spam", "广告"}, interceptor.Keywords())
 }
 
 func TestNewKeywordsChecker(t *testing.T) {
