@@ -33,6 +33,7 @@ type AIAssistantService struct {
 	client   *http.Client
 	mu       sync.Mutex
 	userID   uint
+	userKey  string
 	rateMu   sync.Mutex
 	day      string
 	dayCount int
@@ -52,6 +53,7 @@ func (s *AIAssistantService) Init() error {
 func (s *AIAssistantService) Dispose() error {
 	s.client = nil
 	s.userID = 0
+	s.userKey = ""
 	return nil
 }
 
@@ -202,17 +204,19 @@ func (s *AIAssistantService) reserveRateLimit(userID uint, conf config.AIAssista
 func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.userID != 0 {
+	name := assistantName(conf)
+	email := strings.TrimSpace(conf.Email)
+	if name == "" || email == "" {
+		return entity.User{}, fmt.Errorf("ai_assistant name and email are required")
+	}
+	userKey := strings.Join([]string{name, strings.ToLower(email), strings.TrimSpace(conf.Link)}, "\x00")
+	if s.userID != 0 && s.userKey == userKey {
 		user := s.app.Dao().FindUserByID(s.userID)
 		if !user.IsEmpty() {
 			return user, nil
 		}
 		s.userID = 0
-	}
-	name := assistantName(conf)
-	email := strings.TrimSpace(conf.Email)
-	if name == "" || email == "" {
-		return entity.User{}, fmt.Errorf("ai_assistant name and email are required")
+		s.userKey = ""
 	}
 	user, err := s.app.Dao().FindCreateUser(name, email, conf.Link)
 	if err != nil {
@@ -225,6 +229,7 @@ func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.
 		}
 	}
 	s.userID = user.ID
+	s.userKey = userKey
 	return user, nil
 }
 
