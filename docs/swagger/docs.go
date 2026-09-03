@@ -744,7 +744,8 @@ const docTemplate = `{
                             "all",
                             "mentions",
                             "mine",
-                            "pending"
+                            "pending",
+                            "ai"
                         ],
                         "type": "string",
                         "description": "Message center show type",
