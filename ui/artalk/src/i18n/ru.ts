@@ -18,6 +18,7 @@ export default defineLocaleExternal(
     uploadImage: 'Загрузить изображение',
     uploadFail: 'Ошибка загрузки',
     commentFail: 'Не удалось оставить комментарий',
+    aiAssistant: 'ИИ-помощник',
     restoredMsg: 'Содержимое было восстановлено',
     onlyAdminCanReply: 'Только администратор может ответить',
     uploadLoginMsg: 'Пожалуйста, введите имя и электронную почту для загрузки',

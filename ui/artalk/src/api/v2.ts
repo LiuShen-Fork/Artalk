@@ -51,6 +51,7 @@ export interface EntityCookedComment {
   is_pending: boolean
   is_pinned: boolean
   is_verified: boolean
+  is_ai_assistant?: boolean
   link: string
   nick: string
   page_key: string
@@ -100,6 +101,7 @@ export interface EntityCookedUser {
   email: string
   id: number
   is_admin: boolean
+  is_ai_assistant?: boolean
   link: string
   name: string
   receive_email: boolean
@@ -402,6 +404,7 @@ export interface HandlerResponseCommentGet {
 }
 
 export interface HandlerResponseCommentList {
+  ai_comments?: EntityCookedComment[]
   comments: EntityCookedComment[]
   count: number
   page?: EntityCookedPage
@@ -1193,6 +1196,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         scope?: 'page' | 'user' | 'site'
         /** Search keywords */
         search?: string
+        /** Return AI assistant comments separately */
+        split_ai?: boolean
         /** The site name of your content scope */
         site_name?: string
         /** Sort by condition */

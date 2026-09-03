@@ -18,6 +18,7 @@ export default defineLocaleExternal(
     uploadImage: '画像をアップロード',
     uploadFail: 'アップロードに失敗しました',
     commentFail: 'コメントに失敗しました',
+    aiAssistant: 'AIアシスタント',
     restoredMsg: '内容が自動的に復元されました',
     onlyAdminCanReply: '管理者のみがコメントできます',
     uploadLoginMsg: '名前とメールアドレスを入力してからアップロードしてください',

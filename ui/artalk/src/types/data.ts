@@ -38,6 +38,9 @@ export interface CommentData {
   /** 是否已验证 */
   is_verified: boolean
 
+  /** 是否为 AI 评论助手 */
+  is_ai_assistant?: boolean
+
   /** 徽章文字 */
   badge_name?: string
 
@@ -72,6 +75,9 @@ export interface CommentData {
 export interface ListData {
   /** 评论数据 */
   comments: CommentData[]
+
+  /** 当前页面的 AI 评论助手评论 */
+  ai_comments?: CommentData[]
 
   /** 根评论总数 */
   roots_count: number

@@ -48,6 +48,7 @@ func (dao *Dao) CookComment(c *entity.Comment) entity.CookedComment {
 		Content:        c.Content,
 		ContentMarked:  markedContent,
 		UserID:         c.UserID,
+		IsAIAssistant:  user.IsAIAssistant,
 		Nick:           user.Name,
 		EmailEncrypted: getCommentEmailHash(user.Email),
 		Link:           user.Link,
@@ -179,14 +180,15 @@ func (dao *Dao) FindAllSitesCooked() []entity.CookedSite {
 
 func (dao *Dao) CookUser(u *entity.User) entity.CookedUser {
 	return entity.CookedUser{
-		ID:           u.ID,
-		Name:         u.Name,
-		Email:        u.Email,
-		Link:         u.Link,
-		BadgeName:    u.BadgeName,
-		BadgeColor:   u.BadgeColor,
-		IsAdmin:      u.IsAdmin,
-		ReceiveEmail: u.ReceiveEmail,
+		ID:            u.ID,
+		Name:          u.Name,
+		Email:         u.Email,
+		Link:          u.Link,
+		BadgeName:     u.BadgeName,
+		BadgeColor:    u.BadgeColor,
+		IsAdmin:       u.IsAdmin,
+		IsAIAssistant: u.IsAIAssistant,
+		ReceiveEmail:  u.ReceiveEmail,
 	}
 }
 

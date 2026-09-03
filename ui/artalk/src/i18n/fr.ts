@@ -18,6 +18,7 @@ export default defineLocaleExternal(
     uploadImage: 'Télécharger une image',
     uploadFail: 'Échec du téléchargement',
     commentFail: 'Échec du commentaire',
+    aiAssistant: 'Assistant IA',
     restoredMsg: 'Le contenu a été restauré',
     onlyAdminCanReply: 'Seul l’administrateur peut répondre',
     uploadLoginMsg: 'Veuillez remplir votre nom et email pour télécharger',

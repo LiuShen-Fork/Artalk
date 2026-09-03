@@ -5,7 +5,8 @@ import (
 )
 
 type PageScopeOpts struct {
-	AdminUserIDs []uint
+	AdminUserIDs   []uint
+	ExcludeUserIDs []uint
 }
 
 type PageScopePayload struct {
@@ -35,6 +36,9 @@ func PageScopeQuery(payload PageScopePayload, opts PageScopeOpts) func(liteDB) l
 		// Show admin comments only function
 		if slices.Contains(payload.Tags, AdminOnly) {
 			d.Scopes(CommentsWithinSomeUsers(opts.AdminUserIDs))
+		}
+		if len(opts.ExcludeUserIDs) > 0 {
+			d.Where("user_id NOT IN ?", opts.ExcludeUserIDs)
 		}
 
 		return d

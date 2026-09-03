@@ -28,6 +28,8 @@ type QueryOptions struct {
 	SortBy SortRule
 
 	Search string
+
+	SplitAIAssistant bool
 }
 
 // Get query scope by params
@@ -53,6 +55,12 @@ func GetQueryScopes(dao *dao.Dao, opts QueryOptions) func(liteDB) liteDB {
 		q.Scopes(map[Scope]func(liteDB) liteDB{
 			ScopePage: PageScopeQuery(opts.PagePayload, PageScopeOpts{
 				AdminUserIDs: dao.GetAllAdminIDs(),
+				ExcludeUserIDs: func() []uint {
+					if opts.SplitAIAssistant {
+						return dao.GetAIAssistantIDs()
+					}
+					return nil
+				}(),
 			}),
 			ScopeUser: UserScopeQuery(opts.UserPayload, UserScopeOpts{
 				User: opts.User,

@@ -41,7 +41,16 @@ func FindComments(dao *dao.Dao, opts QueryOptions, pg FindOptions) ([]entity.Coo
 	// Subsequent query
 	cooked := dao.CookAllComments(comments)
 	if pg.Nested {
-		cooked = findNestedChildren(dao, cooked, scopes)
+		var extraRootIDs []uint
+		if opts.SplitAIAssistant && opts.Scope == ScopePage {
+			// Assistant roots are intentionally excluded from the regular list, but
+			// replies from normal users must remain visible there.
+			dao.DB().Model(&entity.Comment{}).
+				Where("site_name = ? AND page_key = ? AND rid = 0 AND user_id IN ?",
+					opts.PagePayload.SiteName, opts.PagePayload.PageKey, dao.GetAIAssistantIDs()).
+				Pluck("id", &extraRootIDs)
+		}
+		cooked = findNestedChildren(dao, cooked, scopes, extraRootIDs)
 	} else {
 		cooked = findFlatLinkedComments(dao, cooked, scopes)
 	}

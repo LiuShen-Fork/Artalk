@@ -5,6 +5,12 @@ import (
 )
 
 func (pusher *NotifyPusher) checkNeedSendEmailToUser(comment *entity.Comment, parentComment *entity.Comment) bool {
+	// The assistant is a sender-only identity. Never notify it as a recipient,
+	// even when its configured email is shared with another user.
+	if pusher.dao.FetchUserForComment(parentComment).IsAIAssistant {
+		return false
+	}
+
 	// 自己回复自己，不提醒
 	if comment.UserID == parentComment.UserID {
 		return false
