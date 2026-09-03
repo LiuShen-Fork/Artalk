@@ -60,7 +60,9 @@ export const Fetch: ArtalkPlugin = (ctx) => {
         // 装置评论
         // AI assistant comments are rendered in the dedicated list at the top.
         // Keep regular comments in the main discussion (including replies to AI).
-        listData.comments = listData.comments.filter((comment) => !comment.is_ai_assistant)
+        if (reqParams.split_ai) {
+          listData.comments = listData.comments.filter((comment) => !comment.is_ai_assistant)
+        }
         ctx.getData().loadComments(listData.comments)
 
         // 更新页面数据
