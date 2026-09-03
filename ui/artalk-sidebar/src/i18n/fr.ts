@@ -98,6 +98,7 @@ export const fr: MessageSchema = {
   badgeColor: "Couleur de l'insigne",
   role: 'Rôle',
   normal: 'Normal',
+  aiAssistant: 'Assistant IA',
   password: 'Mot de passe',
   passwordEmptyHint: 'Laissez vide pour ne pas changer le mot de passe',
   emailNotify: 'Notification par email',

@@ -94,6 +94,7 @@ export const ko: MessageSchema = {
   badgeColor: '뱃지 색상',
   role: '역할',
   normal: '일반',
+  aiAssistant: 'AI 어시스턴트',
   password: '비밀번호',
   passwordEmptyHint: '비밀번호를 변경하지 않으려면 비워 두세요',
   emailNotify: '이메일 알림',

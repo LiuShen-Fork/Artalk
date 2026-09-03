@@ -95,6 +95,7 @@ export const ja: MessageSchema = {
   badgeColor: 'バッジカラー',
   role: '役割',
   normal: '通常',
+  aiAssistant: 'AIアシスタント',
   password: 'パスワード',
   passwordEmptyHint: '空欄の場合はパスワードが変更されません',
   emailNotify: 'メール通知',

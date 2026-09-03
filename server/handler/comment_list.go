@@ -27,7 +27,7 @@ type ParamsCommentList struct {
 	Search           string `query:"search" json:"search" validate:"optional"`     // Search keywords
 	SplitAIAssistant bool   `query:"split_ai" json:"split_ai" validate:"optional"` // Return AI assistant comments separately
 
-	Type  string `query:"type" json:"type" enums:"all,mentions,mine,pending" validate:"optional"` // Message center show type
+	Type  string `query:"type" json:"type" enums:"all,mentions,mine,pending,ai" validate:"optional"` // Message center show type
 	Scope string `query:"scope" json:"scope" enums:"page,user,site" validate:"optional"`          // The scope of comments
 	Name  string `query:"name" json:"name" validate:"optional"`                                   // The username
 	Email string `query:"email" json:"email" validate:"optional"`                                 // The user email
@@ -91,8 +91,9 @@ func CommentList(app *core.App, router fiber.Router) {
 			Scope: scope,
 
 			SitePayload: cog.SitePayload{
-				Type:     cog.SiteScopeType(p.Type),
-				SiteName: p.SiteName,
+				Type:           cog.SiteScopeType(p.Type),
+				SiteName:       p.SiteName,
+				AIAssistantIDs: app.Dao().GetAIAssistantIDs(),
 			},
 
 			PagePayload: cog.PageScopePayload{

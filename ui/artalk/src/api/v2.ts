@@ -1203,7 +1203,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         /** Sort by condition */
         sort_by?: 'date_asc' | 'date_desc' | 'vote'
         /** Message center show type */
-        type?: 'all' | 'mentions' | 'mine' | 'pending'
+        type?: 'all' | 'mentions' | 'mine' | 'pending' | 'ai'
         /** Only show comments by admin */
         view_only_admin?: boolean
       },

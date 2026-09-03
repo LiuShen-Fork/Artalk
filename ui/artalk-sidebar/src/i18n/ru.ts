@@ -98,6 +98,7 @@ export const ru: MessageSchema = {
   badgeColor: 'Цвет значка',
   role: 'Роль',
   normal: 'Обычный',
+  aiAssistant: 'ИИ-помощник',
   password: 'Пароль',
   passwordEmptyHint: 'Оставьте пустым, если не хотите менять пароль',
   emailNotify: 'Уведомления по электронной почте',

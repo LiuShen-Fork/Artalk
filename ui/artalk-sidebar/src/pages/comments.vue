@@ -32,6 +32,7 @@ onMounted(() => {
       {
         all: 'all',
         pending: 'pending',
+        ai: 'aiAssistant',
         personal_all: 'personal',
       },
       'all',
@@ -80,6 +81,9 @@ onMounted(() => {
 
       params.scope = scope
       params.type = type
+      // The admin list intentionally keeps AI comments in the normal result;
+      // the dedicated tab filters them server-side.
+      params.split_ai = false
 
       if (search.value) params.search = search.value
     },

@@ -91,6 +91,7 @@ export const zhTW: MessageSchema = {
   badgeColor: '徽章顏色',
   role: '身份角色',
   normal: '一般',
+  aiAssistant: 'AI 助手',
   password: '密碼',
   passwordEmptyHint: '留空表示不變更密碼',
   emailNotify: '郵件通知',

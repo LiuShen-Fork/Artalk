@@ -97,6 +97,7 @@ export const en = {
   badgeColor: 'Badge Color',
   role: 'Role',
   normal: 'Normal',
+  aiAssistant: 'AI Assistant',
   password: 'Password',
   passwordEmptyHint: 'leave blank not change your password',
   emailNotify: 'Email notification',
