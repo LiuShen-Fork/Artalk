@@ -22,7 +22,8 @@ type ParamsCommentList struct {
 	SortBy        string `query:"sort_by" json:"sort_by" enums:"date_asc,date_desc,vote" validate:"optional"` // Sort by condition
 	ViewOnlyAdmin bool   `query:"view_only_admin" json:"view_only_admin" validate:"optional"`                 // Only show comments by admin
 
-	Search string `query:"search" json:"search" validate:"optional"` // Search keywords
+	Search           string `query:"search" json:"search" validate:"optional"`     // Search keywords
+	SplitAIAssistant bool   `query:"split_ai" json:"split_ai" validate:"optional"` // Return AI assistant comments separately
 
 	Type  string `query:"type" json:"type" enums:"all,mentions,mine,pending" validate:"optional"` // Message center show type
 	Scope string `query:"scope" json:"scope" enums:"page,user,site" validate:"optional"`          // The scope of comments
@@ -32,6 +33,7 @@ type ParamsCommentList struct {
 
 type ResponseCommentList struct {
 	Comments   []entity.CookedComment `json:"comments"`
+	AIComments []entity.CookedComment `json:"ai_comments,omitempty"`
 	Count      int64                  `json:"count"`
 	RootsCount int64                  `json:"roots_count"`
 	Page       *entity.CookedPage     `json:"page,omitempty"`
@@ -99,8 +101,9 @@ func CommentList(app *core.App, router fiber.Router) {
 				Type: cog.UserScopeType(p.Type),
 			},
 
-			SortBy: cog.SortRule(p.SortBy),
-			Search: p.Search,
+			SortBy:           cog.SortRule(p.SortBy),
+			Search:           p.Search,
+			SplitAIAssistant: p.SplitAIAssistant,
 		}
 
 		// Generate query by options
@@ -112,10 +115,16 @@ func CommentList(app *core.App, router fiber.Router) {
 
 		// Get IP region
 		comments = findIPRegionForComments(app, comments)
+		aiComments := []entity.CookedComment{}
+		if scope == cog.ScopePage && p.SplitAIAssistant {
+			aiComments = findAIComments(app, p.PageKey, p.SiteName)
+			aiComments = findIPRegionForComments(app, aiComments)
+		}
 
 		// The response data
 		resp := ResponseCommentList{
 			Comments:   comments,
+			AIComments: aiComments,
 			Count:      count,
 			RootsCount: rootsCount,
 		}
@@ -127,6 +136,24 @@ func CommentList(app *core.App, router fiber.Router) {
 
 		return common.RespData(c, resp)
 	})
+}
+
+// findAIComments returns the assistant's comments for the current page. They are
+// kept separate from the paginated user discussion so the UI can render them in
+// a dedicated diagnostic section without relying on the assistant's email.
+func findAIComments(app *core.App, pageKey, siteName string) []entity.CookedComment {
+	var assistantIDs []uint
+	app.Dao().DB().Model(&entity.User{}).
+		Where("is_ai_assistant = ?", true).
+		Pluck("id", &assistantIDs)
+	if len(assistantIDs) == 0 {
+		return []entity.CookedComment{}
+	}
+
+	var comments []*entity.Comment
+	app.Dao().DB().Where("page_key = ? AND site_name = ? AND user_id IN ?", pageKey, siteName, assistantIDs).
+		Order("created_at DESC").Find(&comments)
+	return app.Dao().CookAllComments(comments)
 }
 
 func findPageData(dao *dao.Dao, pageKey string, siteName string) *entity.CookedPage {

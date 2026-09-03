@@ -18,7 +18,10 @@ export function makeNestCommentNodeList(
 ) {
   const nodeList: CommentNode[] = []
 
-  const roots = srcData.filter((o) => o.rid === 0)
+  const commentIDs = new Set(srcData.map((o) => o.id))
+  // Treat replies whose parent lives in the separate AI list as roots in the
+  // regular discussion, so they remain visible after assistant comments move.
+  const roots = srcData.filter((o) => o.rid === 0 || !commentIDs.has(o.rid))
   roots.forEach((root: CommentData) => {
     const rootNode: CommentNode = {
       id: root.id,

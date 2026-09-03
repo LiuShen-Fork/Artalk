@@ -1,6 +1,18 @@
 .artalk > .atk-list {
   position: relative;
 
+  & > .atk-ai-comments {
+    border-bottom: 1px solid var(--at-color-border);
+    margin-bottom: 8px;
+
+    .atk-ai-comments-header {
+      color: var(--at-color-main);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 17px 4px;
+    }
+  }
+
   & > .atk-list-header {
     display: flex;
     flex-direction: row;

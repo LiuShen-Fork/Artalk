@@ -37,12 +37,12 @@ export const createNestStrategy: LayoutStrategyCreator = (opts) => ({
     // 嵌套模式
     const node = opts.createCommentNode(comment, replyComment)
 
-    if (comment.rid === 0) {
+    const parent = comment.rid ? opts.findCommentNode(comment.rid) : undefined
+    if (comment.rid === 0 || !parent) {
       // root评论 新增
       opts.$commentsWrap?.prepend(node.getEl())
     } else {
       // 子评论 新增
-      const parent = opts.findCommentNode(comment.rid)
       if (parent) {
         parent.putChild(node, opts.nestSortBy === 'DATE_ASC' ? 'append' : 'prepend')
 

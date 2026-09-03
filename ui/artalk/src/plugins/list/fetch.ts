@@ -28,6 +28,7 @@ export const Fetch: ArtalkPlugin = (ctx) => {
       flat_mode: params.flatMode,
       page_key: conf.get().pageKey,
       site_name: conf.get().site,
+      split_ai: true,
     }
 
     // call the modifier function
@@ -57,6 +58,9 @@ export const Fetch: ArtalkPlugin = (ctx) => {
         ctx.getData().setListLastFetch({ params, data: listData })
 
         // 装置评论
+        // AI assistant comments are rendered in the dedicated list at the top.
+        // Keep regular comments in the main discussion (including replies to AI).
+        listData.comments = listData.comments.filter((comment) => !comment.is_ai_assistant)
         ctx.getData().loadComments(listData.comments)
 
         // 更新页面数据

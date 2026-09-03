@@ -5,6 +5,7 @@ type CookedComment struct {
 	Content        string `json:"content"`
 	ContentMarked  string `json:"content_marked"`
 	UserID         uint   `json:"user_id"`
+	IsAIAssistant  bool   `json:"is_ai_assistant,omitempty"`
 	Nick           string `json:"nick"`
 	EmailEncrypted string `json:"email_encrypted"`
 	Link           string `json:"link"`

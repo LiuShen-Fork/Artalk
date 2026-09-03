@@ -717,6 +717,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "boolean",
+                        "description": "Return AI assistant comments separately",
+                        "name": "split_ai",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "The site name of your content scope",
                         "name": "site_name",
@@ -4062,6 +4068,9 @@ const docTemplate = `{
                 "ip_region": {
                     "type": "string"
                 },
+                "is_ai_assistant": {
+                    "type": "boolean"
+                },
                 "is_allow_reply": {
                     "type": "boolean"
                 },
@@ -4246,6 +4255,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "is_admin": {
+                    "type": "boolean"
+                },
+                "is_ai_assistant": {
                     "type": "boolean"
                 },
                 "link": {
@@ -5059,6 +5071,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CookedComment"
+                    }
+                },
+                "ai_comments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.CookedComment"

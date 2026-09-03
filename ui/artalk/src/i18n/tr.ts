@@ -18,6 +18,7 @@ export default defineLocaleExternal(
     uploadImage: 'Görsel Yükle',
     uploadFail: 'Yükleme Başarısız',
     commentFail: 'Yorum yapma başarısız',
+    aiAssistant: 'Yapay Zeka Asistanı',
     restoredMsg: 'İçerik geri yüklendi',
     onlyAdminCanReply: 'Sadece yönetici yanıtlayabilir',
     uploadLoginMsg: 'Yüklemek için lütfen adınızı ve e-postanızı girin',

@@ -249,6 +249,12 @@ func (dao *Dao) GetAllAdminIDs() []uint {
 	return ids
 }
 
+func (dao *Dao) GetAIAssistantIDs() []uint {
+	var ids []uint
+	dao.DB().Model(&entity.User{}).Where("is_ai_assistant = ?", true).Pluck("id", &ids)
+	return ids
+}
+
 func (dao *Dao) IsAdminUser(userID uint) bool {
 	admins := dao.GetAllAdmins()
 	for _, admin := range admins {

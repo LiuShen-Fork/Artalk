@@ -126,6 +126,13 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 	if err := s.app.Dao().CreateComment(&reply); err != nil {
 		return fmt.Errorf("save assistant reply: %w", err)
 	}
+	if notifyService, err := AppService[*NotifyService](s.app); err == nil {
+		if err := notifyService.Push(&reply, &latest); err != nil {
+			return fmt.Errorf("notify assistant reply: %w", err)
+		}
+	} else {
+		return fmt.Errorf("get notify service: %w", err)
+	}
 	s.record(&latest, &reply, trigger, entity.AIAssistantLogStatusSuccess, response, "")
 	return nil
 }
@@ -148,6 +155,12 @@ func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.
 	user, err := s.app.Dao().FindCreateUser(name, email, conf.Link)
 	if err != nil {
 		return entity.User{}, err
+	}
+	if !user.IsAIAssistant {
+		user.IsAIAssistant = true
+		if err := s.app.Dao().UpdateUser(&user); err != nil {
+			return entity.User{}, fmt.Errorf("mark assistant user: %w", err)
+		}
 	}
 	s.userID = user.ID
 	return user, nil
