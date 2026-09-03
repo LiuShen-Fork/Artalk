@@ -197,6 +197,9 @@ type AIAssistantConf struct {
 	Prompt             string    `koanf:"prompt" json:"prompt"`
 	ContentSelector    string    `koanf:"content_selector" json:"content_selector"`
 	ExcludeSelectors   []string  `koanf:"exclude_selectors" json:"exclude_selectors"`
+	DailyLimit         int       `koanf:"daily_limit" json:"daily_limit"`
+	UserHourlyLimit    int       `koanf:"user_hourly_limit" json:"user_hourly_limit"`
+	RateLimitMessage   string    `koanf:"rate_limit_message" json:"rate_limit_message"`
 	MaxTokens          int       `koanf:"max_tokens" json:"max_tokens"`
 	MaxReplyChars      int       `koanf:"max_reply_chars" json:"max_reply_chars"`
 	MaxContextComments int       `koanf:"max_context_comments" json:"max_context_comments"`

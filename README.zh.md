@@ -50,10 +50,11 @@ moderator:
 
 ### AI 评论助手
 
-新增可选的 AI 评论助手。评论中提及配置的助手名称时，助手会结合页面内容、近期评论和当前评论生成回复，并避免在嵌套评论中重复回复。
+新增可选的 AI 评论助手。评论中提及配置的助手名称时，助手会结合页面正文、触发评论的父评论（如果有）和当前评论生成回复，并避免在嵌套评论中重复回复。可通过 `content_selector` 和 `exclude_selectors` 精确控制正文提取，选择器未匹配时不会阻断回复。
 
 - 支持 `responses`、`chat_completions`、`deepseek_json_output` 和 `anthropic_messages` 四种接口模式，最后一种对应 Claude Messages API。
 - `reply_to_pending` 控制待审核评论是否可以触发 AI 回复。
+- `daily_limit`（默认 40）和 `user_hourly_limit`（默认 5）分别限制每日总调用次数和单用户每小时调用次数；超限时直接保存固定回复，不调用 AI 服务。
 - AI 助手提示词可在管理端设置页编辑，并使用多行输入框。
 
 示例配置和环境变量说明可参考 [中文配置示例](./conf/artalk.example.zh-CN.yml) 和 [环境变量文档](./docs/docs/zh/guide/env.md)。

@@ -566,6 +566,12 @@ ai_assistant:
   content_selector: ""
   # 排除的 CSS 选择器
   exclude_selectors: []
+  # 每日 AI 请求次数上限
+  daily_limit: 40
+  # 单用户每小时 AI 请求次数上限
+  user_hourly_limit: 5
+  # 达到限频时保存的回复
+  rate_limit_message: "当前小助手累啦，晚点再来看看吧~"
   # 页面内容字数上限 (发送给模型的页面内容)
   max_page_chars: 12000
   # 请求超时秒数 (AI 请求超时时间)

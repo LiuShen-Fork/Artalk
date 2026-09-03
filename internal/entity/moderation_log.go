@@ -59,6 +59,7 @@ type AIAssistantLogStatus string
 const (
 	AIAssistantLogStatusSuccess AIAssistantLogStatus = "success"
 	AIAssistantLogStatusError   AIAssistantLogStatus = "error"
+	AIAssistantLogStatusRateLimited AIAssistantLogStatus = "rate_limited"
 )
 
 type AIAssistantLog struct {

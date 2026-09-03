@@ -556,6 +556,12 @@ ai_assistant:
   content_selector: ""
   # CSS selectors excluded from the article content
   exclude_selectors: []
+  # Maximum AI requests per calendar day
+  daily_limit: 40
+  # Maximum AI requests per user per rolling hour
+  user_hourly_limit: 5
+  # Reply saved when a rate limit is reached
+  rate_limit_message: "当前小助手累啦，晚点再来看看吧~"
   # Maximum page characters (Page content sent to the model)
   max_page_chars: 12000
   # Request timeout seconds (AI request timeout)

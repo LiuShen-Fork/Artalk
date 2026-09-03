@@ -21,16 +21,26 @@ import (
 var _ Service = (*AIAssistantService)(nil)
 
 const aiAssistantLogRetention = 90 * 24 * time.Hour
+const defaultAIRateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
+
+type aiUserRateWindow struct {
+	started time.Time
+	count   int
+}
 
 type AIAssistantService struct {
-	app    *App
-	client *http.Client
-	mu     sync.Mutex
-	userID uint
+	app      *App
+	client   *http.Client
+	mu       sync.Mutex
+	userID   uint
+	rateMu   sync.Mutex
+	day      string
+	dayCount int
+	userRate map[uint]aiUserRateWindow
 }
 
 func NewAIAssistantService(app *App) *AIAssistantService {
-	return &AIAssistantService{app: app}
+	return &AIAssistantService{app: app, userRate: make(map[uint]aiUserRateWindow)}
 }
 
 func (s *AIAssistantService) Init() error {
@@ -90,18 +100,27 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 		return nil
 	}
 
-	page := s.app.Dao().FindPage(latest.PageKey, latest.SiteName)
-	pageURL := s.app.Dao().GetPageAccessibleURL(&page)
-	pageText, err := fetchPageTextWithSelectors(s.client, pageURL, conf.MaxPageChars, conf.ContentSelector, conf.ExcludeSelectors)
-	if err != nil {
-		return fmt.Errorf("fetch page context: %w", err)
-	}
+	response := ""
+	rateLimited := !s.reserveRateLimit(latest.UserID, conf)
+	if rateLimited {
+		response = strings.TrimSpace(conf.RateLimitMessage)
+		if response == "" {
+			response = defaultAIRateLimitMessage
+		}
+	} else {
+		page := s.app.Dao().FindPage(latest.PageKey, latest.SiteName)
+		pageURL := s.app.Dao().GetPageAccessibleURL(&page)
+		pageText, err := fetchPageTextWithSelectors(s.client, pageURL, conf.MaxPageChars, conf.ContentSelector, conf.ExcludeSelectors)
+		if err != nil {
+			return fmt.Errorf("fetch page context: %w", err)
+		}
 
-	comments := s.parentCommentContext(&latest)
-	prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
-	response, err := s.request(prompt, conf)
-	if err != nil {
-		return err
+		comments := s.parentCommentContext(&latest)
+		prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
+		response, err = s.request(prompt, conf)
+		if err != nil {
+			return err
+		}
 	}
 	maxReplyChars := conf.MaxReplyChars
 	if maxReplyChars <= 0 || maxReplyChars > 300 {
@@ -133,8 +152,51 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 	} else {
 		return fmt.Errorf("get notify service: %w", err)
 	}
-	s.record(&latest, &reply, trigger, entity.AIAssistantLogStatusSuccess, response, "")
+	status := entity.AIAssistantLogStatusSuccess
+	if rateLimited {
+		status = entity.AIAssistantLogStatusRateLimited
+	}
+	s.record(&latest, &reply, trigger, status, response, "")
 	return nil
+}
+
+// reserveRateLimit atomically checks and consumes both global and per-user
+// budgets. A non-positive value is treated as the configured default by the
+// compatibility patch in config.base.go.
+func (s *AIAssistantService) reserveRateLimit(userID uint, conf config.AIAssistantConf) bool {
+	dailyLimit, hourlyLimit := conf.DailyLimit, conf.UserHourlyLimit
+	if dailyLimit <= 0 {
+		dailyLimit = 40
+	}
+	if hourlyLimit <= 0 {
+		hourlyLimit = 5
+	}
+	now := time.Now()
+	today := now.Format("2006-01-02")
+	s.rateMu.Lock()
+	defer s.rateMu.Unlock()
+	if s.userRate == nil {
+		s.userRate = make(map[uint]aiUserRateWindow)
+	}
+	if s.day != today {
+		s.day, s.dayCount = today, 0
+	}
+	for id, window := range s.userRate {
+		if now.Sub(window.started) >= time.Hour {
+			delete(s.userRate, id)
+		}
+	}
+	window, ok := s.userRate[userID]
+	if !ok || now.Sub(window.started) >= time.Hour {
+		window = aiUserRateWindow{started: now}
+	}
+	if s.dayCount >= dailyLimit || window.count >= hourlyLimit {
+		return false
+	}
+	s.dayCount++
+	window.count++
+	s.userRate[userID] = window
+	return true
 }
 
 func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.User, error) {
