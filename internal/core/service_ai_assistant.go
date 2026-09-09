@@ -22,6 +22,8 @@ var _ Service = (*AIAssistantService)(nil)
 
 const aiAssistantLogRetention = 90 * 24 * time.Hour
 const maxAIAssistantContextComments = 20
+const defaultAIPageFetchErrorMessage = "抱歉主人，我获取不到页面的内容哩，可以检查一下网络吗？"
+const defaultAIAPIErrorMessage = "抱歉主人，AI脑子烧掉了，检查一下后端接口呢？"
 const defaultAIRateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
 
 type aiUserRateWindow struct {
@@ -125,6 +127,7 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 	}
 
 	response := ""
+	var responseErr error
 	rateLimited := !s.reserveRateLimit(latest.UserID, conf)
 	if rateLimited {
 		response = strings.TrimSpace(conf.RateLimitMessage)
@@ -136,14 +139,18 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 		pageURL := s.app.Dao().GetPageAccessibleURL(&page)
 		pageText, err := fetchPageTextWithSelectors(s.client, pageURL, conf.MaxPageChars, conf.ContentSelector, conf.ExcludeSelectors)
 		if err != nil {
-			return fmt.Errorf("fetch page context: %w", err)
-		}
-
-		comments := s.assistantThreadContext(&latest, conf.MaxContextComments)
-		prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
-		response, err = s.request(prompt, conf)
-		if err != nil {
-			return err
+			response = defaultAIPageFetchErrorMessage
+			responseErr = fmt.Errorf("fetch page context: %w", err)
+		} else if strings.TrimSpace(pageText) == "" {
+			response = defaultAIPageFetchErrorMessage
+			responseErr = fmt.Errorf("fetch page context: no text extracted from %q", pageURL)
+		} else {
+			comments := s.assistantThreadContext(&latest, conf.MaxContextComments)
+			prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
+			response, responseErr = s.request(prompt, conf)
+			if responseErr != nil {
+				response = defaultAIAPIErrorMessage
+			}
 		}
 	}
 	maxReplyChars := conf.MaxReplyChars
@@ -177,10 +184,16 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 		return fmt.Errorf("get notify service: %w", err)
 	}
 	status := entity.AIAssistantLogStatusSuccess
+	errText := ""
+	if responseErr != nil {
+		status = entity.AIAssistantLogStatusError
+		errText = responseErr.Error()
+		log.Errorf("[AIAssistant] comment=%d fallback reply: %v", latest.ID, responseErr)
+	}
 	if rateLimited {
 		status = entity.AIAssistantLogStatusRateLimited
 	}
-	s.record(&latest, &reply, trigger, status, response, "")
+	s.record(&latest, &reply, trigger, status, response, errText)
 	return nil
 }
 

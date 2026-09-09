@@ -50,6 +50,8 @@ moderator:
 
 ### AI 评论助手
 
+如果页面正文无法获取，助手会回复“抱歉主人，我获取不到页面的内容哩，可以检查一下网络吗？”；如果 AI 接口请求失败，则回复“抱歉主人，AI脑子烧掉了，检查一下后端接口呢？”，具体错误仍会记录到 AI 助手日志中。
+
 新增可选的 AI 评论助手。评论中提及配置的助手名称，或直接回复 AI 助手评论时，助手都会生成回复。上下文包含当前线程此前最多 20 条评论、页面正文和当前评论，并按时间顺序排列，让接口前缀缓存可以复用稳定的提示词前缀。可通过 `content_selector` 和 `exclude_selectors` 精确控制正文提取，选择器未匹配时不会阻断回复。
 
 - 支持 `responses`、`chat_completions`、`deepseek_json_output` 和 `anthropic_messages` 四种接口模式，最后一种对应 Claude Messages API。
