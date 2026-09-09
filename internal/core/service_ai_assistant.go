@@ -21,6 +21,7 @@ import (
 var _ Service = (*AIAssistantService)(nil)
 
 const aiAssistantLogRetention = 90 * 24 * time.Hour
+const maxAIAssistantContextComments = 20
 const defaultAIRateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
 
 type aiUserRateWindow struct {
@@ -66,7 +67,28 @@ func (s *AIAssistantService) ReplyToComment(comment *entity.Comment) {
 	}
 	conf := s.app.Conf().AIAssistant
 	trigger := assistantTrigger(conf)
-	if !conf.Enabled || trigger == "" || !strings.Contains(comment.Content, trigger) {
+	if !conf.Enabled {
+		return
+	}
+	latest := s.app.Dao().FindComment(comment.ID)
+	if latest.IsEmpty() {
+		return
+	}
+	var parentUser entity.User
+	if latest.Rid != 0 {
+		p := s.app.Dao().FindComment(latest.Rid)
+		if !p.IsEmpty() {
+			parentUser = s.app.Dao().FetchUserForComment(&p)
+		}
+	}
+	targeted := commentTargetsAssistant(latest.Content, trigger, parentUser)
+	// Older databases predate IsAIAssistant. Match the complete configured
+	// identity so direct replies to historical assistant comments still work,
+	// without treating users who merely share an email as the assistant.
+	if !targeted {
+		targeted = legacyAssistantIdentityMatches(parentUser, conf)
+	}
+	if !targeted {
 		return
 	}
 
@@ -117,7 +139,7 @@ func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssist
 			return fmt.Errorf("fetch page context: %w", err)
 		}
 
-		comments := s.parentCommentContext(&latest)
+		comments := s.assistantThreadContext(&latest, conf.MaxContextComments)
 		prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
 		response, err = s.request(prompt, conf)
 		if err != nil {
@@ -250,15 +272,62 @@ func assistantTrigger(conf config.AIAssistantConf) string {
 	return "@" + name
 }
 
-func (s *AIAssistantService) parentCommentContext(trigger *entity.Comment) []entity.Comment {
+// assistantThreadContext returns the triggering comment's ancestor chain.
+// Sibling branches are deliberately excluded so unrelated conversations do
+// not enter the prompt. Results are ordered oldest-first and the current
+// message remains the dynamic suffix for stable provider prefix caching.
+func (s *AIAssistantService) assistantThreadContext(trigger *entity.Comment, configuredLimit int) []entity.Comment {
 	if trigger == nil || trigger.Rid == 0 {
 		return nil
 	}
-	parent := s.app.Dao().FindComment(trigger.Rid)
-	if parent.IsEmpty() {
+	limit := configuredLimit
+	if limit <= 0 || limit > maxAIAssistantContextComments {
+		limit = maxAIAssistantContextComments
+	}
+	return collectAncestorComments(trigger, limit, func(id uint) entity.Comment {
+		return s.app.Dao().FindComment(id)
+	})
+}
+
+func collectAncestorComments(trigger *entity.Comment, limit int, find func(uint) entity.Comment) []entity.Comment {
+	if trigger == nil || trigger.Rid == 0 || find == nil {
 		return nil
 	}
-	return []entity.Comment{parent}
+	comments := make([]entity.Comment, 0, limit)
+	visited := make(map[uint]struct{}, limit)
+	parentID := trigger.Rid
+	for parentID != 0 && len(comments) < limit {
+		if _, ok := visited[parentID]; ok {
+			break
+		}
+		visited[parentID] = struct{}{}
+		parent := find(parentID)
+		if parent.IsEmpty() {
+			break
+		}
+		comments = append(comments, parent)
+		parentID = parent.Rid
+	}
+	for left, right := 0, len(comments)-1; left < right; left, right = left+1, right-1 {
+		comments[left], comments[right] = comments[right], comments[left]
+	}
+	return comments
+}
+
+func commentTargetsAssistant(content, trigger string, parentUser entity.User) bool {
+	if parentUser.IsAIAssistant {
+		return true
+	}
+	return strings.TrimSpace(trigger) != "" && strings.Contains(content, trigger)
+}
+
+func legacyAssistantIdentityMatches(user entity.User, conf config.AIAssistantConf) bool {
+	if user.IsEmpty() || user.IsAIAssistant {
+		return false
+	}
+	return strings.TrimSpace(user.Name) == assistantName(conf) &&
+		strings.EqualFold(strings.TrimSpace(user.Email), strings.TrimSpace(conf.Email)) &&
+		strings.TrimSpace(user.Link) == strings.TrimSpace(conf.Link)
 }
 
 func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf) (string, error) {
@@ -456,7 +525,9 @@ func assistantPrompt(conf config.AIAssistantConf) string {
 
 func (s *AIAssistantService) buildAssistantPrompt(trigger string, page entity.Page, pageURL, pageText string, comments []entity.Comment, current string) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "触发标签：%s\n页面标题：%s\n页面地址：%s\n页面正文：\n%s\n\n已有评论：\n", trigger, page.Title, pageURL, pageText)
+	// Keep the stable page material before the dynamic conversation tail so
+	// providers can reuse the long prefix between adjacent replies.
+	fmt.Fprintf(&b, "页面标题：%s\n页面地址：%s\n页面正文：\n%s\n\n触发标签：%s\n\n按时间顺序的父级评论：\n", page.Title, pageURL, pageText, trigger)
 	for _, c := range comments {
 		user := "匿名用户"
 		fetched := s.app.Dao().FetchUserForComment(&c)

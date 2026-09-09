@@ -289,7 +289,7 @@ func commentCreatedJobs(app *core.App, comment entity.Comment, parentComment ent
 		log.Error("[NotifyService] err: ", err)
 	}
 
-	// AI assistant replies to comments that explicitly mention its trigger.
+	// AI assistant replies to explicit mentions and direct replies to the assistant.
 	if assistantService, err := core.AppService[*core.AIAssistantService](app); err == nil {
 		assistantService.ReplyToComment(&comment)
 	} else {
