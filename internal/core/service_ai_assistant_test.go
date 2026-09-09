@@ -3,9 +3,11 @@ package core
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/artalkjs/artalk/v2/internal/config"
+	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,6 +48,55 @@ func TestAssistantTriggerUsesFixedAtPrefixAndName(t *testing.T) {
 	assert.Equal(t, "@清羽酱", assistantTrigger(config.AIAssistantConf{}))
 	assert.Equal(t, "@小助手", assistantTrigger(config.AIAssistantConf{Name: "小助手"}))
 	assert.Equal(t, "@小助手", assistantTrigger(config.AIAssistantConf{Name: "@小助手"}))
+}
+
+func TestCommentTargetsAssistant(t *testing.T) {
+	trigger := assistantTrigger(config.AIAssistantConf{Name: "小助手"})
+
+	assert.True(t, commentTargetsAssistant("请回答 @小助手", trigger, entity.User{}))
+	assert.False(t, commentTargetsAssistant("普通评论", trigger, entity.User{}))
+	assert.True(t, commentTargetsAssistant("普通评论", trigger, entity.User{IsAIAssistant: true}))
+}
+
+func TestLegacyAssistantIdentityMatching(t *testing.T) {
+	conf := config.AIAssistantConf{Name: "小助手", Email: "AI@example.com", Link: "https://example.com"}
+	matching := entity.User{Name: "小助手", Email: "ai@EXAMPLE.com", Link: "https://example.com"}
+	matching.ID = 1
+	nonMatching := entity.User{Name: "小助手", Email: "other@example.com", Link: "https://example.com"}
+	nonMatching.ID = 2
+	assert.True(t, legacyAssistantIdentityMatches(matching, conf))
+	assert.False(t, legacyAssistantIdentityMatches(nonMatching, conf))
+	assert.False(t, legacyAssistantIdentityMatches(entity.User{IsAIAssistant: true}, conf))
+}
+
+func TestCollectAncestorComments(t *testing.T) {
+	root := entity.Comment{Rid: 0, Content: "root"}
+	root.ID = 1
+	parent := entity.Comment{Rid: 1, Content: "parent"}
+	parent.ID = 2
+	currentParent := entity.Comment{Rid: 2, Content: "current parent"}
+	currentParent.ID = 3
+	comments := map[uint]entity.Comment{1: root, 2: parent, 3: currentParent}
+	trigger := entity.Comment{Rid: 3}
+	trigger.ID = 4
+	context := collectAncestorComments(&trigger, 20, func(id uint) entity.Comment {
+		return comments[id]
+	})
+
+	require.Len(t, context, 3)
+	assert.Equal(t, []uint{1, 2, 3}, []uint{context[0].ID, context[1].ID, context[2].ID})
+	limited := collectAncestorComments(&trigger, 2, func(id uint) entity.Comment {
+		return comments[id]
+	})
+	require.Len(t, limited, 2)
+	assert.Equal(t, []uint{2, 3}, []uint{limited[0].ID, limited[1].ID})
+}
+
+func TestAssistantPromptKeepsPagePrefixBeforeConversation(t *testing.T) {
+	service := (*AIAssistantService)(nil)
+	prompt := service.buildAssistantPrompt("@小助手", entity.Page{Title: "页面标题"}, "https://example.com", "稳定正文", nil, "当前问题")
+
+	assert.Less(t, strings.Index(prompt, "稳定正文"), strings.Index(prompt, "当前问题"))
 }
 
 func TestExtractAssistantText(t *testing.T) {

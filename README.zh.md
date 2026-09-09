@@ -50,7 +50,7 @@ moderator:
 
 ### AI 评论助手
 
-新增可选的 AI 评论助手。评论中提及配置的助手名称时，助手会结合页面正文、触发评论的父评论（如果有）和当前评论生成回复，并避免在嵌套评论中重复回复。可通过 `content_selector` 和 `exclude_selectors` 精确控制正文提取，选择器未匹配时不会阻断回复。
+新增可选的 AI 评论助手。评论中提及配置的助手名称，或直接回复 AI 助手评论时，助手都会生成回复。上下文包含当前线程此前最多 20 条评论、页面正文和当前评论，并按时间顺序排列，让接口前缀缓存可以复用稳定的提示词前缀。可通过 `content_selector` 和 `exclude_selectors` 精确控制正文提取，选择器未匹配时不会阻断回复。
 
 - 支持 `responses`、`chat_completions`、`deepseek_json_output` 和 `anthropic_messages` 四种接口模式，最后一种对应 Claude Messages API。
 - `reply_to_pending` 控制待审核评论是否可以触发 AI 回复。
