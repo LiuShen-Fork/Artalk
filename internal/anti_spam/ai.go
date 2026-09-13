@@ -21,6 +21,32 @@ const (
 	AIAPITypeResponses       AIAPIType = "responses"
 	AIAPITypeChatCompletions AIAPIType = "chat_completions"
 	AIAPITypeDeepSeekJSON    AIAPIType = "deepseek_json_output"
+	AIAPITypeAnthropic       AIAPIType = "anthropic_messages"
+)
+
+const (
+	// reasoningEffortDisabled is used when required thinking is turned off.
+	// "none" and "minimal" are model-specific and rejected by most providers,
+	// while "medium" is accepted wherever reasoning_effort exists at all.
+	reasoningEffortDisabled = "medium"
+
+	anthropicVersion       = "2023-06-01"
+	anthropicDefaultTokens = 512
+
+	// aiJSONOutputHint is appended to the prompt whenever the structured schema
+	// alone cannot guarantee JSON output. Providers offering json_object mode
+	// literally require the prompt to mention JSON, and the Anthropic Messages
+	// API treats output_format as an optional hint on many models.
+	aiJSONOutputHint = `
+
+Return JSON only. The response must be a single JSON object and must exactly match this shape:
+{"sensitive": false, "reason": "Non-sensitive technical discussion."}
+
+Rules for the JSON object:
+- Use only the keys "sensitive" and "reason".
+- "sensitive" must be a boolean.
+- "reason" must be a non-empty string for both sensitive=true and sensitive=false.
+- Do not wrap the JSON in Markdown or add any extra text.`
 )
 
 type AIOutputFormat string
@@ -85,9 +111,7 @@ func (c *AIChecker) Check(p *CheckerParams) (bool, error) {
 		return false, fmt.Errorf("create AI moderation request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if apiKey := strings.TrimSpace(c.conf.APIKey); apiKey != "" {
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-	}
+	c.applyAuthHeaders(req)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -137,9 +161,17 @@ func (c *AIChecker) endpoint() (string, error) {
 		return baseURL + "/responses", nil
 	case AIAPITypeChatCompletions, AIAPITypeDeepSeekJSON:
 		return baseURL + "/chat/completions", nil
+	case AIAPITypeAnthropic:
+		return baseURL + "/messages", nil
 	default:
 		return "", fmt.Errorf("unknown AI API type %q", c.conf.APIType)
 	}
+}
+
+// anthropicMessagesRequest reports whether the Anthropic Messages API is used,
+// which needs different authentication headers and a mandatory max_tokens.
+func (c *AIChecker) anthropicMessagesRequest() bool {
+	return c.apiType() == AIAPITypeAnthropic
 }
 
 func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
@@ -151,10 +183,9 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 
 	switch apiType {
 	case AIAPITypeResponses:
-		if c.outputFormat() == AIOutputFormatJSONObject {
+		if c.outputFormat() != AIOutputFormatJSONSchema {
+			// The Responses API only supports json_schema.
 			return nil, fmt.Errorf("AI output format %q is only supported by chat_completions", c.outputFormat())
-		} else if c.outputFormat() != AIOutputFormatJSONSchema {
-			return nil, fmt.Errorf("unknown AI output format %q", c.outputFormat())
 		}
 		request := map[string]any{
 			"model": strings.TrimSpace(c.conf.Model),
@@ -175,9 +206,42 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 			request["max_output_tokens"] = c.conf.MaxTokens
 		}
 		if c.conf.DisableThinking {
-			request["reasoning"] = map[string]any{"effort": "none"}
+			// "none" and "minimal" are model-specific and rejected by most
+			// providers, so fall back to the lowest widely supported effort.
+			request["reasoning"] = map[string]any{"effort": reasoningEffortDisabled}
 		}
 		return request, nil
+
+	case AIAPITypeAnthropic:
+		maxTokens := c.conf.MaxTokens
+		if maxTokens <= 0 {
+			// max_tokens is mandatory for the Messages API; fall back to a
+			// budget that still leaves room for a short JSON answer.
+			maxTokens = anthropicDefaultTokens
+		}
+		request := map[string]any{
+			"model":  strings.TrimSpace(c.conf.Model),
+			"system": c.systemPrompt(),
+			"messages": []map[string]string{
+				{"role": "user", "content": reviewText},
+			},
+			"max_tokens": maxTokens,
+		}
+		if c.outputFormat() == AIOutputFormatJSONSchema {
+			// Structured Outputs use a bare {"type": "json_schema", "schema": {...}}.
+			// Anthropic does not accept the OpenAI name/strict wrapper.
+			request["output_format"] = map[string]any{
+				"type":   "json_schema",
+				"schema": schema,
+			}
+		} else if c.outputFormat() != AIOutputFormatJSONObject {
+			return nil, fmt.Errorf("unknown AI output format %q", c.outputFormat())
+		}
+		// Anthropic thinking is opt-in, so omitting the parameter already means
+		// "disabled". Claude-specific thinking configs are rejected by the
+		// Anthropic-compatible endpoints of other providers, so never send it.
+		return request, nil
+
 	case AIAPITypeChatCompletions, AIAPITypeDeepSeekJSON:
 		request := map[string]any{
 			"model": strings.TrimSpace(c.conf.Model),
@@ -186,7 +250,9 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 				{"role": "user", "content": reviewText},
 			},
 		}
-		if c.usesDeepSeekJSONOutput() {
+		if c.usesPlainJSONObjectFormat() {
+			// Legacy JSON mode. Providers reject it unless the conversation
+			// mentions JSON somewhere, which systemPrompt guarantees.
 			request["response_format"] = map[string]any{"type": "json_object"}
 		} else if c.outputFormat() == AIOutputFormatJSONSchema {
 			request["response_format"] = map[string]any{
@@ -203,10 +269,13 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 		if c.conf.MaxTokens > 0 {
 			request["max_tokens"] = c.conf.MaxTokens
 		}
+		// OpenAI-style thinking configs are model-specific and rejected by many
+		// OpenAI-compatible providers, so only set the portable effort knob.
 		if c.conf.DisableThinking {
-			request["thinking"] = map[string]any{"type": "disabled"}
+			request["reasoning_effort"] = reasoningEffortDisabled
 		}
 		return request, nil
+
 	default:
 		return nil, fmt.Errorf("unknown AI API type %q", c.conf.APIType)
 	}
@@ -228,9 +297,28 @@ func (c *AIChecker) outputFormat() AIOutputFormat {
 	return format
 }
 
-func (c *AIChecker) usesDeepSeekJSONOutput() bool {
+// usesPlainJSONObjectFormat reports whether the legacy response_format
+// json_object mode should be requested instead of a machine-enforced schema.
+func (c *AIChecker) usesPlainJSONObjectFormat() bool {
 	return c.apiType() == AIAPITypeDeepSeekJSON ||
 		(c.apiType() == AIAPITypeChatCompletions && c.outputFormat() == AIOutputFormatJSONObject)
+}
+
+// usesPlainJSONPrompt reports whether the request depends on the model emitting
+// JSON by itself instead of a machine-enforced schema. Those providers require
+// the prompt to spell out the JSON contract, and json_object providers may even
+// reject requests whose prompt never mentions JSON.
+func (c *AIChecker) usesPlainJSONPrompt() bool {
+	switch c.apiType() {
+	case AIAPITypeDeepSeekJSON:
+		return true
+	case AIAPITypeChatCompletions:
+		return c.outputFormat() == AIOutputFormatJSONObject
+	case AIAPITypeAnthropic:
+		return c.outputFormat() == AIOutputFormatJSONObject
+	default:
+		return false
+	}
 }
 
 func (c *AIChecker) systemPrompt() string {
@@ -238,20 +326,28 @@ func (c *AIChecker) systemPrompt() string {
 	if prompt == "" {
 		prompt = config.DefaultAIModerationPrompt
 	}
-	if !c.usesDeepSeekJSONOutput() {
+	if !c.usesPlainJSONPrompt() {
 		return prompt
 	}
 
-	return prompt + `
+	return prompt + aiJSONOutputHint
+}
 
-Return JSON only. The response must be a single JSON object and must exactly match this shape:
-{"sensitive": false, "reason": "Non-sensitive technical discussion."}
-
-Rules for the JSON object:
-- Use only the keys "sensitive" and "reason".
-- "sensitive" must be a boolean.
-- "reason" must be a non-empty string for both sensitive=true and sensitive=false.
-- Do not wrap the JSON in Markdown or add any extra text.`
+// applyAuthHeaders sets the provider-specific authentication headers. The
+// Anthropic Messages API expects x-api-key/anthropic-version instead of the
+// OpenAI-style bearer token.
+func (c *AIChecker) applyAuthHeaders(req *http.Request) {
+	apiKey := strings.TrimSpace(c.conf.APIKey)
+	if c.anthropicMessagesRequest() {
+		req.Header.Set("anthropic-version", anthropicVersion)
+		if apiKey != "" {
+			req.Header.Set("x-api-key", apiKey)
+		}
+		return
+	}
+	if apiKey != "" {
+		req.Header.Set("Authorization", "Bearer "+apiKey)
+	}
 }
 
 func aiModerationJSONSchema() map[string]any {
@@ -323,6 +419,28 @@ func (c *AIChecker) extractResultJSON(responseBody []byte) ([]byte, error) {
 			return nil, fmt.Errorf("AI chat completions result contains no message content")
 		}
 		return []byte(content), nil
+
+	case AIAPITypeAnthropic:
+		var response struct {
+			Content []struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"content"`
+			StopReason string `json:"stop_reason"`
+		}
+		if err := json.Unmarshal(responseBody, &response); err != nil {
+			return nil, fmt.Errorf("decode AI anthropic result: %w", err)
+		}
+		for _, content := range response.Content {
+			if content.Type == "text" && strings.TrimSpace(content.Text) != "" {
+				return []byte(content.Text), nil
+			}
+		}
+		if response.StopReason == "max_tokens" {
+			// Likely spent the whole budget on thinking before emitting JSON.
+			return nil, fmt.Errorf("AI anthropic result contains no text (stop_reason=max_tokens, raise max_tokens)")
+		}
+		return nil, fmt.Errorf("AI anthropic result contains no text content")
 
 	default:
 		return nil, fmt.Errorf("unknown AI API type %q", c.conf.APIType)

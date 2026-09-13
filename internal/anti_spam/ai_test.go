@@ -125,7 +125,8 @@ func TestAICheckerDeepSeekJSONOutput(t *testing.T) {
 	assert.Equal(t, "json_object", responseFormat["type"])
 	assert.NotContains(t, responseFormat, "json_schema")
 	assert.Equal(t, float64(256), received["max_tokens"])
-	assert.Equal(t, "disabled", received["thinking"].(map[string]any)["type"])
+	assert.Equal(t, "medium", received["reasoning_effort"])
+	assert.NotContains(t, received, "thinking")
 	messages := received["messages"].([]any)
 	systemPrompt := messages[0].(map[string]any)["content"].(string)
 	assert.Contains(t, systemPrompt, "JSON")
@@ -154,6 +155,78 @@ func TestAICheckerChatCompletionsJSONObjectCompatibility(t *testing.T) {
 	assert.True(t, pass)
 	responseFormat := received["response_format"].(map[string]any)
 	assert.Equal(t, "json_object", responseFormat["type"])
+	// DeepSeek rejects json_object unless the conversation mentions JSON.
+	messages := received["messages"].([]any)
+	assert.Contains(t, messages[0].(map[string]any)["content"].(string), "JSON")
+}
+
+func TestAICheckerAnthropicMessages(t *testing.T) {
+	var received map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/v1/messages", r.URL.Path)
+		assert.Equal(t, "test-key", r.Header.Get("x-api-key"))
+		assert.Equal(t, "2023-06-01", r.Header.Get("anthropic-version"))
+		assert.Empty(t, r.Header.Get("Authorization"))
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&received))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"stop_reason":"end_turn","content":[{"type":"thinking","thinking":"..."},{"type":"text","text":"{\"sensitive\":true,\"reason\":\"advertisement\"}"}]}`))
+	}))
+	defer server.Close()
+
+	checker := NewAIChecker(AICheckerConf{
+		APIType:         AIAPITypeAnthropic,
+		BaseURL:         server.URL + "/v1",
+		APIKey:          "test-key",
+		Model:           "claude-test",
+		Prompt:          "classify this comment",
+		MaxTokens:       256,
+		DisableThinking: true,
+	})
+	pass, err := checker.Check(&CheckerParams{ReviewText: "nickname: ad\ncomment: click to claim"})
+
+	require.NoError(t, err)
+	assert.False(t, pass)
+	assert.Equal(t, "classify this comment", received["system"])
+	assert.Equal(t, float64(256), received["max_tokens"])
+	// Claude rejects the OpenAI name/strict wrapper on output_format.
+	outputFormat := received["output_format"].(map[string]any)
+	assert.Equal(t, "json_schema", outputFormat["type"])
+	assert.NotContains(t, outputFormat, "name")
+	assert.NotContains(t, outputFormat, "strict")
+	assertReasonSchema(t, outputFormat["schema"].(map[string]any))
+	// Claude-specific thinking overrides break Anthropic-compatible providers.
+	assert.NotContains(t, received, "thinking")
+	messages := received["messages"].([]any)
+	assert.Len(t, messages, 1)
+	assert.Equal(t, "user", messages[0].(map[string]any)["role"])
+}
+
+func TestAICheckerAnthropicMaxTokensDefault(t *testing.T) {
+	checker := NewAIChecker(AICheckerConf{
+		APIType: AIAPITypeAnthropic,
+		Model:   "claude-test",
+	})
+	request, err := checker.requestBody("comment")
+
+	require.NoError(t, err)
+	// max_tokens is mandatory for the Messages API.
+	assert.Equal(t, anthropicDefaultTokens, request["max_tokens"])
+}
+
+func TestAICheckerAnthropicJSONObjectUsesPromptHint(t *testing.T) {
+	checker := NewAIChecker(AICheckerConf{
+		APIType:      AIAPITypeAnthropic,
+		Model:        "claude-test",
+		Prompt:       "Classify the comment.",
+		OutputFormat: AIOutputFormatJSONObject,
+	})
+	request, err := checker.requestBody("comment")
+
+	require.NoError(t, err)
+	// Anthropic has no JSON mode, so the schema must stay absent and the
+	// prompt has to carry the JSON contract instead.
+	assert.NotContains(t, request, "output_format")
+	assert.Contains(t, request["system"].(string), "JSON")
 }
 
 func TestAICheckerResponsesRequestOptions(t *testing.T) {
@@ -167,7 +240,7 @@ func TestAICheckerResponsesRequestOptions(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, 128, request["max_output_tokens"])
-	assert.Equal(t, "none", request["reasoning"].(map[string]any)["effort"])
+	assert.Equal(t, "medium", request["reasoning"].(map[string]any)["effort"])
 }
 
 func TestAICheckerErrors(t *testing.T) {
@@ -213,6 +286,23 @@ func TestAICheckerErrors(t *testing.T) {
 		})
 		pass, err := checker.Check(&CheckerParams{})
 		assert.ErrorContains(t, err, "max tokens")
+		assert.False(t, pass)
+	})
+
+	t.Run("anthropic result without text", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"stop_reason":"max_tokens","content":[{"type":"thinking","thinking":"..."}]}`))
+		}))
+		defer server.Close()
+
+		checker := NewAIChecker(AICheckerConf{
+			APIType: AIAPITypeAnthropic,
+			BaseURL: server.URL + "/v1",
+			Model:   "claude-test",
+		})
+		pass, err := checker.Check(&CheckerParams{})
+		assert.ErrorContains(t, err, "max_tokens")
 		assert.False(t, pass)
 	})
 

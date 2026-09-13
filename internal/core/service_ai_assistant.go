@@ -22,6 +22,12 @@ var _ Service = (*AIAssistantService)(nil)
 
 const aiAssistantLogRetention = 90 * 24 * time.Hour
 const maxAIAssistantContextComments = 20
+
+// aiAssistantReasoningEffortDisabled is sent when thinking is turned off. The
+// OpenAI Responses API rejects "none"/"minimal" on many providers, while
+// "medium" is accepted wherever reasoning effort is supported at all.
+const aiAssistantReasoningEffortDisabled = "medium"
+
 const defaultAIPageFetchErrorMessage = "抱歉主人，我获取不到页面的内容哩，可以检查一下网络吗？"
 const defaultAIAPIErrorMessage = "抱歉主人，AI脑子烧掉了，检查一下后端接口呢？"
 const defaultAIRateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
@@ -368,7 +374,9 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 			bodyMap["max_output_tokens"] = maxTokens
 		}
 		if conf.DisableThinking != nil && *conf.DisableThinking {
-			bodyMap["reasoning"] = map[string]any{"effort": "none"}
+			// "none"/"minimal" are model-specific and rejected by most
+			// providers, so fall back to the lowest widely supported effort.
+			bodyMap["reasoning"] = map[string]any{"effort": aiAssistantReasoningEffortDisabled}
 		}
 	case config.AIAPITypeAnthropic:
 		bodyMap["system"] = assistantPrompt(conf)
@@ -378,13 +386,18 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 		} else {
 			bodyMap["max_tokens"] = 1024
 		}
+		// Anthropic thinking is opt-in, so omitting the parameter already means
+		// "disabled". Claude-specific thinking configs are rejected by the
+		// Anthropic-compatible endpoints of other providers, so never send it.
 	default:
 		bodyMap["messages"] = messages
 		if maxTokens > 0 {
 			bodyMap["max_tokens"] = maxTokens
 		}
 		if conf.DisableThinking != nil && *conf.DisableThinking {
-			bodyMap["thinking"] = map[string]any{"type": "disabled"}
+			// Only set the portable effort knob; OpenAI-style thinking configs
+			// are model-specific and rejected by many compatible providers.
+			bodyMap["reasoning_effort"] = aiAssistantReasoningEffortDisabled
 		}
 	}
 	body, err := json.Marshal(bodyMap)
