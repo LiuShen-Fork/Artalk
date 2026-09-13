@@ -21,11 +21,12 @@
 - 昵称和评论正文会一起发送给审核器，审核输入形如 `昵称: 评论正文`。
 - 只将评论正文中的命中内容替换为 `***`；昵称命中时不修改昵称，直接将评论设为待审。
 - 审核前会生成适合模型理解的纯文本：Markdown 超链接保留链接文本，图片替换为 `[图片]`，表情包图片和 HTML 标签不会作为语义内容发送。
-- 支持三种接口模式：
+- 支持四种接口模式：
   - `responses`：OpenAI Responses API 的 JSON Schema。
   - `chat_completions`：OpenAI Chat Completions API 的 JSON Schema。
+  - `anthropic_messages`：Claude Messages API 的 Structured Outputs。
   - `deepseek_json_output`：DeepSeek Chat Completions API 的 JSON Output。
-- JSON Schema 和输出结构由 Artalk 内置，固定返回 `sensitive` 与非空的 `reason`，用户只需要填写提示词、模型、API 地址和密钥。
+- JSON Schema 和输出结构由 Artalk 内置，固定返回 `sensitive` 与非空的 `reason`，用户只需要填写提示词、模型、API 地址和密钥。`output_format` 可切换 `json_schema` / `json_object`，其中 `json_object` 仅适用于 `chat_completions` 与 `anthropic_messages`。
 - AI 审核提示词可编辑，默认规则覆盖广告推广、垃圾信息、违法、色情、暴力威胁、仇恨骚扰、隐私泄露和政治敏感内容。
 - 思考模式可以配置，默认关闭，以减少审核请求的 token 消耗。
 - AI 请求失败时可按 `moderator.api_fail_block` 决定放行或转为待审。
@@ -54,7 +55,7 @@ moderator:
 
 新增可选的 AI 评论助手。评论中提及配置的助手名称，或直接回复 AI 助手评论时，助手都会生成回复。上下文包含当前线程此前最多 20 条评论、页面正文和当前评论，并按时间顺序排列，让接口前缀缓存可以复用稳定的提示词前缀。可通过 `content_selector` 和 `exclude_selectors` 精确控制正文提取，选择器未匹配时不会阻断回复。
 
-- 支持 `responses`、`chat_completions`、`deepseek_json_output` 和 `anthropic_messages` 四种接口模式，最后一种对应 Claude Messages API。
+- 支持 `responses`、`chat_completions`、`anthropic_messages` 和 `deepseek_json_output` 四种接口模式，最后一种对应 Claude Messages API。
 - `reply_to_pending` 控制待审核评论是否可以触发 AI 回复。
 - `daily_limit`（默认 40）和 `user_hourly_limit`（默认 5）分别限制每日总调用次数和单用户每小时调用次数；超限时直接保存固定回复，不调用 AI 服务。
 - AI 助手提示词可在管理端设置页编辑，并使用多行输入框。

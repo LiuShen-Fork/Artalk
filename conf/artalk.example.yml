@@ -136,7 +136,7 @@ moderator:
   ai:
     # Enable AI content moderation
     enabled: false
-    # AI API type ["responses", "chat_completions", "deepseek_json_output"]
+    # AI API type ["responses", "chat_completions", "anthropic_messages", "deepseek_json_output"]
     api_type: responses
     # API base URL ending in /v1 (e.g. "https://api.openai.com/v1")
     base_url: "https://api.openai.com/v1"
@@ -144,7 +144,9 @@ moderator:
     api_key: ""
     # Model ID (e.g. "gpt-4.1-mini" or the ID supplied by your provider)
     model: ""
-    # Maximum output tokens (0 omits this parameter; 256 is sufficient for moderation)
+    # Output format ["json_schema", "json_object"] (json_object is only supported by chat_completions and anthropic_messages)
+    output_format: json_schema
+    # Maximum output tokens (0 omits this parameter; 256 is sufficient for moderation, Anthropic defaults to 512)
     max_tokens: 256
     # Model thinking mode
     disable_thinking: true

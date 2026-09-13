@@ -137,7 +137,7 @@ moderator:
   ai:
     # 启用 AI 内容审核
     enabled: false
-    # AI 接口类型 ["responses", "chat_completions", "deepseek_json_output"]
+    # AI 接口类型 ["responses", "chat_completions", "anthropic_messages", "deepseek_json_output"]
     api_type: responses
     # API 基础地址，必须以 /v1 结尾 (例如 "https://api.openai.com/v1")
     base_url: "https://api.openai.com/v1"
@@ -145,7 +145,9 @@ moderator:
     api_key: ""
     # 模型 ID (例如 "gpt-4.1-mini" 或服务商提供的模型名称)
     model: ""
-    # 最大输出 Token 数 (填 0 时不发送该参数；评论审核通常 256 已足够)
+    # 输出格式 ["json_schema", "json_object"] (仅 chat_completions 与 anthropic_messages 支持 json_object)
+    output_format: json_schema
+    # 最大输出 Token 数 (填 0 时不发送该参数；评论审核通常 256 已足够，Anthropic 会使用默认值 512)
     max_tokens: 256
     # 思考模式
     disable_thinking: true
