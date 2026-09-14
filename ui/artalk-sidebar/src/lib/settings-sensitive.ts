@@ -12,6 +12,7 @@ export const SensitiveConfigPaths = [
   'admin_notify.slack.oauth_token',
   'admin_notify.telegram.api_token',
   'admin_notify.webhook.url',
+  'admin_notify.wecom.webhook_url',
   'admin.notify.bark.server',
   'auth.apple.client_secret',
   'auth.auth0.client_secret',

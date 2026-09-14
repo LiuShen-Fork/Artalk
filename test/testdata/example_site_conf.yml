@@ -112,6 +112,9 @@ admin_notify:
   lark:
     enabled: false
     webhook_url: ""
+  wecom:
+    enabled: false
+    webhook_url: ""
   webhook:
     enabled: false
     url: ""

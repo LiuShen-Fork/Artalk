@@ -38,6 +38,11 @@ func (pusher *NotifyPusher) multiPush(comment *entity.Comment, pComment *entity.
 		sender.SendLark(pusher.conf.Lark.WebhookURL, subject, body, pusher.conf.Lark.MsgType == "card")
 	}
 
+	// 企业微信
+	if pusher.conf.Wecom.Enabled {
+		pusher.sendWecom(comment, pComment)
+	}
+
 	// Bark
 	if pusher.conf.Bark.Enabled {
 		sender.SendBark(pusher.conf.Bark.Server, subject, body)
@@ -84,4 +89,17 @@ func (pusher *NotifyPusher) sendWebhook(subject string, body string, comment *en
 		Comment:       pusher.dao.CookComment(comment),
 		ParentComment: pCommentCooked,
 	})
+}
+
+func (pusher *NotifyPusher) sendWecom(comment *entity.Comment, pComment *entity.Comment) {
+	cookedComment := pusher.dao.CookComment(comment)
+	page := pusher.dao.FetchPageForComment(comment)
+
+	sender.SendWecom(pusher.conf.Wecom.WebhookURL, sender.BuildWecomMarkdown(
+		cookedComment.Nick,
+		page.Title,
+		pusher.dao.GetPageAccessibleURL(&page),
+		comment.Content,
+		pusher.dao.GetLinkToReplyByComment(comment),
+	))
 }

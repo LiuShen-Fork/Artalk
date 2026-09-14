@@ -62,6 +62,7 @@ export const zhCN: MessageSchema = {
   func_email_aliyun: '阿里云邮件',
   func_captcha_geetest: '极验',
   func_message_pusher_lark: '飞书',
+  func_message_pusher_wecom: '企业微信',
   func_message_pusher_dingtalk: '钉钉',
   func_moderator_aliyun: '腾讯云',
   func_moderator_tencent: '腾讯云',

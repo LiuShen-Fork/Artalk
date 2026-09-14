@@ -2,7 +2,7 @@
 
 Artalk 支持通过多元推送功能以多种方式发送管理员通知。
 
-支持 **Telegram**、**飞书**、**钉钉**、**Bark**、**Slack**、**LINE**，并且多种方式可以同时启用。
+支持 **Telegram**、**飞书**、**企业微信**、**钉钉**、**Bark**、**Slack**、**LINE**，并且多种方式可以同时启用。
 
 你可以在 [控制中心](../frontend/sidebar.md#设置) 的设置界面修改此配置，也可以通过 [配置文件](./config.md#多元推送-admin-notify) 或 [环境变量](../env.md#多元推送) 进行配置。
 
@@ -31,6 +31,10 @@ admin_notify:
       - 7777777
   # 飞书
   lark:
+    enabled: false
+    webhook_url: ''
+  # 企业微信
+  wecom:
     enabled: false
     webhook_url: ''
   # 钉钉
@@ -152,6 +156,33 @@ admin_notify:
 <img src="/images/notify/lark-3.png" width="400px">
 
 可参考：[飞书帮助中心文档](https://www.feishu.cn/hc/zh-CN/articles/360024984973)
+
+## 企业微信
+
+```yaml
+admin_notify:
+  # 企业微信
+  wecom:
+    enabled: true
+    webhook_url: ''
+```
+
+- `webhook_url`：填入创建群机器人时得到的 WebHook 地址。
+
+### 创建群机器人
+
+在群聊右上角进入「群设置」-「群机器人」- 点击「添加机器人」- 选择「新创建一个机器人」并按照提示创建。
+
+复制得到的 WebHook 地址（形如 `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`），
+并修改 Artalk 的 `webhook_url` 配置即可。
+
+可参考：[企业微信群机器人配置说明](https://developer.work.weixin.qq.com/document/path/91770)
+
+::: tip
+
+企业微信推送使用群机器人的 `markdown` 消息类型，评论中的表情包会被提取主干主题，例如 `<img atk-emoticon="liushen-迷惑">` 会显示为 `[迷惑]`，其他图片会显示为 `[图片]`。
+
+:::
 
 ## 钉钉
 

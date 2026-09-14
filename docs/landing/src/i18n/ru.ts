@@ -67,6 +67,7 @@ export const ru: MessageSchema = {
   func_email_aliyun: 'Email от Alibaba Cloud',
   func_captcha_geetest: 'Geetest',
   func_message_pusher_lark: 'Lark',
+  func_message_pusher_wecom: 'WeCom',
   func_message_pusher_dingtalk: 'DingTalk',
   func_moderator_aliyun: 'Alibaba Cloud',
   func_moderator_tencent: 'Tencent Cloud',
