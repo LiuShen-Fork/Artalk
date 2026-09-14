@@ -116,6 +116,8 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_ADMIN_NOTIFY_TELEGRAM_RECEIVERS** | `[7777777]` | Receivers | admin_notify.telegram.receivers (多元推送 > Telegram > Receivers) |
 | **ATK_ADMIN_NOTIFY_WEBHOOK_ENABLED** | `false` | 启用 | admin_notify.webhook.enabled (多元推送 > WebHook > Enabled) |
 | **ATK_ADMIN_NOTIFY_WEBHOOK_URL** | `""` | Url | admin_notify.webhook.url (多元推送 > WebHook > Url) |
+| **ATK_ADMIN_NOTIFY_WECOM_ENABLED** | `false` | 启用 | admin_notify.wecom.enabled (多元推送 > 企业微信 > Enabled) |
+| **ATK_ADMIN_NOTIFY_WECOM_WEBHOOK_URL** | `""` | WebhookUrl | admin_notify.wecom.webhook_url (多元推送 > 企业微信 > WebhookUrl) |
 
 
 ## AI 评论助手

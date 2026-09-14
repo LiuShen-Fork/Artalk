@@ -396,6 +396,7 @@ type AdminNotifyConf struct {
 	Email         *AdminEmailConf    `koanf:"email" json:"email"`                   // 邮件通知
 	Telegram      NotifyTelegramConf `koanf:"telegram" json:"telegram"`             // TG
 	Lark          NotifyLarkConf     `koanf:"lark" json:"lark"`                     // 飞书
+	Wecom         NotifyWecomConf    `koanf:"wecom" json:"wecom"`                   // 企业微信
 	DingTalk      NotifyDingTalkConf `koanf:"ding_talk" json:"ding_talk"`           // 钉钉
 	Bark          NotifyBarkConf     `koanf:"bark" json:"bark"`                     // bark
 	Slack         NotifySlackConf    `koanf:"slack" json:"slack"`                   // slack
@@ -427,6 +428,11 @@ type NotifyLarkConf struct {
 	Enabled    bool   `koanf:"enabled" json:"enabled"`
 	WebhookURL string `koanf:"webhook_url" json:"webhook_url"`
 	MsgType    string `koanf:"msg_type" json:"msg_type"`
+}
+
+type NotifyWecomConf struct {
+	Enabled    bool   `koanf:"enabled" json:"enabled"`
+	WebhookURL string `koanf:"webhook_url" json:"webhook_url"`
 }
 
 type NotifyBarkConf struct {

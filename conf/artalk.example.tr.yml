@@ -288,6 +288,10 @@ admin_notify:
     webhook_url: ""
     # Mesaj türü ["text", "card"]
     msg_type: "text"
+  # WeCom
+  wecom:
+    enabled: false
+    webhook_url: ""
   # WebHook
   webhook:
     enabled: false

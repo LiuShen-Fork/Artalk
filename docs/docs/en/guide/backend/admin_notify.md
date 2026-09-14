@@ -2,7 +2,7 @@
 
 Artalk supports sending administrator notifications through its multi-channel notification feature in various ways.
 
-Supported platforms include **Telegram**, **Feishu**, **DingTalk**, **Bark**, **Slack**, and **LINE**, with the ability to enable multiple methods simultaneously.
+Supported platforms include **Telegram**, **Feishu**, **WeCom (WeChat Work)**, **DingTalk**, **Bark**, **Slack**, and **LINE**, with the ability to enable multiple methods simultaneously.
 
 You can modify these configurations in the settings interface of the [Dashboard](../frontend/sidebar.md#Settings) or via the [configuration file](../backend/config.md#multi-channel-notifications-admin-notify) or [environment variables](../env.md#multi-channel-notifications).
 
@@ -31,6 +31,10 @@ admin_notify:
       - 7777777
   # Feishu
   lark:
+    enabled: false
+    webhook_url: ''
+  # WeCom (WeChat Work)
+  wecom:
     enabled: false
     webhook_url: ''
   # DingTalk
@@ -152,6 +156,36 @@ Copy the WebHook address as shown above and modify Artalk's `webhook_url` config
 <img src="/images/notify/lark-3.png" width="400px">
 
 For more details, refer to: [Feishu Help Center Documentation](https://www.feishu.cn/hc/zh-CN/articles/360024984973)
+
+## WeCom (WeChat Work)
+
+```yaml
+admin_notify:
+  # WeCom
+  wecom:
+    enabled: true
+    webhook_url: ''
+```
+
+- `webhook_url`: The WebHook address obtained when creating the group bot.
+
+### Creating a Group Bot
+
+Open "Group Settings" from the top-right corner of a group chat, select "Group Bots", click "Add Bot",
+choose "Create a new bot", and follow the prompts to create it.
+
+Copy the WebHook address (in the form `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+and set it as Artalk's `webhook_url` configuration.
+
+Refer to: [WeCom Group Bot Documentation](https://developer.work.weixin.qq.com/document/path/91770)
+
+::: tip
+
+The WeCom push uses the `markdown` message type of the group bot. Emoticons in comments are
+extracted to their main theme, e.g. `<img atk-emoticon="liushen-迷惑">` is shown as `[迷惑]`,
+and other images are shown as `[图片]`.
+
+:::
 
 ## DingTalk
 

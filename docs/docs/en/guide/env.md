@@ -115,6 +115,8 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | **ATK_ADMIN_NOTIFY_TELEGRAM_RECEIVERS** | `[7777777]` | Receivers | admin_notify.telegram.receivers (Multi-Push > Telegram > Receivers) |
 | **ATK_ADMIN_NOTIFY_WEBHOOK_ENABLED** | `false` | 启用 | admin_notify.webhook.enabled (Multi-Push > WebHook > Enabled) |
 | **ATK_ADMIN_NOTIFY_WEBHOOK_URL** | `""` | Url | admin_notify.webhook.url (Multi-Push > WebHook > Url) |
+| **ATK_ADMIN_NOTIFY_WECOM_ENABLED** | `false` | 启用 | admin_notify.wecom.enabled (Multi-Push > WeCom > Enabled) |
+| **ATK_ADMIN_NOTIFY_WECOM_WEBHOOK_URL** | `""` | WebhookUrl | admin_notify.wecom.webhook_url (Multi-Push > WeCom > WebhookUrl) |
 
 
 ## AI comment assistant

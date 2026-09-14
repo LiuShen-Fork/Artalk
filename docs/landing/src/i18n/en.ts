@@ -65,6 +65,7 @@ export const en = {
   func_email_aliyun: 'Aliyun Email',
   func_captcha_geetest: 'Geetest',
   func_message_pusher_lark: 'Lark',
+  func_message_pusher_wecom: 'WeCom',
   func_message_pusher_dingtalk: 'DingTalk',
   func_moderator_aliyun: 'Aliyun',
   func_moderator_tencent: 'Tencent Cloud',

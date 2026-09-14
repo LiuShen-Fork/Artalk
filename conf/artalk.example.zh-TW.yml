@@ -300,6 +300,10 @@ admin_notify:
     webhook_url: ""
     # 消息類型 ["text", "card"]
     msg_type: "text"
+  # 企業微信
+  wecom:
+    enabled: false
+    webhook_url: ""
   # WebHook
   webhook:
     enabled: false

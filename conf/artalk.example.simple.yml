@@ -140,6 +140,9 @@ admin_notify:
     enabled: false
     webhook_url: ""
     msg_type: "text"
+  wecom:
+    enabled: false
+    webhook_url: ""
   webhook:
     enabled: false
     url: ""

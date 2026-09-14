@@ -44,6 +44,7 @@ export const FuncsFeature: React.FC = () => {
       items: [
         'Telegram',
         t('func_message_pusher_lark'),
+        t('func_message_pusher_wecom'),
         t('func_message_pusher_dingtalk'),
         'Bark',
         'WebHook',

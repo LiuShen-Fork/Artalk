@@ -315,6 +315,10 @@ admin_notify:
     webhook_url: ""
     # Message type ["text", "card"]
     msg_type: "text"
+  # WeCom
+  wecom:
+    enabled: false
+    webhook_url: ""
   # WebHook
   webhook:
     enabled: false
