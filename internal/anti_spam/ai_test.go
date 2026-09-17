@@ -125,8 +125,10 @@ func TestAICheckerDeepSeekJSONOutput(t *testing.T) {
 	assert.Equal(t, "json_object", responseFormat["type"])
 	assert.NotContains(t, responseFormat, "json_schema")
 	assert.Equal(t, float64(256), received["max_tokens"])
-	assert.Equal(t, "medium", received["reasoning_effort"])
-	assert.NotContains(t, received, "thinking")
+	// DeepSeek keeps thinking on by default, so the effort knob alone would
+	// leave it running; the thinking field is what actually switches it off.
+	assert.Equal(t, "disabled", received["thinking"].(map[string]any)["type"])
+	assert.NotContains(t, received, "reasoning_effort")
 	messages := received["messages"].([]any)
 	systemPrompt := messages[0].(map[string]any)["content"].(string)
 	assert.Contains(t, systemPrompt, "JSON")
@@ -194,8 +196,12 @@ func TestAICheckerAnthropicMessages(t *testing.T) {
 	assert.NotContains(t, outputFormat, "name")
 	assert.NotContains(t, outputFormat, "strict")
 	assertReasonSchema(t, outputFormat["schema"].(map[string]any))
-	// Claude-specific thinking overrides break Anthropic-compatible providers.
-	assert.NotContains(t, received, "thinking")
+	// Thinking is its own switch, separate from the effort knob. It is on by
+	// default, so disabling it means sending an explicit "disabled" rather than
+	// leaving the field out.
+	thinking := received["thinking"].(map[string]any)
+	assert.Equal(t, "disabled", thinking["type"])
+	assert.NotContains(t, received, "output_config")
 	messages := received["messages"].([]any)
 	assert.Len(t, messages, 1)
 	assert.Equal(t, "user", messages[0].(map[string]any)["role"])
@@ -240,7 +246,89 @@ func TestAICheckerResponsesRequestOptions(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, 128, request["max_output_tokens"])
-	assert.Equal(t, "medium", request["reasoning"].(map[string]any)["effort"])
+	// The Responses API folds the thinking toggle into the effort field, where
+	// "none" is the documented way to turn thinking off.
+	assert.Equal(t, "none", request["reasoning"].(map[string]any)["effort"])
+}
+
+// TestAICheckerThinkingToggle pins the thinking switch per protocol. Thinking
+// is on by default everywhere, so the effort knob only tunes its depth and a
+// real off switch is a separate field.
+func TestAICheckerThinkingToggle(t *testing.T) {
+	tests := []struct {
+		name            string
+		apiType         AIAPIType
+		disableThinking bool
+		assertBody      func(t *testing.T, request map[string]any)
+	}{
+		{
+			name:            "responses disables thinking with effort none",
+			apiType:         AIAPITypeResponses,
+			disableThinking: true,
+			assertBody: func(t *testing.T, request map[string]any) {
+				assert.Equal(t, "none", request["reasoning"].(map[string]any)["effort"])
+			},
+		},
+		{
+			name:            "responses keeps thinking on with a portable effort",
+			apiType:         AIAPITypeResponses,
+			disableThinking: false,
+			assertBody: func(t *testing.T, request map[string]any) {
+				assert.Equal(t, "medium", request["reasoning"].(map[string]any)["effort"])
+			},
+		},
+		{
+			name:            "chat completions disables thinking with the thinking field",
+			apiType:         AIAPITypeChatCompletions,
+			disableThinking: true,
+			assertBody: func(t *testing.T, request map[string]any) {
+				assert.Equal(t, "disabled", request["thinking"].(map[string]any)["type"])
+				assert.NotContains(t, request, "reasoning_effort")
+			},
+		},
+		{
+			name:            "chat completions keeps thinking on with a portable effort",
+			apiType:         AIAPITypeChatCompletions,
+			disableThinking: false,
+			assertBody: func(t *testing.T, request map[string]any) {
+				assert.NotContains(t, request, "thinking")
+				assert.Equal(t, "medium", request["reasoning_effort"])
+			},
+		},
+		{
+			name:            "anthropic disables thinking with the thinking field",
+			apiType:         AIAPITypeAnthropic,
+			disableThinking: true,
+			assertBody: func(t *testing.T, request map[string]any) {
+				assert.Equal(t, "disabled", request["thinking"].(map[string]any)["type"])
+				assert.NotContains(t, request, "output_config")
+			},
+		},
+		{
+			name:            "anthropic keeps thinking on with a portable effort",
+			apiType:         AIAPITypeAnthropic,
+			disableThinking: false,
+			assertBody: func(t *testing.T, request map[string]any) {
+				assert.NotContains(t, request, "thinking")
+				assert.Equal(t, "medium", request["output_config"].(map[string]any)["effort"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			checker := NewAIChecker(AICheckerConf{
+				APIType:         tt.apiType,
+				BaseURL:         "https://example.com/v1",
+				Model:           "test-model",
+				DisableThinking: tt.disableThinking,
+			})
+			request, err := checker.requestBody("comment")
+
+			require.NoError(t, err)
+			tt.assertBody(t, request)
+		})
+	}
 }
 
 func TestAICheckerErrors(t *testing.T) {

@@ -16,22 +16,42 @@ import (
 // that reject them.
 func TestAssistantRequestParameters(t *testing.T) {
 	tests := []struct {
-		name        string
-		apiType     config.AIAPIType
-		expectedURL string
-		assertBody  func(t *testing.T, body map[string]any)
+		name            string
+		apiType         config.AIAPIType
+		disableThinking bool
+		expectedURL     string
+		assertBody      func(t *testing.T, body map[string]any)
 	}{
 		{
-			name:        "responses disables thinking with a portable effort",
-			apiType:     config.AIAPITypeResponses,
-			expectedURL: "/v1/responses",
+			name:            "responses disables thinking with effort none",
+			apiType:         config.AIAPITypeResponses,
+			disableThinking: true,
+			expectedURL:     "/v1/responses",
 			assertBody: func(t *testing.T, body map[string]any) {
-				assert.Equal(t, "medium", body["reasoning"].(map[string]any)["effort"])
+				assert.Equal(t, "none", body["reasoning"].(map[string]any)["effort"])
 				assert.NotContains(t, body, "thinking")
 			},
 		},
 		{
-			name:        "chat completions never sends model specific thinking",
+			name:        "responses keeps thinking on with a portable effort",
+			apiType:     config.AIAPITypeResponses,
+			expectedURL: "/v1/responses",
+			assertBody: func(t *testing.T, body map[string]any) {
+				assert.Equal(t, "medium", body["reasoning"].(map[string]any)["effort"])
+			},
+		},
+		{
+			name:            "chat completions disables thinking with the thinking field",
+			apiType:         config.AIAPITypeChatCompletions,
+			disableThinking: true,
+			expectedURL:     "/v1/chat/completions",
+			assertBody: func(t *testing.T, body map[string]any) {
+				assert.Equal(t, "disabled", body["thinking"].(map[string]any)["type"])
+				assert.NotContains(t, body, "reasoning_effort")
+			},
+		},
+		{
+			name:        "chat completions keeps thinking on with a portable effort",
 			apiType:     config.AIAPITypeChatCompletions,
 			expectedURL: "/v1/chat/completions",
 			assertBody: func(t *testing.T, body map[string]any) {
@@ -40,13 +60,24 @@ func TestAssistantRequestParameters(t *testing.T) {
 			},
 		},
 		{
-			name:        "anthropic keeps its own system field and max_tokens",
+			name:            "anthropic disables thinking with the thinking field",
+			apiType:         config.AIAPITypeAnthropic,
+			disableThinking: true,
+			expectedURL:     "/v1/messages",
+			assertBody: func(t *testing.T, body map[string]any) {
+				assert.Equal(t, "disabled", body["thinking"].(map[string]any)["type"])
+				assert.NotContains(t, body, "output_config")
+				assert.Contains(t, body, "system")
+				assert.Equal(t, float64(512), body["max_tokens"])
+			},
+		},
+		{
+			name:        "anthropic keeps thinking on with a portable effort",
 			apiType:     config.AIAPITypeAnthropic,
 			expectedURL: "/v1/messages",
 			assertBody: func(t *testing.T, body map[string]any) {
 				assert.NotContains(t, body, "thinking")
-				assert.Contains(t, body, "system")
-				assert.Equal(t, float64(512), body["max_tokens"])
+				assert.Equal(t, "medium", body["output_config"].(map[string]any)["effort"])
 			},
 		},
 	}
@@ -70,7 +101,7 @@ func TestAssistantRequestParameters(t *testing.T) {
 			}))
 			defer server.Close()
 
-			disableThinking := true
+			disableThinking := tt.disableThinking
 			// Provide the client directly so the request helper does not need a
 			// fully wired App only to read the timeout config.
 			service := &AIAssistantService{client: server.Client()}

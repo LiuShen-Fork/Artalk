@@ -25,10 +25,22 @@ const (
 )
 
 const (
-	// reasoningEffortDisabled is used when required thinking is turned off.
-	// "none" and "minimal" are model-specific and rejected by most providers,
-	// while "medium" is accepted wherever reasoning_effort exists at all.
-	reasoningEffortDisabled = "medium"
+	// reasoningEffortThinkingOn is sent while thinking stays enabled. "medium"
+	// is accepted wherever a reasoning effort is understood at all, so it never
+	// turns a valid request into a rejection. The effort knob only tunes how
+	// deep the thinking goes; it cannot switch it off.
+	reasoningEffortThinkingOn = "medium"
+
+	// thinkingTypeDisabled is the switch that actually turns thinking off for
+	// the chat completions and Anthropic Messages protocols. Thinking is its own
+	// field there and is enabled by default, so lowering the effort alone leaves
+	// it running.
+	thinkingTypeDisabled = "disabled"
+
+	// reasoningEffortDisabled is the Responses API spelling of the same switch.
+	// That protocol folds the toggle into the effort field, where "none" is the
+	// documented way to disable thinking.
+	reasoningEffortDisabled = "none"
 
 	anthropicVersion       = "2023-06-01"
 	anthropicDefaultTokens = 512
@@ -206,9 +218,9 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 			request["max_output_tokens"] = c.conf.MaxTokens
 		}
 		if c.conf.DisableThinking {
-			// "none" and "minimal" are model-specific and rejected by most
-			// providers, so fall back to the lowest widely supported effort.
 			request["reasoning"] = map[string]any{"effort": reasoningEffortDisabled}
+		} else {
+			request["reasoning"] = map[string]any{"effort": reasoningEffortThinkingOn}
 		}
 		return request, nil
 
@@ -237,9 +249,13 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 		} else if c.outputFormat() != AIOutputFormatJSONObject {
 			return nil, fmt.Errorf("unknown AI output format %q", c.outputFormat())
 		}
-		// Anthropic thinking is opt-in, so omitting the parameter already means
-		// "disabled". Claude-specific thinking configs are rejected by the
-		// Anthropic-compatible endpoints of other providers, so never send it.
+		// Thinking is enabled by default on the Messages API, so leaving the
+		// field out keeps it running instead of disabling it.
+		if c.conf.DisableThinking {
+			request["thinking"] = map[string]any{"type": thinkingTypeDisabled}
+		} else {
+			request["output_config"] = map[string]any{"effort": reasoningEffortThinkingOn}
+		}
 		return request, nil
 
 	case AIAPITypeChatCompletions, AIAPITypeDeepSeekJSON:
@@ -269,10 +285,12 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 		if c.conf.MaxTokens > 0 {
 			request["max_tokens"] = c.conf.MaxTokens
 		}
-		// OpenAI-style thinking configs are model-specific and rejected by many
-		// OpenAI-compatible providers, so only set the portable effort knob.
+		// Thinking is enabled by default, so switching it off needs the thinking
+		// field; the effort knob only tunes an already running thinking mode.
 		if c.conf.DisableThinking {
-			request["reasoning_effort"] = reasoningEffortDisabled
+			request["thinking"] = map[string]any{"type": thinkingTypeDisabled}
+		} else {
+			request["reasoning_effort"] = reasoningEffortThinkingOn
 		}
 		return request, nil
 
