@@ -274,7 +274,7 @@ func TestAICheckerThinkingToggle(t *testing.T) {
 			apiType:         AIAPITypeResponses,
 			disableThinking: false,
 			assertBody: func(t *testing.T, request map[string]any) {
-				assert.Equal(t, "medium", request["reasoning"].(map[string]any)["effort"])
+				assert.Equal(t, "low", request["reasoning"].(map[string]any)["effort"])
 			},
 		},
 		{
@@ -292,7 +292,7 @@ func TestAICheckerThinkingToggle(t *testing.T) {
 			disableThinking: false,
 			assertBody: func(t *testing.T, request map[string]any) {
 				assert.NotContains(t, request, "thinking")
-				assert.Equal(t, "medium", request["reasoning_effort"])
+				assert.Equal(t, "low", request["reasoning_effort"])
 			},
 		},
 		{
@@ -310,7 +310,7 @@ func TestAICheckerThinkingToggle(t *testing.T) {
 			disableThinking: false,
 			assertBody: func(t *testing.T, request map[string]any) {
 				assert.NotContains(t, request, "thinking")
-				assert.Equal(t, "medium", request["output_config"].(map[string]any)["effort"])
+				assert.Equal(t, "low", request["output_config"].(map[string]any)["effort"])
 			},
 		},
 	}

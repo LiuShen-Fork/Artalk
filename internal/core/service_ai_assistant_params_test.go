@@ -37,7 +37,7 @@ func TestAssistantRequestParameters(t *testing.T) {
 			apiType:     config.AIAPITypeResponses,
 			expectedURL: "/v1/responses",
 			assertBody: func(t *testing.T, body map[string]any) {
-				assert.Equal(t, "medium", body["reasoning"].(map[string]any)["effort"])
+				assert.Equal(t, "low", body["reasoning"].(map[string]any)["effort"])
 			},
 		},
 		{
@@ -56,7 +56,7 @@ func TestAssistantRequestParameters(t *testing.T) {
 			expectedURL: "/v1/chat/completions",
 			assertBody: func(t *testing.T, body map[string]any) {
 				assert.NotContains(t, body, "thinking")
-				assert.Equal(t, "medium", body["reasoning_effort"])
+				assert.Equal(t, "low", body["reasoning_effort"])
 			},
 		},
 		{
@@ -77,7 +77,7 @@ func TestAssistantRequestParameters(t *testing.T) {
 			expectedURL: "/v1/messages",
 			assertBody: func(t *testing.T, body map[string]any) {
 				assert.NotContains(t, body, "thinking")
-				assert.Equal(t, "medium", body["output_config"].(map[string]any)["effort"])
+				assert.Equal(t, "low", body["output_config"].(map[string]any)["effort"])
 			},
 		},
 	}

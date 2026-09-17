@@ -24,10 +24,11 @@ const aiAssistantLogRetention = 90 * 24 * time.Hour
 const maxAIAssistantContextComments = 20
 
 // aiAssistantReasoningEffortThinkingOn is sent while thinking stays enabled.
-// "medium" is accepted wherever a reasoning effort is understood at all, so it
-// never turns a valid request into a rejection. The effort knob only tunes how
-// deep the thinking goes; it cannot switch it off.
-const aiAssistantReasoningEffortThinkingOn = "medium"
+// "low" sits at the bottom of every provider's effort enum, so it is accepted
+// wherever a reasoning effort is understood at all and never turns a valid
+// request into a rejection. The effort knob only tunes how deep the thinking
+// goes; it cannot switch it off.
+const aiAssistantReasoningEffortThinkingOn = "low"
 
 // aiAssistantThinkingTypeDisabled is the switch that actually turns thinking
 // off for the chat completions and Anthropic Messages protocols. Thinking has

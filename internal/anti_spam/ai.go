@@ -25,11 +25,12 @@ const (
 )
 
 const (
-	// reasoningEffortThinkingOn is sent while thinking stays enabled. "medium"
-	// is accepted wherever a reasoning effort is understood at all, so it never
-	// turns a valid request into a rejection. The effort knob only tunes how
-	// deep the thinking goes; it cannot switch it off.
-	reasoningEffortThinkingOn = "medium"
+	// reasoningEffortThinkingOn is sent while thinking stays enabled. "low" sits
+	// at the bottom of every provider's effort enum, so it is accepted wherever
+	// a reasoning effort is understood at all and never turns a valid request
+	// into a rejection. The effort knob only tunes how deep the thinking goes;
+	// it cannot switch it off.
+	reasoningEffortThinkingOn = "low"
 
 	// thinkingTypeDisabled is the switch that actually turns thinking off for
 	// the chat completions and Anthropic Messages protocols. Thinking is its own
