@@ -23,10 +23,20 @@ var _ Service = (*AIAssistantService)(nil)
 const aiAssistantLogRetention = 90 * 24 * time.Hour
 const maxAIAssistantContextComments = 20
 
-// aiAssistantReasoningEffortDisabled is sent when thinking is turned off. The
-// OpenAI Responses API rejects "none"/"minimal" on many providers, while
-// "medium" is accepted wherever reasoning effort is supported at all.
-const aiAssistantReasoningEffortDisabled = "medium"
+// aiAssistantReasoningEffortThinkingOn is sent while thinking stays enabled.
+// "medium" is accepted wherever a reasoning effort is understood at all, so it
+// never turns a valid request into a rejection. The effort knob only tunes how
+// deep the thinking goes; it cannot switch it off.
+const aiAssistantReasoningEffortThinkingOn = "medium"
+
+// aiAssistantThinkingTypeDisabled is the switch that actually turns thinking
+// off for the chat completions and Anthropic Messages protocols. Thinking has
+// its own field there and is enabled by default.
+const aiAssistantThinkingTypeDisabled = "disabled"
+
+// aiAssistantReasoningEffortDisabled is the Responses API spelling of the same
+// switch, where "none" is the documented way to disable thinking.
+const aiAssistantReasoningEffortDisabled = "none"
 
 const defaultAIPageFetchErrorMessage = "抱歉主人，我获取不到页面的内容哩，可以检查一下网络吗？"
 const defaultAIAPIErrorMessage = "抱歉主人，AI脑子烧掉了，检查一下后端接口呢？"
@@ -374,9 +384,9 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 			bodyMap["max_output_tokens"] = maxTokens
 		}
 		if conf.DisableThinking != nil && *conf.DisableThinking {
-			// "none"/"minimal" are model-specific and rejected by most
-			// providers, so fall back to the lowest widely supported effort.
 			bodyMap["reasoning"] = map[string]any{"effort": aiAssistantReasoningEffortDisabled}
+		} else {
+			bodyMap["reasoning"] = map[string]any{"effort": aiAssistantReasoningEffortThinkingOn}
 		}
 	case config.AIAPITypeAnthropic:
 		bodyMap["system"] = assistantPrompt(conf)
@@ -386,18 +396,24 @@ func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf)
 		} else {
 			bodyMap["max_tokens"] = 1024
 		}
-		// Anthropic thinking is opt-in, so omitting the parameter already means
-		// "disabled". Claude-specific thinking configs are rejected by the
-		// Anthropic-compatible endpoints of other providers, so never send it.
+		// Thinking is enabled by default on the Messages API, so leaving the
+		// field out keeps it running instead of disabling it.
+		if conf.DisableThinking != nil && *conf.DisableThinking {
+			bodyMap["thinking"] = map[string]any{"type": aiAssistantThinkingTypeDisabled}
+		} else {
+			bodyMap["output_config"] = map[string]any{"effort": aiAssistantReasoningEffortThinkingOn}
+		}
 	default:
 		bodyMap["messages"] = messages
 		if maxTokens > 0 {
 			bodyMap["max_tokens"] = maxTokens
 		}
+		// Thinking is enabled by default, so switching it off needs the thinking
+		// field; the effort knob only tunes an already running thinking mode.
 		if conf.DisableThinking != nil && *conf.DisableThinking {
-			// Only set the portable effort knob; OpenAI-style thinking configs
-			// are model-specific and rejected by many compatible providers.
-			bodyMap["reasoning_effort"] = aiAssistantReasoningEffortDisabled
+			bodyMap["thinking"] = map[string]any{"type": aiAssistantThinkingTypeDisabled}
+		} else {
+			bodyMap["reasoning_effort"] = aiAssistantReasoningEffortThinkingOn
 		}
 	}
 	body, err := json.Marshal(bodyMap)
