@@ -136,7 +136,7 @@ moderator:
   ai:
     # Enable AI content moderation
     enabled: false
-    # AI API type ["responses", "chat_completions", "anthropic_messages", "deepseek_json_output"]
+    # AI API type ["responses", "chat_completions", "anthropic_messages", "deepseek_json_output", "jev"]
     api_type: responses
     # API base URL ending in /v1 (e.g. "https://api.openai.com/v1")
     base_url: "https://api.openai.com/v1"

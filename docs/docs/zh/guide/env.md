@@ -377,7 +377,7 @@ ATK_TRUSTED_DOMAINS_0="https://a.com"
 | 环境变量 | 默认值 | 描述 | 路径 |
 | --- | --- | --- | --- |
 | **ATK_MODERATOR_AI_API_KEY** | `""` | API Key (例如 "sk-...") | moderator.ai.api_key (评论审核 > AI 内容审核 > API Key) |
-| **ATK_MODERATOR_AI_API_TYPE** | `"responses"` | AI 接口类型 (可选：`["responses", "chat_completions", "anthropic_messages", "deepseek_json_output"]`) | moderator.ai.api_type (评论审核 > AI 内容审核 > AI 接口类型) |
+| **ATK_MODERATOR_AI_API_TYPE** | `"responses"` | AI 接口类型 (可选：`["responses", "chat_completions", "anthropic_messages", "deepseek_json_output", "jev"]`) | moderator.ai.api_type (评论审核 > AI 内容审核 > AI 接口类型) |
 | **ATK_MODERATOR_AI_BASE_URL** | `"https://api.openai.com/v1"` | API 基础地址，必须以 /v1 结尾 (例如 "https://api.openai.com/v1") | moderator.ai.base_url (评论审核 > AI 内容审核 > API 基础地址，必须以 /v1 结尾) |
 | **ATK_MODERATOR_AI_DISABLE_THINKING** | `true` | 思考模式 | moderator.ai.disable_thinking (评论审核 > AI 内容审核 > 思考模式) |
 | **ATK_MODERATOR_AI_ENABLED** | `false` | 启用 AI 内容审核 | moderator.ai.enabled (评论审核 > AI 内容审核 > 启用 AI 内容审核) |

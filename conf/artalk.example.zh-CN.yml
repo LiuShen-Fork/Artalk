@@ -137,7 +137,7 @@ moderator:
   ai:
     # 启用 AI 内容审核
     enabled: false
-    # AI 接口类型 ["responses", "chat_completions", "anthropic_messages", "deepseek_json_output"]
+    # AI 接口类型 ["responses", "chat_completions", "anthropic_messages", "deepseek_json_output", "jev"]
     api_type: responses
     # API 基础地址，必须以 /v1 结尾 (例如 "https://api.openai.com/v1")
     base_url: "https://api.openai.com/v1"
