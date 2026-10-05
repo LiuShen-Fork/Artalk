@@ -164,6 +164,7 @@ const (
 	AIAPITypeChatCompletions AIAPIType = "chat_completions"
 	AIAPITypeAnthropic       AIAPIType = "anthropic_messages"
 	AIAPITypeDeepSeekJSON    AIAPIType = "deepseek_json_output"
+	AIAPITypeJev             AIAPIType = "jev"
 )
 
 type AIOutputFormat string

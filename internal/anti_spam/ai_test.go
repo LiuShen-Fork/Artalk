@@ -433,6 +433,137 @@ func TestAICheckerErrors(t *testing.T) {
 	})
 }
 
+// TestAICheckerJev pins the decision model wire format. Jev is not a chat
+// model: it takes a state plus named questions and answers with probabilities,
+// so none of the chat-only knobs apply.
+func TestAICheckerJev(t *testing.T) {
+	var received map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/v1/systemone", r.URL.Path)
+		assert.Equal(t, "Bearer test-key", r.Header.Get("Authorization"))
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&received))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"model":"typesafe/jev","answers":{"sensitive":{"type":"noul","noul":0.99}},"usage":{"input_tokens":278,"output_tokens":20}}`))
+	}))
+	defer server.Close()
+
+	checker := NewAIChecker(AICheckerConf{
+		APIType:         AIAPITypeJev,
+		BaseURL:         server.URL + "/v1/",
+		APIKey:          "test-key",
+		Model:           "typesafe/jev",
+		Prompt:          "Is this comment sensitive?",
+		MaxTokens:       256,
+		DisableThinking: true,
+		OutputFormat:    AIOutputFormatJSONObject,
+	})
+	pass, err := checker.Check(&CheckerParams{ReviewText: "nickname: ad\ncomment: buy now"})
+
+	require.NoError(t, err)
+	assert.False(t, pass)
+
+	assert.Equal(t, "typesafe/jev", received["model"])
+	assert.Equal(t, "nickname: ad\ncomment: buy now", received["state"])
+	// A decision model has no output format, token budget or thinking switch,
+	// so none of those options may leak into the request.
+	assert.NotContains(t, received, "max_tokens")
+	assert.NotContains(t, received, "max_output_tokens")
+	assert.NotContains(t, received, "output_format")
+	assert.NotContains(t, received, "reasoning_effort")
+	assert.NotContains(t, received, "reasoning")
+	assert.NotContains(t, received, "thinking")
+
+	questions := received["questions"].(map[string]any)
+	assert.Len(t, questions, 1)
+	question := questions["sensitive"].(map[string]any)
+	assert.Equal(t, "noul", question["type"])
+	assert.Equal(t, "Is this comment sensitive?", question["instructions"])
+}
+
+// TestAICheckerJevVerdict maps the returned probability onto the moderation
+// verdict and rejects answers that are not a usable probability.
+func TestAICheckerJevVerdict(t *testing.T) {
+	tests := []struct {
+		name       string
+		response   string
+		status     int
+		wantPass   bool
+		wantReason string
+		wantErr    string
+	}{
+		{
+			name:       "high probability is sensitive",
+			response:   `{"answers":{"sensitive":{"type":"noul","noul":0.99}}}`,
+			wantPass:   false,
+			wantReason: "0.99",
+		},
+		{
+			name:       "low probability is not sensitive",
+			response:   `{"answers":{"sensitive":{"type":"noul","noul":0.03}}}`,
+			wantPass:   true,
+			wantReason: "0.03",
+		},
+		{
+			name:       "half rounds to sensitive",
+			response:   `{"answers":{"sensitive":{"type":"noul","noul":0.5}}}`,
+			wantPass:   false,
+			wantReason: "0.50",
+		},
+		{
+			name:     "missing answers",
+			response: `{"model":"typesafe/jev"}`,
+			wantErr:  "no answers",
+		},
+		{
+			name:     "missing sensitive answer",
+			response: `{"answers":{"urgent":{"type":"noul","noul":0.9}}}`,
+			wantErr:  "no sensitive answer",
+		},
+		{
+			name:     "answer is not a noul probability",
+			response: `{"answers":{"sensitive":{"type":"score","score":0.9}}}`,
+			wantErr:  "not a probability",
+		},
+		{
+			name:    "http failure surfaces the status",
+			status:  http.StatusUnauthorized,
+			wantErr: "401",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				if tt.status != 0 {
+					http.Error(w, "nope", tt.status)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(tt.response))
+			}))
+			defer server.Close()
+
+			checker := NewAIChecker(AICheckerConf{
+				APIType: AIAPITypeJev,
+				BaseURL: server.URL + "/v1",
+				Model:   "typesafe/jev",
+			})
+			params := &CheckerParams{ReviewText: "nickname: user\ncomment: hello"}
+			pass, err := checker.Check(params)
+
+			if tt.wantErr != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantPass, pass)
+			assert.Contains(t, params.ResultReason, tt.wantReason)
+		})
+	}
+}
+
 func assertReasonSchema(t *testing.T, schema map[string]any) {
 	t.Helper()
 

@@ -22,6 +22,7 @@ const (
 	AIAPITypeChatCompletions AIAPIType = "chat_completions"
 	AIAPITypeDeepSeekJSON    AIAPIType = "deepseek_json_output"
 	AIAPITypeAnthropic       AIAPIType = "anthropic_messages"
+	AIAPITypeJev             AIAPIType = "jev"
 )
 
 const (
@@ -45,6 +46,18 @@ const (
 
 	anthropicVersion       = "2023-06-01"
 	anthropicDefaultTokens = 512
+
+	// jevEndpointPath is the Command Code Provider API path serving every
+	// decision model; the model itself is picked by the request body, so unlike
+	// the chat protocols this path carries no model specific segment.
+	jevEndpointPath = "/systemone"
+
+	// jevQuestionName is the question key the moderation verdict is asked under.
+	jevQuestionName = "sensitive"
+
+	// jevSensitiveThreshold is the probability at or above which a comment is
+	// treated as sensitive.
+	jevSensitiveThreshold = 0.5
 
 	// aiJSONOutputHint is appended to the prompt whenever the structured schema
 	// alone cannot guarantee JSON output. Providers offering json_object mode
@@ -176,6 +189,8 @@ func (c *AIChecker) endpoint() (string, error) {
 		return baseURL + "/chat/completions", nil
 	case AIAPITypeAnthropic:
 		return baseURL + "/messages", nil
+	case AIAPITypeJev:
+		return baseURL + jevEndpointPath, nil
 	default:
 		return "", fmt.Errorf("unknown AI API type %q", c.conf.APIType)
 	}
@@ -294,6 +309,23 @@ func (c *AIChecker) requestBody(reviewText string) (map[string]any, error) {
 			request["reasoning_effort"] = reasoningEffortThinkingOn
 		}
 		return request, nil
+
+	case AIAPITypeJev:
+		// A decision model answers with a probability, so there is no output to
+		// format and no response to generate. The chat-only options (thinking,
+		// output format, token budget) are ignored rather than rejected, so one
+		// config can be switched to this type without clearing them, and their
+		// defaults would otherwise fail every request.
+		return map[string]any{
+			"model": strings.TrimSpace(c.conf.Model),
+			"state": reviewText,
+			"questions": map[string]any{
+				jevQuestionName: map[string]any{
+					"type":         "noul",
+					"instructions": c.systemPrompt(),
+				},
+			},
+		}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown AI API type %q", c.conf.APIType)
@@ -460,6 +492,34 @@ func (c *AIChecker) extractResultJSON(responseBody []byte) ([]byte, error) {
 			return nil, fmt.Errorf("AI anthropic result contains no text (stop_reason=max_tokens, raise max_tokens)")
 		}
 		return nil, fmt.Errorf("AI anthropic result contains no text content")
+
+	case AIAPITypeJev:
+		var response struct {
+			Answers map[string]struct {
+				Noul *float64 `json:"noul"`
+			} `json:"answers"`
+		}
+		if err := json.Unmarshal(responseBody, &response); err != nil {
+			return nil, fmt.Errorf("decode AI jev result: %w", err)
+		}
+		if len(response.Answers) == 0 {
+			return nil, fmt.Errorf("AI jev result contains no answers")
+		}
+		answer, ok := response.Answers[jevQuestionName]
+		if !ok {
+			return nil, fmt.Errorf("AI jev result contains no sensitive answer")
+		}
+		if answer.Noul == nil {
+			return nil, fmt.Errorf("AI jev sensitive answer is not a probability")
+		}
+
+		// Fold the probability back into the shared verdict shape so the rest of
+		// the pipeline stays unaware of which protocol produced it. The reason
+		// carries the raw probability, since a decision model never writes one.
+		return json.Marshal(aiModerationResult{
+			Sensitive: *answer.Noul >= jevSensitiveThreshold,
+			Reason:    fmt.Sprintf("jev sensitive probability %.2f", *answer.Noul),
+		})
 
 	default:
 		return nil, fmt.Errorf("unknown AI API type %q", c.conf.APIType)
