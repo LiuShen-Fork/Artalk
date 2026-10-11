@@ -85,12 +85,11 @@ func UserInfoUpdate(app *core.App, router fiber.Router) {
 
 		// Modify link
 		if p.Link != "" {
-			// Check link format
-			if !utils.ValidateURL(p.Link) {
-				user.Link = "https://" + p.Link
-			}
-
-			user.Link = p.Link
+			// Normalize rather than reject: a bare host is what someone typing
+			// their homepage means, and the previous attempt to prepend the
+			// scheme was overwritten on the next line, so an unusable value
+			// used to reach the database and break the next save.
+			user.Link = utils.NormalizeURL(p.Link)
 		}
 
 		if err := app.Dao().UpdateUser(&user); err != nil {
