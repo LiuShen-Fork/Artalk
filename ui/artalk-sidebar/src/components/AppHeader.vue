@@ -8,8 +8,10 @@ const nav = useNavStore()
 const router = useRouter()
 const user = useUserStore()
 const { t } = useI18n()
-const { site: curtSite, is_admin: isAdmin, avatar } = storeToRefs(user)
+const { site: curtSite, is_admin: isAdmin, avatar, name: userName } = storeToRefs(user)
 const { darkMode } = storeToRefs(nav)
+
+const siteInitial = computed(() => (curtSite.value || '_').substring(0, 1))
 
 const avatarClickHandler = () => {
   if (!isOpenFromSidebar()) logout()
@@ -26,210 +28,198 @@ const logout = () => {
 </script>
 
 <template>
-  <div class="header">
-    <template v-if="isAdmin">
-      <div
-        class="avatar clickable"
-        :class="{ active: nav.siteSwitcherShow }"
-        @click="nav.showSiteSwitcher()"
-      >
-        <div class="site">{{ curtSite.substring(0, 1) || '_' }}</div>
-      </div>
-    </template>
-    <template v-else>
-      <div class="avatar" @click="avatarClickHandler">
-        <img :src="avatar" />
-      </div>
-    </template>
+  <header class="header">
+    <button
+      v-if="isAdmin"
+      type="button"
+      class="brand"
+      :aria-label="t('siteManage')"
+      @click="nav.showSiteSwitcher()"
+    >
+      <span class="brand-mark">{{ siteInitial }}</span>
+      <span class="brand-copy">
+        <span class="brand-name">Artalk</span>
+        <span class="brand-site">{{ curtSite || t('ctrlCenter') }}</span>
+      </span>
+      <span class="chevron" />
+    </button>
 
-    <div class="title">
-      <div class="text show-mobile">{{ isAdmin ? t('ctrlCenter') : t('msgCenter') }}</div>
-      <div class="text show-desktop">
-        <template v-if="!isAdmin">{{ t('msgCenter') }}</template>
-        <template v-else-if="!!curtSite">{{ curtSite }}</template>
-        <template v-else>
-          <img src="../assets/favicon.png" class="artalk-logo" draggable="false" />
-        </template>
-      </div>
+    <button v-else type="button" class="brand guest" @click="avatarClickHandler">
+      <span class="brand-mark avatar-mark"><img :src="avatar" alt="" /></span>
+      <span class="brand-copy">
+        <span class="brand-name">{{ t('msgCenter') }}</span>
+        <span class="brand-site">{{ userName || t('unknownUser') }}</span>
+      </span>
+    </button>
+
+    <div class="header-actions">
+      <button
+        type="button"
+        class="icon-btn theme-toggle"
+        :aria-label="darkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        :aria-pressed="darkMode"
+        @click="nav.toggleDarkMode()"
+      >
+        <span class="theme-icon" :data-darkmode="darkMode ? 'on' : 'off'" />
+      </button>
     </div>
 
-    <div class="close-btn"></div>
-    <div
-      class="dark-mode-toggle"
-      :data-darkmode="darkMode ? 'on' : 'off'"
-      @click="nav.toggleDarkMode()"
-    ></div>
-  </div>
+    <!-- The host page renders its close button over this reserved area. -->
+    <div class="close-btn" />
+  </header>
   <SiteSwitcher v-if="isAdmin" />
 </template>
 
 <style scoped lang="scss">
 .header {
+  position: relative;
+  z-index: 30;
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 10px;
+  height: var(--atk-admin-header-h);
+  padding-left: 14px;
   border-bottom: 1px solid var(--atk-admin-border);
+  background: var(--atk-admin-bg-transl);
+  backdrop-filter: blur(18px);
+}
 
-  @media (min-width: 1024px) {
-    background: var(--at-sidebar-header-bg);
+.brand {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 8px 0 0;
+  border: 0;
+  border-radius: var(--atk-admin-radius-sm);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background: var(--atk-admin-surface-muted);
   }
 
-  .avatar {
-    position: relative;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-right: 1px solid transparent;
-    padding: 0 10px 0 15px;
+  &.guest {
+    cursor: pointer;
+  }
+}
 
-    .site {
-      user-select: none;
-      color: var(--atk-admin-surface);
-      background: var(--atk-admin-sage);
-      height: 30px;
-      width: 30px;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 30px;
-      font-size: 13px;
-    }
+.brand-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: #fff;
+  background: linear-gradient(145deg, var(--atk-admin-sage), var(--atk-admin-sage-strong));
+  box-shadow: 0 8px 18px -10px rgba(15, 118, 110, 0.75);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
 
-    &.clickable {
-      cursor: pointer;
-
-      &:hover,
-      &.active {
-        background: var(--atk-admin-surface-muted);
-        border-right: 1px solid var(--atk-admin-border);
-      }
-
-      &::after {
-        content: '';
-        margin-left: 10px;
-        vertical-align: middle;
-        border-top: 5px solid var(--atk-admin-subtle);
-        border-left: 3px solid transparent;
-        border-right: 3px solid transparent;
-        margin-top: -1px;
-        display: inline-block;
-      }
-    }
+  &.avatar-mark {
+    overflow: hidden;
+    background: var(--atk-admin-surface-muted);
+    box-shadow: none;
 
     img {
-      height: 30px;
-      width: 30px;
-      border-radius: 50%;
-      background: var(--atk-admin-sage);
-      text-align: center;
-      line-height: 30px;
-      font-size: 13px;
-      color: var(--atk-admin-surface);
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
+}
 
-  .title {
-    flex: auto;
-    text-align: center;
-    user-select: none;
+.brand-copy {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
 
-    .text {
-      display: inline-block;
-      position: relative;
-      color: var(--atk-admin-ink);
-      font-size: 20px;
+.brand-name {
+  color: var(--atk-admin-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+}
 
-      &.show-mobile {
-        display: none;
-      }
+.brand-site {
+  overflow: hidden;
+  color: var(--atk-admin-ink);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-      &.show-desktop {
-        display: inline-block;
+.chevron {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 4px 0 2px;
+  border-right: 1.5px solid var(--atk-admin-faint);
+  border-bottom: 1.5px solid var(--atk-admin-faint);
+  transform: rotate(45deg) translateY(-2px);
+}
 
-        &::after {
-          display: none;
-        }
-      }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
 
-      @media (max-width: 1023px) {
-        &.show-mobile {
-          display: inline-block;
-        }
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
 
-        &.show-desktop {
-          display: none;
-        }
-      }
+  &:hover {
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface-muted);
+  }
+}
 
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 6px;
-        background: var(--atk-admin-sage);
-        opacity: 0.4;
-      }
-    }
+.theme-icon {
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 
-    .artalk-logo {
-      border-radius: 9px;
-      height: 40px;
-      width: 40px;
-      background: var(--atk-admin-sage);
-      text-align: center;
-      line-height: 30px;
-      font-size: 13px;
-      color: #fff;
-    }
+  &[data-darkmode='on'] {
+    background-image: url('@/assets/icon-darkmode-on.svg');
   }
 
-  .close-btn {
-    width: 60px;
-    height: 60px;
-    margin-left: 10px;
+  &[data-darkmode='off'] {
+    background-image: url('@/assets/icon-darkmode-off.svg');
   }
+}
 
-  .dark-mode-toggle {
-    display: none;
-    width: 60px;
-    height: 60px;
-    margin-left: 10px;
-    justify-content: center;
-    align-items: center;
-    user-select: none;
-    cursor: pointer;
-
-    @media (min-width: 1024px) {
-      display: flex;
-    }
-
-    &:hover {
-      &::after {
-        background-color: var(--at-color-bg-grey);
-      }
-    }
-
-    &::after {
-      content: '';
-      display: block;
-      transition: background-color 0.2s;
-      width: 35px;
-      height: 35px;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: 60%;
-      border-radius: 50%;
-    }
-
-    &[data-darkmode='on']::after {
-      background-image: url('@/assets/icon-darkmode-on.svg');
-    }
-
-    &[data-darkmode='off']::after {
-      background-image: url('@/assets/icon-darkmode-off.svg');
-    }
-  }
+.close-btn {
+  flex: none;
+  width: 60px;
+  height: var(--atk-admin-header-h);
 }
 </style>

@@ -196,57 +196,69 @@ defineExpose({ prev, next, reset })
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding: 10px 0;
+  padding: 9px 0;
   position: relative;
 
   & > .atk-btn,
   & > .atk-input {
-    font-size: 15px;
-    height: 30px;
+    height: 34px;
+    padding: 0;
     border: 1px solid var(--atk-admin-border);
-    border-radius: 999px;
-    padding: 0 5px;
+    border-radius: 0;
     text-align: center;
     background: var(--atk-admin-surface);
+    box-shadow: 0 1px 2px rgba(18, 46, 38, 0.04);
   }
 
   & > .atk-btn {
     user-select: none;
-    width: 60px;
+    width: 40px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: var(--atk-admin-subtle);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+
+    &:first-child {
+      border-radius: 9px 0 0 9px;
+    }
+
+    &:last-child {
+      border-radius: 0 9px 9px 0;
+    }
 
     &:hover {
       background: var(--atk-admin-surface-muted);
+      color: var(--atk-admin-ink);
     }
 
     &.atk-disabled {
-      color: var(--at-color-sub);
+      color: var(--atk-admin-faint);
+      opacity: 0.6;
 
       &:hover {
         cursor: default;
-        background: initial;
+        background: var(--atk-admin-surface);
+        color: var(--atk-admin-faint);
       }
     }
   }
 
   & > .atk-input {
-    background: transparent;
+    width: 48px;
+    border-right: 0;
+    border-left: 0;
     color: var(--atk-admin-ink);
-    font-size: 18px;
-    width: 60px;
+    background: var(--atk-admin-surface);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
     outline: none;
 
     &:focus {
       border-color: var(--atk-admin-sage);
-    }
-  }
-
-  & > * {
-    &:not(:last-child) {
-      margin-right: 10px;
     }
   }
 }

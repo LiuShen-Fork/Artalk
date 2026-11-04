@@ -151,6 +151,7 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
 
 <template>
   <div class="user-list-wrap admin-page">
+    <AdminPageHeader :title="t('user')" description="管理站点内的用户、邮箱与权限。" />
     <div class="user-list admin-panel">
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-main">
@@ -278,17 +279,22 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
     box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
 
     .user-item {
-      padding: 18px 20px;
+      padding: 15px 16px;
       border-color: var(--atk-admin-border);
 
       .user-main {
         .title {
           color: var(--atk-admin-ink);
-          font-size: 18px;
+          font-size: 15px;
+          font-weight: 650;
 
           .badge {
+            padding: 1px 7px;
             border-radius: 999px;
             background: var(--atk-admin-sage);
+            font-size: 10.5px;
+            font-weight: 650;
+            line-height: 1.6;
 
             &.admin {
               background: var(--atk-admin-terracotta);
@@ -301,15 +307,30 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
         }
 
         .sub {
+          margin-top: 3px;
           color: var(--atk-admin-subtle);
+          font-size: 12.5px;
         }
       }
 
-      .user-actions > span {
-        color: var(--atk-admin-subtle);
+      .user-actions {
+        margin-top: 9px;
 
-        &:hover {
-          color: var(--atk-admin-sage);
+        & > span {
+          color: var(--atk-admin-subtle);
+          font-size: 12.5px;
+
+          &:not(:last-child) {
+            margin-right: 18px;
+          }
+
+          &:hover {
+            color: var(--atk-admin-sage);
+          }
+
+          &:last-child:hover {
+            color: var(--atk-admin-danger);
+          }
         }
       }
     }

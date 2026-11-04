@@ -36,13 +36,13 @@ const basicRootGroup = computed<OptionNode | null>(() => {
   }
 })
 const rootGroups = computed(() =>
-  [
-    basicRootGroup.value,
-    ...visibleRootNodes.value.filter((node) => !!node.items),
-  ].filter((node): node is OptionNode => !!node),
+  [basicRootGroup.value, ...visibleRootNodes.value.filter((node) => !!node.items)].filter(
+    (node): node is OptionNode => !!node,
+  ),
 )
 const activeRoot = computed(
-  () => rootGroups.value.find((node) => node.path === selectedRootPath.value) || rootGroups.value[0],
+  () =>
+    rootGroups.value.find((node) => node.path === selectedRootPath.value) || rootGroups.value[0],
 )
 
 watch(rootGroups, (groups) => {
@@ -117,7 +117,7 @@ function save() {
       <LoadingLayer v-if="isLoading" />
     </div>
     <div v-if="tree" class="settings-layout">
-      <AdminPageHeader eyebrow="Config" :title="t('settings')" :description="t('settingNotice')" />
+      <AdminPageHeader :title="t('settings')" :description="t('settingNotice')" />
 
       <div class="settings-mobile-index">
         <select v-model="selectedRootPath" :aria-label="t('config')">
@@ -313,7 +313,7 @@ function save() {
     }
 
     :deep(.pf-item) {
-      padding: 14px 0;
+      padding: 12px 0;
       margin-bottom: 0;
       border-bottom: 1px solid var(--atk-admin-border);
     }
@@ -450,19 +450,117 @@ function save() {
   :deep(input[type='password']),
   :deep(textarea),
   :deep(select) {
-    padding: 7px 11px;
+    min-height: 40px;
+    padding: 8px 12px;
     border: 1px solid var(--atk-admin-border);
-    border-radius: 9px;
-    background: var(--atk-admin-surface);
+    border-radius: var(--atk-admin-radius-xs);
+    background: var(--atk-admin-surface-muted);
     color: var(--atk-admin-ink);
+    font-size: 14px;
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
 
     &:focus {
       border-color: var(--atk-admin-sage);
+      background: var(--atk-admin-surface);
+      box-shadow: 0 0 0 3px var(--atk-admin-ring);
+      outline: none;
     }
   }
 
+  :deep(.pf-head .title) {
+    color: var(--atk-admin-ink);
+    font-size: 17px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  :deep(.pf-grp.level-1 > .pf-head .title::before) {
+    height: 18px;
+    width: 4px;
+    left: -10px;
+    border-radius: 2px;
+  }
+
+  :deep(.pf-grp.level-1.expand > .pf-head .title::before) {
+    height: 22px;
+  }
+
+  :deep(.pf-item .sub-title) {
+    color: var(--atk-admin-faint);
+    font-size: 12.5px;
+  }
+
+  :deep(select) {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 34px;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%238a9a93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    cursor: pointer;
+  }
+
+  .settings-mobile-index select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 34px;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%238a9a93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 12px;
+    cursor: pointer;
+  }
+
   .settings-content {
-    background: var(--atk-admin-canvas);
+    background: var(--atk-admin-surface);
+  }
+}
+
+.settings :deep(.pf-item input[type='checkbox']) {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 42px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 1px solid var(--atk-admin-border-strong);
+  border-radius: 999px;
+  background: var(--atk-admin-surface-sunken);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(10, 20, 16, 0.28);
+    transition: transform 0.2s var(--atk-admin-ease);
+  }
+
+  &:checked {
+    border-color: var(--atk-admin-sage);
+    background: var(--atk-admin-sage);
+
+    &::after {
+      transform: translateX(18px);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 </style>

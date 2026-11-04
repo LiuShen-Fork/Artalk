@@ -216,11 +216,7 @@ onMounted(() => {
 
 <template>
   <div class="moderation-page admin-page">
-    <AdminPageHeader
-      eyebrow="Moderation"
-      :title="t('moderation')"
-      :description="t('moderationIntro')"
-    >
+    <AdminPageHeader :title="t('moderation')" :description="t('moderationIntro')">
       <template #actions>
         <button class="admin-button danger" :disabled="clearing || !total" @click="clearLogs">
           {{ clearing ? t('refreshing') : t('moderationClear') }}
@@ -236,12 +232,7 @@ onMounted(() => {
         {{ t('moderationSummary', { total, count: logs.length }) }}
       </div>
       <div class="log-list">
-        <article
-          v-for="item in logs"
-          :key="item.id"
-          class="log-item"
-          :class="displayStatus(item)"
-        >
+        <article v-for="item in logs" :key="item.id" class="log-item" :class="displayStatus(item)">
           <div class="status-icon">{{ statusMeta[displayStatus(item)].icon }}</div>
           <div class="log-main">
             <div class="log-top">
@@ -433,7 +424,6 @@ onMounted(() => {
   .moderation-page {
     padding: 16px 14px 70px;
   }
-
 }
 
 .moderation-page .log-panel,

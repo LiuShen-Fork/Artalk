@@ -179,6 +179,7 @@ function openPage(url: string) {
 
 <template>
   <div class="atk-page-list-wrap admin-page">
+    <AdminPageHeader :title="t('page')" description="管理评论页面的标题与缓存。" />
     <div class="atk-header-action-bar" :class="{ bordered: showActBarBorder }">
       <span class="atk-update-all-title-btn" @click="refreshAllPages()">
         <i class="atk-icon atk-icon-sync" :class="{ 'atk-rotate': refreshBtn.isRun }"></i>
@@ -285,13 +286,17 @@ function openPage(url: string) {
     }
 
     & > span {
-      padding: 7px 12px;
+      height: 36px;
+      padding: 0 12px;
       border: 1px solid var(--atk-admin-border);
-      border-radius: 999px;
-      color: var(--atk-admin-ink);
+      border-radius: var(--atk-admin-radius-xs);
+      color: var(--atk-admin-subtle);
       background: var(--atk-admin-surface);
+      font-size: 12.5px;
 
       &:hover {
+        border-color: var(--atk-admin-sage);
+        color: var(--atk-admin-ink);
         background: var(--atk-admin-surface-muted);
       }
     }

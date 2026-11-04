@@ -119,59 +119,71 @@ function logout() {
   @extend .atk-slim-scrollbar;
 
   position: absolute;
+  top: calc(var(--atk-admin-header-h) + 8px);
+  left: 12px;
   z-index: 9999;
-  left: calc((100% - 80%) / 2);
-  top: 70px;
-  pointer-events: all;
-  background: var(--atk-admin-surface);
-  width: 80%;
-  max-height: 40%;
-  margin: 0 auto;
+  width: min(300px, calc(100% - 24px));
+  max-height: 46%;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
   border: 1px solid var(--atk-admin-border);
   border-radius: var(--atk-admin-radius);
-  box-shadow: 0 6px 16px rgba(72, 60, 46, 0.08);
-  overflow-y: auto;
-  transition: all 0.2s ease;
-
-  @media (min-width: 1024px) {
-    left: 10px;
-    max-width: 260px;
-  }
+  background: var(--atk-admin-surface);
+  box-shadow: var(--atk-admin-shadow);
+  transform-origin: top left;
 
   .atk-sites {
     display: flex;
     flex-direction: column;
-    padding: 7px 0;
+    gap: 2px;
+  }
 
-    .atk-site-item {
-      display: flex;
-      flex-direction: row;
-      cursor: pointer;
-      align-items: center;
-      padding: 0 10px;
-      margin-bottom: 1px;
+  .atk-site-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 9px;
+    border-radius: var(--atk-admin-radius-xs);
+    cursor: pointer;
+    transition: background-color 0.16s ease;
 
-      .atk-site-logo {
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
-        background: var(--atk-admin-sage);
-        margin: 10px;
-        border-radius: 50%;
-        text-align: center;
-        color: #fff;
-        font-size: 12px;
-      }
+    .atk-site-logo {
+      flex: none;
+      width: 30px;
+      height: 30px;
+      margin: 0;
+      border-radius: 9px;
+      color: #fff;
+      background: linear-gradient(145deg, var(--atk-admin-sage), var(--atk-admin-sage-strong));
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 30px;
+      text-align: center;
+    }
+
+    .atk-site-name {
+      overflow: hidden;
+      margin: 0;
+      color: var(--atk-admin-ink);
+      font-size: 13.5px;
+      font-weight: 550;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    &.atk-active,
+    &:hover {
+      background: var(--atk-admin-surface-muted);
+    }
+
+    &.atk-active {
+      color: var(--atk-admin-sage-strong);
+      background: var(--atk-admin-sage-soft);
 
       .atk-site-name {
-        color: var(--atk-admin-ink);
-        font-size: 17px;
-        margin-left: 7px;
-      }
-
-      &.atk-active,
-      &:hover {
-        background: var(--atk-admin-surface-muted);
+        color: var(--atk-admin-sage-strong);
+        font-weight: 650;
       }
     }
   }
@@ -180,6 +192,6 @@ function logout() {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-  transform: scale3d(1.05, 1.05, 1.05);
+  transform: translateY(-4px) scale(0.98);
 }
 </style>

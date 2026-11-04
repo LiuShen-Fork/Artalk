@@ -4,6 +4,7 @@
 
 body {
   margin: 0;
+  background: var(--atk-admin-canvas, #f2f5f4);
 }
 
 .artalk,
@@ -19,49 +20,79 @@ body {
   }
 }
 
-.artalk {
-  --at-sidebar-header-bg: #f7f3ed;
-  --atk-admin-canvas: #faf6f1;
-  --atk-admin-surface: #fffdfa;
-  --atk-admin-surface-muted: #f2ece3;
-  --atk-admin-ink: #3f3b35;
-  --atk-admin-subtle: #6f6a61;
-  --atk-admin-border: #ded5ca;
-  --atk-admin-sage: #718064;
-  --atk-admin-sage-soft: #e5eadf;
-  --atk-admin-terracotta: #a85f48;
-  --atk-admin-danger: #9d5147;
-  --atk-admin-radius: 14px;
-  --atk-admin-radius-sm: 9px;
-}
-
-.artalk.atk-dark-mode {
-  --at-sidebar-header-bg: #252924;
-  --atk-admin-canvas: #1f211d;
-  --atk-admin-surface: #292c26;
-  --atk-admin-surface-muted: #34372f;
-  --atk-admin-ink: #eee9df;
-  --atk-admin-subtle: #bdb7ac;
-  --atk-admin-border: #4a4d43;
-  --atk-admin-sage: #a5b594;
-  --atk-admin-sage-soft: #384233;
-  --atk-admin-terracotta: #d28b73;
-  --atk-admin-danger: #df8e82;
-
-  .atk-comment-wrap.atk-openable:hover {
-    background: var(--atk-admin-surface-muted);
-  }
-}
+/* --------------------------------------------------------------------------
+   Theme tokens
+   -------------------------------------------------------------------------- */
 
 .atk-sidebar {
-  background: var(--atk-admin-canvas);
+  --atk-admin-canvas: #f2f5f4;
+  --atk-admin-canvas-deep: #e8efec;
+  --atk-admin-surface: #ffffff;
+  --atk-admin-surface-muted: #edf2f0;
+  --atk-admin-surface-sunken: #e6edea;
+  --atk-admin-ink: #13211c;
+  --atk-admin-subtle: #5d6d67;
+  --atk-admin-faint: #8a9a93;
+  --atk-admin-border: #dfe8e4;
+  --atk-admin-border-strong: #c9d7d1;
+  --atk-admin-sage: #0f766e;
+  --atk-admin-sage-strong: #0a5c56;
+  --atk-admin-sage-soft: #d9efe9;
+  --atk-admin-terracotta: #bf5b3b;
+  --atk-admin-terracotta-soft: #f6e7e0;
+  --atk-admin-danger: #b23b3b;
+  --atk-admin-danger-soft: #f7e5e4;
+  --atk-admin-gold: #a97c22;
+  --atk-admin-gold-soft: #f6eed9;
+  --atk-admin-radius: 18px;
+  --atk-admin-radius-sm: 12px;
+  --atk-admin-radius-xs: 8px;
+  --atk-admin-header-h: 62px;
+  --atk-admin-nav-h: 52px;
+  --atk-admin-shadow: 0 24px 60px -34px rgba(18, 46, 38, 0.45);
+  --atk-admin-shadow-sm: 0 10px 26px -18px rgba(18, 46, 38, 0.4);
+  --atk-admin-ring: rgba(15, 118, 110, 0.22);
+  --atk-admin-bg-transl: rgba(255, 255, 255, 0.86);
+  --atk-admin-surface-transl: rgba(255, 255, 255, 0.94);
+  --atk-admin-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Bridge Artalk's core widget variables onto the console palette. */
+  --at-color-font: var(--atk-admin-ink);
+  --at-color-deep: var(--atk-admin-ink);
+  --at-color-sub: var(--atk-admin-subtle);
+  --at-color-grey: var(--atk-admin-subtle);
+  --at-color-meta: var(--atk-admin-faint);
+  --at-color-border: var(--atk-admin-border);
+  --at-color-light: var(--atk-admin-sage);
+  --at-color-bg: var(--atk-admin-surface);
+  --at-color-bg-transl: rgba(255, 255, 255, 0.88);
+  --at-color-bg-grey: var(--atk-admin-surface-muted);
+  --at-color-bg-grey-transl: rgba(237, 242, 240, 0.72);
+  --at-color-bg-light: var(--atk-admin-sage-soft);
+  --at-color-main: var(--atk-admin-sage);
+  --at-color-red: var(--atk-admin-danger);
+  --at-color-pink: var(--atk-admin-danger);
+  --at-color-yellow: var(--atk-admin-gold);
+  --at-color-green: #2f9e76;
+
+  background:
+    radial-gradient(115% 70% at 100% 0%, rgba(15, 118, 110, 0.09), transparent 58%),
+    radial-gradient(90% 60% at 0% 100%, rgba(191, 91, 59, 0.05), transparent 62%),
+    var(--atk-admin-canvas);
+  background-attachment: fixed;
   color: var(--atk-admin-ink);
+  font-family: $font-family;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 
   button,
   input,
   select,
   textarea {
     font: inherit;
+    color: inherit;
   }
 
   button,
@@ -75,58 +106,128 @@ body {
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 2px solid rgba(113, 128, 100, 0.35);
+    outline: 2px solid var(--atk-admin-ring);
     outline-offset: 1px;
+  }
+
+  ::selection {
+    color: var(--atk-admin-ink);
+    background: var(--atk-admin-sage-soft);
   }
 }
 
+.atk-sidebar.atk-dark-mode {
+  --atk-admin-canvas: #0e1512;
+  --atk-admin-canvas-deep: #0a100e;
+  --atk-admin-surface: #151e1a;
+  --atk-admin-surface-muted: #1b2621;
+  --atk-admin-surface-sunken: #101815;
+  --atk-admin-ink: #e9f1ed;
+  --atk-admin-subtle: #9fb0a8;
+  --atk-admin-faint: #70837a;
+  --atk-admin-border: #26342e;
+  --atk-admin-border-strong: #34473f;
+  --atk-admin-sage: #5bd3c4;
+  --atk-admin-sage-strong: #7ee6d8;
+  --atk-admin-sage-soft: #143832;
+  --atk-admin-terracotta: #e08a6a;
+  --atk-admin-terracotta-soft: #3a261f;
+  --atk-admin-danger: #ef8a86;
+  --atk-admin-danger-soft: #3a2221;
+  --atk-admin-gold: #d9b36b;
+  --atk-admin-gold-soft: #352c1b;
+  --atk-admin-shadow: 0 28px 70px -30px rgba(0, 0, 0, 0.8);
+  --atk-admin-shadow-sm: 0 12px 30px -18px rgba(0, 0, 0, 0.75);
+  --atk-admin-ring: rgba(91, 211, 196, 0.24);
+  --atk-admin-bg-transl: rgba(21, 30, 26, 0.9);
+  --atk-admin-surface-transl: rgba(21, 30, 26, 0.96);
+
+  --at-color-bg-transl: rgba(21, 30, 26, 0.9);
+  --at-color-bg-grey-transl: rgba(27, 38, 33, 0.78);
+  --at-color-green: #4fd1a5;
+
+  background:
+    radial-gradient(115% 70% at 100% 0%, rgba(91, 211, 196, 0.1), transparent 58%),
+    radial-gradient(90% 60% at 0% 100%, rgba(224, 138, 106, 0.05), transparent 62%),
+    var(--atk-admin-canvas);
+
+  .atk-comment-wrap.atk-openable:hover {
+    background: var(--atk-admin-surface-muted);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Admin layout primitives
+   -------------------------------------------------------------------------- */
+
 .atk-sidebar .admin-page {
-  padding: 24px 28px 72px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 22px 22px 84px;
+  animation: atk-admin-page-in 0.32s var(--atk-admin-ease) both;
+}
+
+@keyframes atk-admin-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .atk-sidebar .admin-page-head {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  margin: 2px 0 18px;
-  padding: 24px 26px;
-  color: var(--atk-admin-ink);
-  background: var(--atk-admin-surface-muted);
-  border: 1px solid var(--atk-admin-border);
-  border-radius: var(--atk-admin-radius);
-  box-shadow: 0 2px 8px rgba(72, 60, 46, 0.05);
+  gap: 24px;
+  margin: 2px 0 20px;
+  padding: 0 2px;
 
   h1 {
-    margin: 0 0 7px;
-    font-family: Georgia, 'Songti SC', 'STSong', serif;
-    font-size: 27px;
-    line-height: 1.25;
-    font-weight: 600;
-    letter-spacing: 0;
+    margin: 0;
+    color: var(--atk-admin-ink);
+    font-size: 26px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   p {
-    max-width: 680px;
-    margin: 0;
+    max-width: 640px;
+    margin: 8px 0 0;
     color: var(--atk-admin-subtle);
-    font-size: 14px;
+    font-size: 13.5px;
+    line-height: 1.6;
   }
 }
 
 .atk-sidebar .admin-eyebrow {
-  margin-bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
   color: var(--atk-admin-sage);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-weight: 650;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 3px var(--atk-admin-sage-soft);
+  }
 }
 
 .atk-sidebar .admin-panel {
-  background: var(--atk-admin-surface);
   border: 1px solid var(--atk-admin-border);
   border-radius: var(--atk-admin-radius);
-  box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+  background: var(--atk-admin-surface);
+  box-shadow: var(--atk-admin-shadow-sm);
 }
 
 .atk-sidebar .admin-button {
@@ -134,10 +235,10 @@ body {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 36px;
-  padding: 7px 14px;
-  border: 1px solid var(--atk-admin-border);
-  border-radius: 999px;
+  min-height: 38px;
+  padding: 8px 15px;
+  border: 1px solid var(--atk-admin-border-strong);
+  border-radius: var(--atk-admin-radius-xs);
   color: var(--atk-admin-ink);
   background: var(--atk-admin-surface);
   cursor: pointer;
@@ -145,7 +246,12 @@ body {
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
 
   .atk-icon {
     display: block;
@@ -153,43 +259,85 @@ body {
   }
 
   &:hover:not(:disabled) {
-    background: var(--atk-admin-surface-muted);
     border-color: var(--atk-admin-sage);
+    color: var(--atk-admin-sage-strong);
+    background: var(--atk-admin-sage-soft);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    opacity: 0.5;
   }
 
   &.primary {
     border-color: var(--atk-admin-ink);
-    background: var(--atk-admin-ink);
     color: var(--atk-admin-surface);
+    background: var(--atk-admin-ink);
 
     &:hover:not(:disabled) {
       border-color: var(--atk-admin-sage);
+      color: #fff;
       background: var(--atk-admin-sage);
     }
   }
 
   &.danger {
+    border-color: var(--atk-admin-border-strong);
     color: var(--atk-admin-danger);
 
     &:hover:not(:disabled) {
       border-color: var(--atk-admin-danger);
-      background: rgba(157, 81, 71, 0.08);
+      color: var(--atk-admin-danger);
+      background: var(--atk-admin-danger-soft);
     }
   }
+}
+
+.atk-sidebar .admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid var(--atk-admin-border);
+  border-radius: 999px;
+  color: var(--atk-admin-subtle);
+  background: var(--atk-admin-surface);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.atk-sidebar .admin-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 38px 20px;
+  color: var(--atk-admin-faint);
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+
+.atk-sidebar .admin-form {
+  padding: 20px 22px 24px;
 }
 
 .atk-sidebar .atk-form {
   color: var(--atk-admin-ink);
 
   .atk-label {
+    display: block;
     color: var(--atk-admin-ink);
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 650;
   }
 
   .atk-desc {
@@ -200,32 +348,43 @@ body {
   textarea,
   select {
     border: 1px solid var(--atk-admin-border);
-    border-radius: 9px;
+    border-radius: var(--atk-admin-radius-xs);
     color: var(--atk-admin-ink);
-    background: var(--atk-admin-surface);
+    background: var(--atk-admin-surface-muted);
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
+
+    &::placeholder {
+      color: var(--atk-admin-faint);
+    }
 
     &:focus {
       border-color: var(--atk-admin-sage);
+      background: var(--atk-admin-surface);
+      box-shadow: 0 0 0 3px var(--atk-admin-ring);
+      outline: none;
     }
   }
 
   input,
   select {
-    min-height: 38px;
+    min-height: 40px;
   }
 
   textarea {
-    padding: 9px 11px;
+    padding: 10px 12px;
   }
 
   .atk-btn,
   button[type='submit'] {
     width: auto;
     min-width: 116px;
-    min-height: 38px;
+    min-height: 40px;
     margin: 0;
-    border-color: var(--atk-admin-ink);
-    border-radius: 999px;
+    border: 1px solid var(--atk-admin-ink);
+    border-radius: var(--atk-admin-radius-xs);
     color: var(--atk-admin-surface);
     background: var(--atk-admin-ink);
 
@@ -235,6 +394,141 @@ body {
     }
   }
 }
+
+/* Legacy form spacing used by transfer and editor layers */
+.atk-sidebar .atk-form {
+  $form-height: 40px;
+
+  .atk-label {
+    margin-bottom: 10px;
+    font-size: 13.5px;
+
+    &.required::after {
+      content: '*';
+      margin-left: 5px;
+      color: var(--atk-admin-danger);
+      vertical-align: top;
+    }
+  }
+
+  .atk-desc {
+    display: block;
+    margin: 8px 0 18px;
+    font-size: 13px;
+
+    a {
+      color: var(--atk-admin-sage);
+      text-decoration: none;
+    }
+  }
+
+  input,
+  textarea {
+    display: block;
+    width: 100%;
+    margin: 0 0 18px;
+    padding: 0 12px;
+    line-height: $form-height;
+    outline: none;
+
+    &[type='file'] {
+      padding: 8px 12px;
+      line-height: 1.4;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--atk-admin-surface-muted);
+      }
+    }
+  }
+
+  textarea {
+    min-height: 92px;
+    padding: 10px 12px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  select {
+    display: block;
+    width: 100%;
+    height: $form-height;
+    margin: 0 0 18px;
+    padding: 5px 12px;
+    outline: none;
+  }
+
+  button {
+    width: 100%;
+    margin: 0 5px;
+    padding: 0 20px;
+    line-height: $form-height;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: var(--atk-admin-radius-xs);
+    color: var(--atk-admin-surface);
+    background: var(--atk-admin-ink);
+
+    &:hover {
+      background: var(--atk-admin-sage);
+    }
+  }
+
+  input,
+  select,
+  button {
+    font-size: 14px;
+  }
+
+  .atk-file-upload-group {
+    height: 100px;
+    overflow: hidden;
+  }
+
+  .atk-uploading-wrap {
+    .atk-progress {
+      display: block;
+      width: 100%;
+      height: 10px;
+      margin: 18px 0 7px;
+      overflow: hidden;
+      border-radius: 100px;
+      background: var(--atk-admin-surface-sunken);
+
+      .atk-bar {
+        width: 0%;
+        height: 100%;
+        background: var(--atk-admin-sage);
+        opacity: 0.8;
+        transition: 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+      }
+    }
+
+    .atk-status {
+      color: var(--atk-admin-subtle);
+      font-size: 13px;
+
+      .atk-curt {
+        color: var(--atk-admin-sage);
+      }
+
+      .atk-abort {
+        float: right;
+        cursor: pointer;
+
+        &:hover {
+          color: var(--atk-admin-sage);
+        }
+      }
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Editor / overlay layers
+   -------------------------------------------------------------------------- */
 
 .atk-sidebar .user-editor-layer,
 .atk-sidebar .atk-page-edit-layer,
@@ -247,26 +541,41 @@ body {
 .atk-sidebar .user-editor-layer .header,
 .atk-sidebar .atk-site-add > .atk-header,
 .atk-sidebar .atk-site-edit > .atk-header {
-  background: var(--atk-admin-surface);
   border-bottom: 1px solid var(--atk-admin-border);
+  background: var(--atk-admin-surface);
 }
 
 .atk-sidebar .user-editor-layer .user-log {
-  background: var(--atk-admin-surface-muted);
   border: 1px solid var(--atk-admin-border);
   border-radius: var(--atk-admin-radius-sm);
+  background: var(--atk-admin-surface-muted);
 }
 
-@media (max-width: 850px) {
-  .atk-sidebar .admin-page {
-    padding: 16px 14px 72px;
+.atk-sidebar .atk-log-wrap {
+  .atk-log-back-btn {
+    display: inline-block;
+    padding: 6px 20px;
+    cursor: pointer;
+    user-select: none;
+    border-right: 1px solid var(--atk-admin-border);
+    border-left: 1px solid transparent;
+
+    &:hover {
+      background: var(--atk-admin-surface-muted);
+    }
   }
 
-  .atk-sidebar .admin-page-head {
-    display: block;
-    padding: 20px;
+  .atk-iframe {
+    width: 100%;
+    height: calc(100vh - 150px);
+    border: 0;
+    background: var(--atk-admin-surface-muted);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Artalk list / comment surface
+   -------------------------------------------------------------------------- */
 
 .atk-sidebar {
   .atk-list {
@@ -278,213 +587,197 @@ body {
 
   .atk-sidebar-no-content {
     position: absolute;
-    left: 0;
-    right: 0;
     top: 0;
-    font-size: 35px;
-    color: var(--at-color-meta);
-    pointer-events: none;
-    height: 100%;
+    right: 0;
+    left: 0;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--atk-admin-faint);
+    font-size: 32px;
+    pointer-events: none;
   }
 
-  .atk-form {
-    $form-height: 35px;
+  .atk-comment-wrap {
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+  }
 
-    padding: 20px 30px;
+  .atk-list-body {
+    background: transparent;
+  }
 
-    .atk-label {
-      font-size: 16px;
-      margin-bottom: 12px;
-      color: var(--at-color-font);
+  .atk-pagination-wrap {
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface-transl, var(--atk-admin-surface));
+  }
+}
 
-      &.required::after {
-        content: '*';
-        color: var(--at-color-red);
-        margin-left: 5px;
-        vertical-align: top;
-      }
+/* --------------------------------------------------------------------------
+   Page-specific polish
+   -------------------------------------------------------------------------- */
+
+/* Page list */
+.atk-sidebar .atk-page-list-wrap {
+  .atk-header-action-bar {
+    border-bottom: 1px solid transparent;
+    background: transparent;
+
+    &.bordered {
+      border-color: var(--atk-admin-border);
     }
 
-    .atk-desc {
-      font-size: 14px;
-      margin-top: 10px;
-      margin-left: 15px;
-      margin-bottom: 25px;
-      display: block;
-      color: var(--at-color-meta);
+    & > span {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: var(--atk-admin-radius-xs);
+      color: var(--atk-admin-subtle);
+      background: var(--atk-admin-surface);
+      font-size: 12.5px;
+      transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
 
-      a {
-        opacity: 0.8;
+      &:not(:last-child) {
+        margin-right: 8px;
       }
-    }
-
-    input,
-    textarea {
-      display: block;
-      line-height: $form-height;
-      padding: 0 10px;
-      margin: 0;
-      border: none;
-      border-bottom: 1px solid var(--at-color-border);
-      outline: none;
-      width: 100%;
-      margin-bottom: 25px;
-      background: var(--at-color-bg);
-
-      &:focus {
-        border-bottom-color: var(--at-color-bg-light);
-      }
-
-      &[type='file'] {
-        background: transparent;
-        border: 1px solid var(--at-color-border);
-        cursor: pointer;
-        position: relative;
-        padding: 6px 15px;
-        line-height: 0;
-        margin-bottom: 17px;
-        border-radius: 4px;
-
-        &:hover {
-          background: var(--at-color-bg-light);
-          border-color: var(--at-color-bg-light);
-        }
-      }
-
-      &[type='file']::-webkit-file-upload-button {
-        background: transparent;
-        color: var(--at-color-font);
-        border: 0;
-        border-right: 1px solid var(--at-color-border);
-        border-left: 0;
-        border-top: 0;
-        border-bottom: 0;
-        padding: 0 20px 0 10px;
-        line-height: 25px;
-        margin-right: 15px;
-        cursor: pointer;
-        transition: 0.2s ease;
-        -webkit-appearance: none;
-        border-radius: 0;
-      }
-    }
-
-    textarea {
-      font-size: 13px;
-      line-height: 20px;
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    select {
-      display: block;
-      outline: none;
-      height: $form-height;
-      padding: 5px 10px;
-      width: 100%;
-      border: none;
-      border-bottom: 2px solid var(--at-color-border);
-      margin-bottom: 25px;
-      -webkit-appearance: none;
-      border-radius: 0;
-      background: var(--at-color-bg);
-    }
-
-    button {
-      text-align: center;
-      color: var(--at-color-light);
-      background: transparent;
-      border: 1px solid var(--at-color-bg-light);
-      line-height: $form-height;
-      cursor: pointer;
-      outline: none;
-      padding: 0 20px;
-      border-radius: 4px;
-      margin: 0 5px;
-      width: 100%;
-      user-select: none;
 
       &:hover {
-        background: var(--at-color-bg-light);
-      }
-    }
-
-    input,
-    select,
-    button {
-      font-size: 15px;
-    }
-
-    .atk-file-upload-group {
-      height: 100px;
-      overflow: hidden;
-    }
-
-    .atk-uploading-wrap {
-      .atk-progress {
-        width: 100%;
-        height: 12px;
-        display: block;
-        overflow: hidden;
-        background: var(--at-color-bg-grey);
-        border-radius: 100px;
-        margin-bottom: 7px;
-        margin-top: 20px;
-
-        .atk-bar {
-          transition: 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
-          background: var(--at-color-main);
-          height: 100%;
-          width: 0%;
-          opacity: 0.7;
-        }
-      }
-
-      .atk-status {
-        color: var(--at-color-meta);
-        font-size: 14px;
-
-        .atk-curt {
-          color: var(--at-color-main);
-        }
-
-        .atk-abort {
-          cursor: pointer;
-          float: right;
-
-          &:hover {
-            color: var(--at-color-main);
-          }
-        }
+        border-color: var(--atk-admin-sage);
+        color: var(--atk-admin-ink);
+        background: var(--atk-admin-surface-muted);
       }
     }
   }
 
-  .atk-log-wrap {
-    .atk-log-back-btn {
-      display: inline-block;
-      padding: 5px 33px;
-      cursor: pointer;
-      user-select: none;
-      border-right: 1px solid var(--at-color-border);
-      border-left: 1px solid transparent;
-      &:hover {
-        background: var(--at-color-bg-grey);
-      }
+  .atk-page-list {
+    padding: 6px;
+  }
+
+  .atk-page-item {
+    border-radius: var(--atk-admin-radius-sm);
+    transition: background-color 0.18s ease;
+
+    &:hover {
+      background: var(--atk-admin-surface-muted);
+    }
+  }
+}
+
+/* Sites */
+.atk-sidebar .atk-site-list {
+  .atk-site-item {
+    border-radius: var(--atk-admin-radius-sm);
+    transition:
+      background-color 0.18s ease,
+      transform 0.18s ease;
+
+    &:hover {
+      background: var(--atk-admin-surface-muted);
+      transform: translateY(-1px);
     }
 
-    .atk-log {
+    .atk-site-logo {
+      border-radius: var(--atk-admin-radius-sm);
+      background: linear-gradient(145deg, var(--atk-admin-sage), var(--atk-admin-sage-strong));
+      font-weight: 700;
+    }
+  }
+}
+
+/* Settings */
+.atk-sidebar .settings {
+  .settings-index,
+  .settings-content {
+    border-color: var(--atk-admin-border);
+    border-radius: var(--atk-admin-radius);
+    background: var(--atk-admin-surface);
+    box-shadow: var(--atk-admin-shadow-sm);
+  }
+
+  .settings-index-title {
+    color: var(--atk-admin-faint);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  .act-bar {
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-bg-transl, rgba(255, 255, 255, 0.86));
+    backdrop-filter: blur(14px);
+  }
+}
+
+/* Site switcher popover */
+.atk-sidebar .atk-site-list-floater {
+  border-color: var(--atk-admin-border);
+  border-radius: var(--atk-admin-radius);
+  background: var(--atk-admin-surface);
+  box-shadow: var(--atk-admin-shadow);
+}
+
+/* Loading / scrollbars */
+.atk-sidebar .atk-loading {
+  background: var(--atk-admin-bg-transl);
+
+  .atk-loading-spinner circle {
+    stroke: var(--atk-admin-sage);
+  }
+}
+
+.atk-sidebar ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.atk-sidebar ::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--atk-admin-border-strong);
+}
+
+.atk-sidebar ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 850px) {
+  .atk-sidebar .admin-page {
+    padding: 16px 14px 76px;
+  }
+
+  .atk-sidebar .admin-page-head {
+    display: block;
+
+    h1 {
+      font-size: 23px;
     }
 
-    .atk-iframe {
-      width: 100%;
-      height: calc(100vh - 150px);
-      border: 0;
-      background: var(--at-color-bg-grey);
-      border: 3px solid var(--at-color-border);
+    .admin-page-head-actions {
+      margin-top: 14px;
+      justify-content: flex-start;
     }
+  }
+}
+
+@media (max-width: 560px) {
+  .atk-sidebar .admin-page {
+    padding: 14px 12px 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atk-sidebar *,
+  .atk-sidebar *::before,
+  .atk-sidebar *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
