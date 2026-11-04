@@ -7,6 +7,7 @@
 "Comment": "コメント"
 "Comment count": "コメント数"
 "Comment failed": "コメント失敗"
+"Comment blocked by keyword": "コメントに禁止キーワードが含まれています: {{keyword}}"
 "Config file read failed": "設定ファイルの読み取りに失敗しました"
 "Confirm to continue?": "続行しますか？"
 "Contains invalid URL": "無効なURLが含まれています"

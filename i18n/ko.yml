@@ -7,6 +7,7 @@
 "Comment": "댓글"
 "Comment count": "댓글 수"
 "Comment failed": "댓글 실패"
+"Comment blocked by keyword": "댓글에 금지된 키워드가 포함되어 있습니다: {{keyword}}"
 "Config file read failed": "구성 파일 읽기 실패"
 "Confirm to continue?": "계속 진행하시겠습니까?"
 "Contains invalid URL": "잘못된 URL을 포함합니다"

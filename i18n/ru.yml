@@ -7,6 +7,7 @@
 "Comment": "Комментарий"
 "Comment count": "Количество комментариев"
 "Comment failed": "Ошибка комментария"
+"Comment blocked by keyword": "Комментарий содержит запрещённое ключевое слово: {{keyword}}"
 "Config file read failed": "Не удалось прочитать файл конфигурации"
 "Confirm to continue?": "Подтвердите продолжение?"
 "Contains invalid URL": "Содержит недопустимый URL"

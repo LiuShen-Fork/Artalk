@@ -7,6 +7,7 @@
 "Comment": "Yorum"
 "Comment count": "Yorum sayısı"
 "Comment failed": "Yorum başarısız"
+"Comment blocked by keyword": "Yorum yasaklı bir anahtar kelime içeriyor: {{keyword}}"
 "Config file read failed": "Yapılandırma dosyası okunamadı"
 "Confirm to continue?": "Devam etmek istiyor musunuz?"
 "Contains invalid URL": "Geçersiz URL içeriyor"

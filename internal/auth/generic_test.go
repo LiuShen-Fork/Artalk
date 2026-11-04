@@ -103,25 +103,31 @@ func TestGetProviderInfoUsesDefaultEmailLabel(t *testing.T) {
 }
 
 func TestGetSocialUserUsesEmailLocalPartAsName(t *testing.T) {
-	socialUser := GetSocialUser(goth.User{
+	socialUser, err := GetSocialUser(goth.User{
 		Provider: generic.ProviderName,
 		UserID:   "user-123",
 		Email:    "alice@example.com",
-	})
+	}, "")
+	if err != nil {
+		t.Fatalf("GetSocialUser returned error: %v", err)
+	}
 	if socialUser.Name != "alice" {
 		t.Fatalf("Name = %q, want email local part", socialUser.Name)
 	}
 }
 
 func TestGetSocialUserMapsGenericLinkAndSafeFallbackEmail(t *testing.T) {
-	socialUser := GetSocialUser(goth.User{
+	socialUser, err := GetSocialUser(goth.User{
 		Provider: generic.ProviderName,
 		UserID:   "tenant|user:123",
 		Name:     "Alice",
 		RawData: map[string]any{
 			generic.RawDataUserLinkKey: "https://example.com/users/alice",
 		},
-	})
+	}, "")
+	if err != nil {
+		t.Fatalf("GetSocialUser returned error: %v", err)
+	}
 	if socialUser.Link != "https://example.com/users/alice" {
 		t.Fatalf("Link = %q", socialUser.Link)
 	}
