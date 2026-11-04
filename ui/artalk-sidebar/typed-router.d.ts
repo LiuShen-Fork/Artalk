@@ -20,8 +20,9 @@ import type {
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers:
-      | never
+    _ParamParsers: {}
+    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -118,11 +119,15 @@ declare module 'vue-router/auto-routes' {
         | '/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/comments.vue': {
       routes:
         | '/comments'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/dashboard.vue': {
@@ -130,11 +135,15 @@ declare module 'vue-router/auto-routes' {
         | '/dashboard'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/login.vue': {
       routes:
         | '/login'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/moderation.vue': {
@@ -142,11 +151,15 @@ declare module 'vue-router/auto-routes' {
         | '/moderation'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/pages.vue': {
       routes:
         | '/pages'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/settings.vue': {
@@ -154,11 +167,15 @@ declare module 'vue-router/auto-routes' {
         | '/settings'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/sites.vue': {
       routes:
         | '/sites'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/transfer.vue': {
@@ -166,11 +183,15 @@ declare module 'vue-router/auto-routes' {
         | '/transfer'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/users.vue': {
       routes:
         | '/users'
       views:
+        | never
+      pathParamNames:
         | never
     }
   }

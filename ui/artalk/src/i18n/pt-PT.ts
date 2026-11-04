@@ -18,6 +18,7 @@ export default defineLocaleExternal(
     uploadImage: 'Enviar imagem',
     uploadFail: 'Falha ao enviar',
     commentFail: 'Falha ao comentar',
+    aiAssistant: 'Assistente de IA',
     restoredMsg: 'Conteúdo restaurado',
     onlyAdminCanReply: 'Apenas o administrador pode responder',
     uploadLoginMsg: 'Preenche o teu nome e email para enviar',
