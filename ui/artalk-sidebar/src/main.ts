@@ -9,6 +9,8 @@ import './style.scss'
 import App from './App.vue'
 import { setArtalk } from './global'
 import { setupArtalk, syncArtalkUser } from './artalk'
+import { AdminPages, UserPages } from './components/AppNavigationMenu'
+import { useUserStore } from './stores/user'
 import './lib/promise-polyfill'
 
 // I18n
@@ -55,8 +57,22 @@ const artalkLoader = () =>
 
   const app = createApp(App)
   app.use(i18n)
-  app.use(router)
   app.use(pinia)
+
+  // Keep regular users inside their own console. Admin APIs are guarded on
+  // the server too; this only prevents pointless page loads and confusing
+  // error states from direct hash navigation.
+  router.beforeEach((to) => {
+    const name = String(to.name || '').replace(/^\//, '')
+    if (!name || name === 'login') return true
+
+    const user = useUserStore()
+    const allowed = user.is_admin ? AdminPages : UserPages
+    if (allowed[name]) return true
+    return user.is_admin ? '/dashboard' : '/comments'
+  })
+
+  app.use(router)
 
   // user sync from artalk to sidebar
   await syncArtalkUser(artalk.ctx, router)

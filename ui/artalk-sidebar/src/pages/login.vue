@@ -8,20 +8,34 @@
 
 <script setup lang="ts">
 import type { ArtalkType } from 'artalk'
+import VerifyCodeButton from '../components/VerifyCodeButton.vue'
 import { getArtalk } from '../global'
 import { useUserStore } from '../stores/user'
 
 const router = useRouter()
 const { t } = useI18n()
 
+type LoginMode = 'login' | 'register' | 'reset'
+const mode = ref<LoginMode>('login')
+
 let userForm = ref({
+  name: '',
   email: '',
   password: '',
+  confirm: '',
 })
+let code = ref('')
 let version = ref('')
 let buildHash = ref('')
 let loginErr = ref('')
+let submitting = ref(false)
 let userSelector = ref<string[] | null>(null)
+
+const modeTitle = computed(() => {
+  if (mode.value === 'register') return t('signUp')
+  if (mode.value === 'reset') return t('resetPassword')
+  return t('signIn')
+})
 
 onMounted(() => {
   getArtalk()!
@@ -37,39 +51,101 @@ function onFocus() {
   loginErr.value = ''
 }
 
-function login(username?: string) {
+function finishLogin(data: { user: any; token: string }) {
+  const artalk = getArtalk()
+  if (!artalk) throw new Error('Artalk instance not initialized')
+
+  artalk.ctx.getUser().update({
+    ...data.user,
+    token: data.token,
+  })
+  useUserStore().sync()
+  router.replace('/comments')
+}
+
+async function login(username?: string) {
   loginErr.value = ''
 
   const artalk = getArtalk()
   if (!artalk) throw new Error('Artalk instance not initialized')
 
-  artalk.ctx
-    .getApi()
-    .user.login({
+  submitting.value = true
+  try {
+    const res = await artalk.ctx.getApi().user.login({
       name: username || '',
       email: userForm.value.email,
       password: userForm.value.password,
     })
-    .then((res) => {
-      artalk.ctx.getUser().update({
-        ...res.data.user,
-        token: res.data.token,
-      })
-      useUserStore().sync()
-      router.replace('/comments')
-    })
-    .catch((e: ArtalkType.FetchError) => {
-      if (e.data?.need_name_select) {
-        userSelector.value = e.data?.need_name_select
-      } else {
-        loginErr.value = e.message || t('loginFailure')
-      }
-    })
+    finishLogin(res.data)
+  } catch (e: any) {
+    if (e.data?.need_name_select) {
+      userSelector.value = e.data?.need_name_select
+    } else {
+      loginErr.value = e.message || t('loginFailure')
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+function submit() {
+  loginErr.value = ''
+
+  if (mode.value === 'login') {
+    login()
+    return
+  }
+
+  if (userForm.value.password !== userForm.value.confirm) {
+    loginErr.value = t('passwordMismatch')
+    return
+  }
+
+  const artalk = getArtalk()
+  if (!artalk) throw new Error('Artalk instance not initialized')
+
+  submitting.value = true
+  ;(async () => {
+    try {
+      const res =
+        mode.value === 'register'
+          ? await artalk.ctx.getApi().auth.registerByEmail({
+              name: userForm.value.name.trim(),
+              email: userForm.value.email.trim(),
+              password: userForm.value.password,
+              code: code.value.trim(),
+            })
+          : await artalk.ctx.getApi().auth.registerByEmail({
+              email: userForm.value.email.trim(),
+              password: userForm.value.password,
+              code: code.value.trim(),
+            })
+
+      finishLogin(res.data)
+    } catch (e: any) {
+      loginErr.value = e.message || t('loginFailure')
+    } finally {
+      submitting.value = false
+    }
+  })()
+}
+
+function switchMode(next: LoginMode) {
+  mode.value = next
+  loginErr.value = ''
+  userSelector.value = null
+  code.value = ''
+  userForm.value.password = ''
+  userForm.value.confirm = ''
 }
 
 function selectUser(username: string) {
   userSelector.value = null
   login(username)
+}
+
+function onCodeError(message: string) {
+  loginErr.value = message
 }
 
 const versionInfo = computed(() => {
@@ -86,34 +162,104 @@ const versionInfo = computed(() => {
 
       <div class="login-heading">
         <h1>Artalk 控制台</h1>
-        <p>使用管理员账户继续</p>
+        <p>{{ mode === 'login' ? '使用账户继续' : modeTitle }}</p>
       </div>
 
-      <form class="login-form" @submit.prevent="login()">
+      <form class="login-form" @submit.prevent="submit()">
+        <label v-if="mode === 'register'" class="field">
+          <span>{{ t('username') }}</span>
+          <input
+            v-model="userForm.name"
+            type="text"
+            autocomplete="nickname"
+            :placeholder="t('username')"
+            required
+            @focus="onFocus"
+          />
+        </label>
+
         <label class="field">
           <span>{{ t('email') }}</span>
           <input
             v-model="userForm.email"
-            type="text"
+            type="email"
             autocomplete="username"
             :placeholder="t('email')"
+            required
             @focus="onFocus"
           />
         </label>
+
         <label class="field">
-          <span>{{ t('password') }}</span>
+          <span>{{ mode === 'login' ? t('password') : t('newPassword') }}</span>
           <input
             v-model="userForm.password"
             type="password"
-            autocomplete="current-password"
-            :placeholder="t('password')"
+            :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
+            :minlength="mode === 'login' ? undefined : 8"
+            :placeholder="mode === 'login' ? t('password') : t('newPassword')"
+            required
             @focus="onFocus"
           />
         </label>
 
+        <template v-if="mode !== 'login'">
+          <label class="field">
+            <span>{{ t('confirmPassword') }}</span>
+            <input
+              v-model="userForm.confirm"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              :placeholder="t('confirmPassword')"
+              required
+              @focus="onFocus"
+            />
+          </label>
+
+          <div class="field">
+            <span>{{ t('verificationCode') }}</span>
+            <div class="code-row">
+              <input
+                v-model="code"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                :placeholder="t('verificationCode')"
+                required
+                @focus="onFocus"
+              />
+              <VerifyCodeButton :email="userForm.email" @error="onCodeError" />
+            </div>
+          </div>
+        </template>
+
         <div v-if="!!loginErr" class="err-msg atk-fade-in">{{ loginErr }}</div>
 
-        <button type="submit">{{ t('login') }}</button>
+        <button type="submit" :disabled="submitting">
+          {{ submitting ? '…' : modeTitle }}
+        </button>
+
+        <div class="form-links">
+          <template v-if="mode === 'login'">
+            <span>
+              {{ t('noAccountPrompt') }}
+              <button type="button" class="link-btn" @click="switchMode('register')">
+                {{ t('signUp') }}
+              </button>
+            </span>
+            <button type="button" class="link-btn" @click="switchMode('reset')">
+              {{ t('forgetPassword') }}
+            </button>
+          </template>
+          <span v-else>
+            {{ t('haveAccountPrompt') }}
+            <button type="button" class="link-btn" @click="switchMode('login')">
+              {{ t('signIn') }}
+            </button>
+          </span>
+        </div>
       </form>
 
       <div class="copyright">
@@ -238,7 +384,7 @@ const versionInfo = computed(() => {
     }
   }
 
-  button {
+  > button[type='submit'] {
     height: 42px;
     margin-top: 5px;
     border: 1px solid var(--atk-admin-ink);
@@ -261,6 +407,60 @@ const versionInfo = computed(() => {
     &:active {
       transform: translateY(1px);
     }
+  }
+
+  .code-row {
+    display: flex;
+    gap: 10px;
+
+    input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .verify-code-btn {
+      height: 42px;
+    }
+  }
+
+  .form-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 2px;
+    color: var(--atk-admin-subtle);
+    font-size: 12px;
+  }
+
+  .link-btn {
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: var(--atk-admin-sage);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+
+    &:hover {
+      border: 0;
+      color: var(--atk-admin-sage-strong);
+      background: transparent;
+      text-decoration: underline;
+    }
+
+    &:active {
+      transform: none;
+    }
+  }
+
+  > button[type='submit']:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .err-msg {

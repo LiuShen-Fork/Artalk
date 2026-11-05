@@ -32,8 +32,18 @@ const wheelHandler = (evt: WheelEvent) => {
   evt.preventDefault()
   if (tabListEl.value) tabListEl.value.scrollLeft += evt.deltaY
 }
-onMounted(() => tabListEl.value?.addEventListener('wheel', wheelHandler))
-onUnmounted(() => tabListEl.value?.removeEventListener('wheel', wheelHandler))
+onMounted(() => {
+  tabListEl.value?.addEventListener('wheel', wheelHandler)
+  window.addEventListener('keydown', closeOnEscape)
+})
+onUnmounted(() => {
+  tabListEl.value?.removeEventListener('wheel', wheelHandler)
+  window.removeEventListener('keydown', closeOnEscape)
+})
+
+function closeOnEscape(evt: KeyboardEvent) {
+  if (evt.key === 'Escape') indicatorState.value = 'tabs'
+}
 
 /**
  * Toggle indicator

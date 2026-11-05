@@ -32,5 +32,6 @@ declare module 'vue' {
     SiteEditor: typeof import('./src/components/SiteEditor.vue')['default']
     SiteSwitcher: typeof import('./src/components/SiteSwitcher.vue')['default']
     UserEditor: typeof import('./src/components/UserEditor.vue')['default']
+    VerifyCodeButton: typeof import('./src/components/VerifyCodeButton.vue')['default']
   }
 }

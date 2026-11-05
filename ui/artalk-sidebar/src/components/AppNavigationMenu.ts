@@ -8,6 +8,7 @@ import UsersIcon from '@/assets/nav-icon-users.svg'
 import SitesIcon from '@/assets/nav-icon-sites.svg'
 import TransferIcon from '@/assets/nav-icon-transfer.svg'
 import SettingsIcon from '@/assets/nav-icon-settings.svg'
+import SecurityIcon from '@/assets/nav-icon-security.svg'
 import { useUserStore } from '@/stores/user'
 import { useNavStore } from '@/stores/nav'
 
@@ -59,6 +60,12 @@ export const AdminPages: Record<string, PageItem> = {
     link: '/settings',
     icon: SettingsIcon,
   },
+  security: {
+    label: 'security',
+    link: '/security',
+    icon: SecurityIcon,
+    hideOnMobile: true,
+  },
 }
 
 /**
@@ -68,6 +75,9 @@ export const UserPages: Record<string, PageItem> = {
   comments: {
     // Only show comments page for user
     ...AdminPages.comments,
+  },
+  security: {
+    ...AdminPages.security,
   },
 }
 
