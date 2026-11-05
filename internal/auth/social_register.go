@@ -49,6 +49,15 @@ func RegisterSocialUser(dao *dao.Dao, u SocialUser) (entity.AuthIdentity, error)
 		ExpiresAt:   expiresAt,
 	}
 	if err := dao.CreateAuthIdentity(&authIdentity); err != nil {
+		// The unique indexes make a concurrent login or a provider-side account
+		// change observable here. Reuse the existing link instead of failing the
+		// login; the account was already selected by the same name/email rules.
+		if existing := dao.FindAuthIdentityByRemoteUID(u.Provider, u.RemoteUID); !existing.IsEmpty() {
+			return existing, nil
+		}
+		if existing := dao.FindAuthIdentityByUserID(u.Provider, user.ID); !existing.IsEmpty() {
+			return existing, nil
+		}
 		return entity.AuthIdentity{}, err
 	}
 

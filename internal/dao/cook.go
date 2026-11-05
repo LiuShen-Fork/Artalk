@@ -188,6 +188,7 @@ func (dao *Dao) CookUser(u *entity.User) entity.CookedUser {
 		BadgeColor:    u.BadgeColor,
 		IsAdmin:       u.IsAdmin,
 		IsAIAssistant: u.IsAIAssistant,
+		HasPassword:   strings.TrimSpace(u.Password) != "",
 		ReceiveEmail:  u.ReceiveEmail,
 	}
 }

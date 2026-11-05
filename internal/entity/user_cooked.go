@@ -9,5 +9,6 @@ type CookedUser struct {
 	BadgeColor    string `json:"badge_color"`
 	IsAdmin       bool   `json:"is_admin"`
 	IsAIAssistant bool   `json:"is_ai_assistant,omitempty"`
+	HasPassword   bool   `json:"has_password"`
 	ReceiveEmail  bool   `json:"receive_email"`
 }

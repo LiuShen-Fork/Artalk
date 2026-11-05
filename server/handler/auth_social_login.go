@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/artalkjs/artalk/v2/internal/auth"
 	"github.com/artalkjs/artalk/v2/internal/auth/gothic_fiber"
 	"github.com/artalkjs/artalk/v2/internal/core"
@@ -70,19 +73,61 @@ func AuthSocialLogin(app *core.App, router fiber.Router) {
 			return common.RespError(c, 500, "Field to get provider name")
 		}
 
+		// A signed state token marks an explicit "link this provider to my
+		// current account" request. It must be resolved before the ordinary
+		// login path, which would otherwise create or select a user from the
+		// provider email.
+		bindClaims, isBind, bindStateErr := parseIdentityBindState(app, c.Query("state"))
+		bindFail := func(message string) error {
+			return auth.ResponseBindCallbackPage(c, provider, false, message)
+		}
+		if isBind {
+			if bindStateErr != nil {
+				return bindFail(bindStateErr.Error())
+			}
+			if !strings.EqualFold(bindClaims.Provider, provider) {
+				return bindFail("The provider does not match this bind request")
+			}
+			if app.Dao().FindUserByID(bindClaims.UserID).IsEmpty() {
+				return bindFail("The account no longer exists")
+			}
+		}
+
 		// Fetch user
 		gothUser, err := gothic_fiber.CompleteUserAuth(c)
 		if err != nil {
 			log.Error("[SocialLogin] ", err)
+			if isBind {
+				return auth.ResponseBindCallbackPage(c, provider, false, "Authentication was cancelled or failed")
+			}
 			return common.RespError(c, 500, "Field to complete user auth")
 		}
 
 		// Convert to social user
 		socialUser, err := auth.GetSocialUser(gothUser, app.Conf().Auth.Gitea.SiteURL)
 		if err != nil {
+			if isBind {
+				return auth.ResponseBindCallbackPage(c, provider, false, "The provider did not return a usable account")
+			}
 			return common.RespError(c, 500, err.Error())
 		}
 		log.Debug("[SocialLogin] ", socialUser)
+
+		if isBind {
+			err := BindSocialIdentity(app, bindClaims.UserID, provider, socialUser)
+			if errors.Is(err, ErrIdentityBoundToOtherUser) {
+				return bindFail("This provider account is already linked to another Artalk account")
+			}
+			if errors.Is(err, ErrProviderAlreadyBound) {
+				return bindFail("This Artalk account already has a different binding for this provider")
+			}
+			if err != nil {
+				log.Error("[SocialLogin] bind identity error: ", err)
+				return bindFail("Failed to link this provider account")
+			}
+
+			return auth.ResponseBindCallbackPage(c, provider, true, "This provider is now linked to your account")
+		}
 
 		// Find auth identity
 		authIdentity := app.Dao().FindAuthIdentityByRemoteUID(provider, socialUser.RemoteUID)

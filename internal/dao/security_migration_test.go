@@ -148,3 +148,48 @@ func TestGuestTokenRenamePreservesOwnership(t *testing.T) {
 	require.NoError(t, database.First(&stored, old.ID).Error)
 	require.Equal(t, old.GuestKeyHash, stored.GuestTokenHash)
 }
+
+// Model the old identity table, which had no unique constraints.
+type legacyAuthIdentity struct {
+	gorm.Model
+	Provider    string
+	RemoteUID   string `gorm:"column:remote_uid"`
+	UserID      uint
+	Token       string
+	ConfirmedAt *time.Time
+	ExpiresAt   *time.Time
+}
+
+func TestAuthIdentityDuplicatesAreCollapsedBeforeUniqueIndexes(t *testing.T) {
+	database, err := db.NewDB(config.DBConf{Type: config.TypeSQLite, Dsn: filepath.Join(t.TempDir(), "legacy-identities.db"), TablePrefix: "atk_"})
+	require.NoError(t, err)
+	defer db.CloseDB(database)
+	require.NoError(t, database.Table("atk_auth_identities").AutoMigrate(&legacyAuthIdentity{}))
+
+	rows := []legacyAuthIdentity{
+		{Provider: "github", RemoteUID: "remote-a", UserID: 1001},
+		{Provider: "github", RemoteUID: "remote-a", UserID: 1002},
+		{Provider: "github", RemoteUID: "remote-b", UserID: 1001},
+	}
+	for i := range rows {
+		require.NoError(t, database.Table("atk_auth_identities").Create(&rows[i]).Error)
+	}
+
+	_ = dao.NewDao(database) // migration runs here
+
+	var identities []entity.AuthIdentity
+	require.NoError(t, database.Order("id ASC").Find(&identities).Error)
+	require.Len(t, identities, 2)
+	require.Equal(t, "remote-a", identities[0].RemoteUID)
+	require.EqualValues(t, 1002, identities[0].UserID)
+	require.Equal(t, "remote-b", identities[1].RemoteUID)
+	require.EqualValues(t, 1001, identities[1].UserID)
+
+	// The constraints installed by the migration keep the invariants.
+	require.Error(t, database.Create(&entity.AuthIdentity{
+		Provider: "github", RemoteUID: "remote-a", UserID: 1003,
+	}).Error)
+	require.Error(t, database.Create(&entity.AuthIdentity{
+		Provider: "github", RemoteUID: "remote-c", UserID: 1001,
+	}).Error)
+}

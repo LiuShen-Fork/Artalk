@@ -19,12 +19,19 @@ type jwtCustomClaims struct {
 }
 
 func LoginGetUserToken(user entity.User, key string, ttl int) (string, error) {
+	return LoginGetUserTokenAt(user, key, ttl, time.Now())
+}
+
+// LoginGetUserTokenAt issues a token with an explicit issuance time. Callers
+// that rotate user.TokenValidFrom use this to mint a token at the exact second
+// that becomes valid, without leaving a same-second window for older tokens.
+func LoginGetUserTokenAt(user entity.User, key string, ttl int, issuedAt time.Time) (string, error) {
 	// Set custom claims
 	claims := &jwtCustomClaims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(time.Now()),                                       // 签发时间
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(ttl))), // 过期时间
+			IssuedAt:  jwt.NewNumericDate(issuedAt),                                       // 签发时间
+			ExpiresAt: jwt.NewNumericDate(issuedAt.Add(time.Second * time.Duration(ttl))), // 过期时间
 		},
 	}
 

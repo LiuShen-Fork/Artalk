@@ -105,6 +105,10 @@ func Serve(app *core.App) (*fiber.App, error) {
 		h.UserInfoUpdate(app, api)
 		h.UserLogin(app, api)
 		h.UserStatus(app, api)
+		h.UserPasswordUpdate(app, api)
+		h.UserIdentityList(app, api)
+		h.UserIdentityBind(app, api)
+		h.UserIdentityUnbind(app, api)
 
 		// admin
 		admin(app, api)

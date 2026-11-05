@@ -31,6 +31,16 @@ func (dao *Dao) MigrateModels() {
 		}
 	}
 
+	// Identity binding now relies on two unique indexes. Databases created by
+	// older versions may contain duplicate rows, so collapse them before
+	// AutoMigrate tries to add the constraints. Keeping the newest row matches
+	// what the old "find first match" behavior effectively used.
+	if dao.DB().Migrator().HasTable(&entity.AuthIdentity{}) {
+		if err := dao.dedupeAuthIdentities(); err != nil {
+			log.Fatal("[DB Migrator] Failed to normalize auth identities: ", err)
+		}
+	}
+
 	// Migrate the schema
 	if err := dao.DB().AutoMigrate(&entity.Site{}, &entity.Page{}, &entity.User{},
 		&entity.AuthIdentity{}, &entity.UserEmailVerify{},
@@ -170,4 +180,52 @@ func (dao *Dao) MergePages() {
 
 	log.Info("Pages merged successfully. Before pages: ", beforeLen, ", After pages: ", len(mergedPages), ", Deleted pages: ", beforeLen-len(mergedPages))
 	os.Exit(0)
+}
+
+type authIdentityKeep struct {
+	Provider  string
+	RemoteUID string
+	UserID    uint
+	KeepID    uint
+}
+
+func (dao *Dao) dedupeAuthIdentities() error {
+	// A remote account can only belong to one Artalk account.
+	var remoteDuplicates []authIdentityKeep
+	if err := dao.DB().Unscoped().Model(&entity.AuthIdentity{}).
+		Select("provider, remote_uid, MAX(id) AS keep_id").
+		Group("provider, remote_uid").
+		Having("COUNT(*) > 1").
+		Scan(&remoteDuplicates).Error; err != nil {
+		return err
+	}
+	for _, dup := range remoteDuplicates {
+		if err := dao.DB().Unscoped().
+			Where("provider = ? AND remote_uid = ? AND id <> ?", dup.Provider, dup.RemoteUID, dup.KeepID).
+			Delete(&entity.AuthIdentity{}).Error; err != nil {
+			return err
+		}
+	}
+
+	// An Artalk account can only hold one identity per provider.
+	var userDuplicates []authIdentityKeep
+	if err := dao.DB().Unscoped().Model(&entity.AuthIdentity{}).
+		Select("provider, user_id, MAX(id) AS keep_id").
+		Group("provider, user_id").
+		Having("COUNT(*) > 1").
+		Scan(&userDuplicates).Error; err != nil {
+		return err
+	}
+	for _, dup := range userDuplicates {
+		if err := dao.DB().Unscoped().
+			Where("provider = ? AND user_id = ? AND id <> ?", dup.Provider, dup.UserID, dup.KeepID).
+			Delete(&entity.AuthIdentity{}).Error; err != nil {
+			return err
+		}
+	}
+
+	if removed := len(remoteDuplicates) + len(userDuplicates); removed > 0 {
+		log.Warnf("[DB Migrator] Removed %d duplicate auth identity row(s)", removed)
+	}
+	return nil
 }
