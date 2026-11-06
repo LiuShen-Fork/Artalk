@@ -177,13 +177,7 @@ function save() {
     position: sticky;
     bottom: 0;
     z-index: 30;
-    padding: 34px 0 18px;
-    background: linear-gradient(
-      to top,
-      var(--atk-admin-canvas) 0%,
-      var(--atk-admin-canvas) 46%,
-      transparent 100%
-    );
+    padding: 16px 0;
     pointer-events: none;
   }
 
