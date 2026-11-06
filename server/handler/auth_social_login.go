@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"crypto/subtle"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/artalkjs/artalk/v2/internal/auth"
 	"github.com/artalkjs/artalk/v2/internal/auth/gothic_fiber"
@@ -82,11 +84,31 @@ func AuthSocialLogin(app *core.App, router fiber.Router) {
 			return auth.ResponseBindCallbackPage(c, provider, false, message)
 		}
 		if isBind {
+			// Read and consume the browser-bound nonce before anything else.
+			// Restarting the bind regenerates it, so a failed callback cannot
+			// be retried with the same state.
+			bindCookieValue := c.Cookies(identityBindCookie)
+			c.Cookie(&fiber.Cookie{
+				Name:     identityBindCookie,
+				Value:    "",
+				Path:     "/",
+				Expires:  time.Now().Add(-time.Hour),
+				MaxAge:   -1,
+				HTTPOnly: true,
+				Secure:   c.Protocol() == "https",
+				SameSite: fiber.CookieSameSiteLaxMode,
+			})
+
 			if bindStateErr != nil {
 				return bindFail(bindStateErr.Error())
 			}
 			if !strings.EqualFold(bindClaims.Provider, provider) {
 				return bindFail("The provider does not match this bind request")
+			}
+			if bindClaims.BindCookie &&
+				(bindCookieValue == "" ||
+					subtle.ConstantTimeCompare([]byte(bindCookieValue), []byte(bindClaims.Nonce)) != 1) {
+				return bindFail("This link request expired or was opened in another browser")
 			}
 			if app.Dao().FindUserByID(bindClaims.UserID).IsEmpty() {
 				return bindFail("The account no longer exists")

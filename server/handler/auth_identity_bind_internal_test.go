@@ -80,15 +80,25 @@ func TestIdentityBindStateValidation(t *testing.T) {
 	defer app.Cleanup()
 	require.NoError(t, app.Dao().DB().Unscoped().Where("1 = 1").Delete(&entity.AuthIdentity{}).Error)
 
-	state, err := newIdentityBindState(app.App, 1001, "github")
+	state, nonce, err := newIdentityBindState(app.App, 1001, "github", true)
 	require.NoError(t, err)
 	require.Contains(t, state, identityBindStatePrefix)
+	require.Len(t, nonce, 64)
 
 	claims, isBind, err := parseIdentityBindState(app.App, state)
 	require.NoError(t, err)
 	require.True(t, isBind)
 	require.EqualValues(t, 1001, claims.UserID)
 	require.Equal(t, "github", claims.Provider)
+	require.Equal(t, nonce, claims.Nonce)
+	require.True(t, claims.BindCookie)
+
+	// A state created for a cross-origin callback does not ask for the cookie.
+	stateNoCookie, _, err := newIdentityBindState(app.App, 1001, "github", false)
+	require.NoError(t, err)
+	claimsNoCookie, _, err := parseIdentityBindState(app.App, stateNoCookie)
+	require.NoError(t, err)
+	require.False(t, claimsNoCookie.BindCookie)
 
 	// Tampering must never be accepted. Append rather than overwrite the last
 	// base64 character, whose unused trailing bits can decode identically.

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/artalkjs/artalk/v2/internal/auth"
 	"github.com/artalkjs/artalk/v2/internal/core"
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/server/common"
@@ -81,9 +82,29 @@ func UserIdentityBind(app *core.App, router fiber.Router) {
 			return common.RespError(c, 404, "Provider is not enabled")
 		}
 
-		state, err := newIdentityBindState(app, user.ID, provider)
+		// Tie the state to this browser when the OAuth callback lives on the
+		// same origin. A state copied to another browser then cannot complete
+		// the bind, even though the signed token itself is valid.
+		callbackOrigin := strings.TrimRight(auth.CallbackOrigin(app.Conf()), "/")
+		requestOrigin := fmt.Sprintf("%s://%s", c.Protocol(), c.Get(fiber.HeaderHost))
+		bindCookie := callbackOrigin != "" && strings.EqualFold(callbackOrigin, requestOrigin)
+
+		state, nonce, err := newIdentityBindState(app, user.ID, provider, bindCookie)
 		if err != nil {
 			return common.RespError(c, 500, "Failed to create bind request")
+		}
+
+		if bindCookie {
+			c.Cookie(&fiber.Cookie{
+				Name:     identityBindCookie,
+				Value:    nonce,
+				Path:     "/",
+				Expires:  time.Now().Add(identityBindTTL),
+				MaxAge:   int(identityBindTTL.Seconds()),
+				HTTPOnly: true,
+				Secure:   c.Protocol() == "https",
+				SameSite: fiber.CookieSameSiteLaxMode,
+			})
 		}
 
 		return common.RespData(c, ResponseUserIdentityBindURL{

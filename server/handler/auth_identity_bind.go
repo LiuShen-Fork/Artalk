@@ -1,8 +1,9 @@
 package handler
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -16,6 +17,8 @@ const (
 	identityBindStatePrefix = "atkbind."
 	identityBindPurpose     = "identity_bind"
 	identityBindTTL         = 10 * time.Minute
+	// identityBindCookie binds a bind state to the browser that started it.
+	identityBindCookie = "atk_identity_bind"
 )
 
 var (
@@ -29,20 +32,28 @@ var (
 )
 
 type identityBindClaims struct {
-	UserID   uint   `json:"user_id"`
-	Provider string `json:"provider"`
-	Purpose  string `json:"purpose"`
-	Nonce    string `json:"nonce"`
+	UserID     uint   `json:"user_id"`
+	Provider   string `json:"provider"`
+	Purpose    string `json:"purpose"`
+	Nonce      string `json:"nonce"`
+	BindCookie bool   `json:"bind_cookie,omitempty"`
 	jwt.RegisteredClaims
 }
 
-func newIdentityBindState(app *core.App, userID uint, provider string) (string, error) {
+func newIdentityBindState(app *core.App, userID uint, provider string, bindCookie bool) (state string, nonce string, err error) {
+	nonceBytes := make([]byte, 32)
+	if _, err := rand.Read(nonceBytes); err != nil {
+		return "", "", err
+	}
+	nonce = hex.EncodeToString(nonceBytes)
+
 	now := time.Now()
 	claims := identityBindClaims{
-		UserID:   userID,
-		Provider: strings.ToLower(strings.TrimSpace(provider)),
-		Purpose:  identityBindPurpose,
-		Nonce:    fmt.Sprintf("%d-%d", userID, now.UnixNano()),
+		UserID:     userID,
+		Provider:   strings.ToLower(strings.TrimSpace(provider)),
+		Purpose:    identityBindPurpose,
+		Nonce:      nonce,
+		BindCookie: bindCookie,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
@@ -52,9 +63,9 @@ func newIdentityBindState(app *core.App, userID uint, provider string) (string, 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString([]byte(app.Conf().AppKey))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return identityBindStatePrefix + signed, nil
+	return identityBindStatePrefix + signed, nonce, nil
 }
 
 // parseIdentityBindState returns isBind=false for the ordinary OAuth login
