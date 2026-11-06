@@ -82,9 +82,13 @@ $maxWidth: 1040px;
     left: 0;
     z-index: 200;
     width: 100%;
-    border-top: 1px solid var(--atk-admin-border);
-    background: var(--atk-admin-bg-transl);
-    backdrop-filter: blur(16px);
+    background: linear-gradient(
+      to top,
+      var(--atk-admin-canvas) 0%,
+      var(--atk-admin-canvas) 70%,
+      transparent 100%
+    );
+    pointer-events: none;
   }
 }
 

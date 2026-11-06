@@ -106,16 +106,6 @@ function save() {
 
 <template>
   <div class="settings admin-page">
-    <div class="act-bar">
-      <div class="atk-sidebar-container">
-        <div class="status-text"></div>
-        <button class="save-btn admin-button primary" @click="save()">
-          <i class="atk-icon atk-icon-yes" />
-          {{ t('apply') }}
-        </button>
-      </div>
-      <LoadingLayer v-if="isLoading" />
-    </div>
     <div v-if="tree" class="settings-layout">
       <AdminPageHeader :title="t('settings')" :description="t('settingNotice')" />
 
@@ -151,12 +141,26 @@ function save() {
         />
       </main>
     </div>
+
+    <div v-if="tree" class="act-bar">
+      <div class="act-dock">
+        <div class="act-status">
+          <span class="act-dot" aria-hidden="true" />
+          <span class="act-title">{{ activeRoot?.title }}</span>
+        </div>
+        <button class="save-btn" type="button" :disabled="isLoading" @click="save()">
+          <i class="atk-icon atk-icon-yes" />
+          {{ isLoading ? '…' : t('apply') }}
+        </button>
+      </div>
+      <LoadingLayer v-if="isLoading" />
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .settings {
-  padding: 18px 28px 80px;
+  padding: 18px 28px 0;
 
   .notice {
     font-size: 13px;
@@ -170,52 +174,97 @@ function save() {
   }
 
   .act-bar {
-    z-index: 999;
-    position: fixed;
-    height: 55px;
-    width: 100%;
+    position: sticky;
     bottom: 0;
-    left: 0;
-    background: var(--at-color-bg-transl);
-    border-top: 1px solid var(--at-color-border);
-    padding: 0 20px;
+    z-index: 30;
+    padding: 34px 0 18px;
+    background: linear-gradient(
+      to top,
+      var(--atk-admin-canvas) 0%,
+      var(--atk-admin-canvas) 46%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
 
-    .atk-sidebar-container {
-      display: flex;
-      height: 100%;
-      align-items: center;
-      justify-content: space-between;
-      flex-direction: row;
+  .act-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 9px 10px 9px 18px;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: 16px;
+    background: var(--atk-admin-bg-transl, rgba(255, 255, 255, 0.86));
+    box-shadow: var(--atk-admin-shadow-sm);
+    backdrop-filter: blur(18px) saturate(1.15);
+    pointer-events: auto;
+  }
+
+  .act-status {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .act-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--atk-admin-sage);
+    box-shadow: 0 0 0 4px var(--atk-admin-sage-soft);
+  }
+
+  .act-title {
+    flex: none;
+    color: var(--atk-admin-ink);
+    font-size: 13px;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .save-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 104px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--atk-admin-ink);
+    border-radius: 12px;
+    color: var(--atk-admin-surface);
+    background: var(--atk-admin-ink);
+    font-size: 13.5px;
+    font-weight: 650;
+    cursor: pointer;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      opacity 0.18s ease;
+
+    .atk-icon {
+      display: block;
     }
 
-    .status-text {
-      padding: 0 5px;
-      flex: 1;
+    &:hover:not(:disabled) {
+      border-color: var(--atk-admin-sage);
+      background: var(--atk-admin-sage);
     }
 
-    button {
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 16px;
-      cursor: pointer;
-      background: transparent;
-      border-radius: 2px;
-      background: var(--atk-admin-ink);
-      color: #fff;
-      border: 0;
+    &:active:not(:disabled) {
+      opacity: 0.88;
+    }
 
-      &:active {
-        opacity: 0.9;
-      }
-
-      i {
-        margin-right: 8px;
-
-        &::after {
-          background-color: #fff;
-        }
-      }
+    &:disabled {
+      cursor: wait;
+      opacity: 0.65;
     }
   }
 
@@ -351,7 +400,7 @@ function save() {
 
 @media (max-width: 900px) {
   .settings {
-    padding: 12px 14px 80px;
+    padding: 12px 14px 0;
 
     .settings-layout {
       grid-template-columns: 190px minmax(0, 1fr);
@@ -433,17 +482,6 @@ function save() {
   .settings-index-title {
     color: var(--atk-admin-subtle);
     letter-spacing: 0;
-  }
-
-  .act-bar {
-    background: var(--atk-admin-surface);
-    border-color: var(--atk-admin-border);
-
-    .save-btn {
-      width: auto;
-      margin: 0;
-      background: var(--atk-admin-ink);
-    }
   }
 
   :deep(input[type='text']),

@@ -2,10 +2,11 @@
 /**
  * Pagination Component
  *
- * (The Vue implementation which should correspond to the Artalk VanillaJS)
+ * Circular page buttons with a compact window, first/last shortcuts and
+ * ellipsis for the gaps. The wrapper fades into the page background at the top.
  */
 const props = defineProps<{
-  /** Total page number */
+  /** Total item count */
   total: number
 
   /** Page size */
@@ -23,243 +24,240 @@ const emit = defineEmits<{
 }>()
 
 const curtPage = ref(1)
+const maxPage = computed(() => Math.max(1, Math.ceil(total.value / Math.max(1, pageSize.value))))
 const offset = computed(() => pageSize.value * (curtPage.value - 1))
-const maxPage = computed(() => Math.ceil(total.value / pageSize.value))
-const prevDisabled = computed(() => curtPage.value - 1 < 1)
-const nextDisabled = computed(() => curtPage.value + 1 > maxPage.value)
+const prevDisabled = computed(() => curtPage.value <= 1)
+const nextDisabled = computed(() => curtPage.value >= maxPage.value)
 
-const inputValue = ref(String(curtPage.value))
-let inputTimer: number | undefined
+type PageItem = number | 'ellipsis'
+
+/**
+ * Keep the current page in a small window: first, last, and the nearby pages.
+ * Near either edge the window grows to five pages so it never looks sparse.
+ */
+const pageItems = computed<PageItem[]>(() => {
+  const last = maxPage.value
+  const current = curtPage.value
+
+  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1)
+
+  if (current <= 3) {
+    return [1, 2, 3, 4, 5, 'ellipsis', last]
+  }
+  if (current >= last - 2) {
+    return [1, 'ellipsis', last - 4, last - 3, last - 2, last - 1, last]
+  }
+
+  return [1, 'ellipsis', current - 1, current, current + 1, current + 2, 'ellipsis', last]
+})
+
+watch(maxPage, (last) => {
+  if (curtPage.value > last) curtPage.value = last
+})
 
 function changePage(page: number) {
-  curtPage.value = page
+  if (disabled?.value) return
+  const target = Math.min(maxPage.value, Math.max(1, page))
+  if (target === curtPage.value) return
+
+  curtPage.value = target
   emit('change', offset.value)
-  fillInput(page)
 }
 
-/**
- * Change to previous page
- */
 function prev() {
-  if (disabled?.value) return
-  const page = curtPage.value - 1
-  if (page < 1) {
-    return
-  }
-  changePage(page)
+  if (disabled?.value || prevDisabled.value) return
+  changePage(curtPage.value - 1)
 }
 
-/**
- * Change to next page
- */
 function next() {
-  if (disabled?.value) return
-  const page = curtPage.value + 1
-  if (page > maxPage.value) {
-    return
-  }
-  changePage(page)
+  if (disabled?.value || nextDisabled.value) return
+  changePage(curtPage.value + 1)
 }
 
 function reset() {
   curtPage.value = 1
-  fillInput(1)
-}
-
-/**
- * Fill input value
- */
-function fillInput(page: number) {
-  inputValue.value = String(page)
-}
-
-function revokeInput() {
-  fillInput(curtPage.value)
-}
-
-function triggerInput(now: boolean = false) {
-  window.clearTimeout(inputTimer)
-
-  const value = inputValue.value.trim()
-
-  const modify = () => {
-    if (value === '') {
-      revokeInput()
-      return
-    }
-    let page = Number(value)
-    if (Number.isNaN(page)) {
-      revokeInput()
-      return
-    }
-    if (page < 1) {
-      revokeInput()
-      return
-    }
-    if (page > maxPage.value) {
-      page = maxPage.value
-    }
-    changePage(page)
-  }
-
-  // Delay input trigger
-  if (!now) inputTimer = window.setTimeout(() => modify(), 800)
-  else modify()
-}
-
-function onInputKeydown(evt: KeyboardEvent) {
-  const keyCode = evt.keyCode || evt.which
-
-  if (keyCode === 38) {
-    // Up key
-    const page = Number(inputValue.value) + 1
-    if (page > maxPage.value) {
-      return
-    }
-    fillInput(page)
-    triggerInput(false)
-  } else if (keyCode === 40) {
-    // Down key
-    const page = Number(inputValue.value) - 1
-    if (page < 1) {
-      return
-    }
-    fillInput(page)
-    triggerInput(false)
-  } else if (keyCode === 13) {
-    // Enter key
-    triggerInput(true)
-  }
 }
 
 defineExpose({ prev, next, reset })
 </script>
 
 <template>
-  <div class="atk-pagination-wrap">
-    <div class="atk-pagination">
-      <div
-        class="atk-btn atk-btn-prev"
-        :class="{ 'atk-disabled': disabled || prevDisabled }"
+  <div v-if="maxPage > 1" class="atk-pagination-wrap">
+    <nav class="atk-pagination" aria-label="Pagination">
+      <button
+        type="button"
+        class="page-arrow"
+        :disabled="disabled || prevDisabled"
         aria-label="Previous page"
         @click="prev()"
       >
-        <svg
-          stroke="currentColor"
-          fill="currentColor"
-          stroke-width="0"
-          viewBox="0 0 512 512"
-          height="14px"
-          width="14px"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg viewBox="0 0 16 16" aria-hidden="true">
           <path
-            d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z"
-          ></path>
+            d="M10 3.5 5.5 8l4.5 4.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
-      </div>
-      <input
-        v-model="inputValue"
-        type="text"
-        class="atk-input"
-        aria-label="Enter the number of page"
-        :disabled="disabled"
-        @input="triggerInput(false)"
-        @keydown="onInputKeydown"
-      />
-      <div
-        class="atk-btn atk-btn-next"
-        :class="{ 'atk-disabled': disabled || nextDisabled }"
+      </button>
+
+      <template v-for="(item, index) in pageItems" :key="`${item}-${index}`">
+        <span v-if="item === 'ellipsis'" class="page-ellipsis" aria-hidden="true">…</span>
+        <button
+          v-else
+          type="button"
+          class="page-btn"
+          :class="{ active: item === curtPage }"
+          :aria-current="item === curtPage ? 'page' : undefined"
+          :disabled="disabled"
+          @click="changePage(item)"
+        >
+          {{ item }}
+        </button>
+      </template>
+
+      <button
+        type="button"
+        class="page-arrow"
+        :disabled="disabled || nextDisabled"
         aria-label="Next page"
         @click="next()"
       >
-        <svg
-          stroke="currentColor"
-          fill="currentColor"
-          stroke-width="0"
-          viewBox="0 0 512 512"
-          height="14px"
-          width="14px"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg viewBox="0 0 16 16" aria-hidden="true">
           <path
-            d="M294.1 256L167 129c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.3 34 0L345 239c9.1 9.1 9.3 23.7.7 33.1L201.1 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9l127-127.1z"
-          ></path>
+            d="m6 3.5 4.5 4.5L6 12.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
-      </div>
-    </div>
+      </button>
+    </nav>
   </div>
 </template>
 
 <style scoped lang="scss">
+.atk-pagination-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 30px 12px 16px;
+  pointer-events: none;
+}
+
 .atk-pagination {
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 2px;
+  pointer-events: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.page-btn,
+.page-arrow {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
   justify-content: center;
-  padding: 9px 0;
-  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--atk-admin-border);
+  border-radius: 50%;
+  color: var(--atk-admin-subtle);
+  background: var(--atk-admin-surface);
+  box-shadow: 0 4px 14px -10px rgba(18, 46, 38, 0.45);
+  font-size: 12.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 
-  & > .atk-btn,
-  & > .atk-input {
-    height: 34px;
-    padding: 0;
-    border: 1px solid var(--atk-admin-border);
-    border-radius: 0;
-    text-align: center;
-    background: var(--atk-admin-surface);
-    box-shadow: 0 1px 2px rgba(18, 46, 38, 0.04);
+  &:hover:not(:disabled) {
+    border-color: var(--atk-admin-sage);
+    color: var(--atk-admin-sage-strong);
+    background: var(--atk-admin-sage-soft);
+    transform: translateY(-1px);
   }
 
-  & > .atk-btn {
-    user-select: none;
-    width: 40px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--atk-admin-subtle);
-    transition:
-      background-color 0.18s ease,
-      color 0.18s ease;
-
-    &:first-child {
-      border-radius: 9px 0 0 9px;
-    }
-
-    &:last-child {
-      border-radius: 0 9px 9px 0;
-    }
-
-    &:hover {
-      background: var(--atk-admin-surface-muted);
-      color: var(--atk-admin-ink);
-    }
-
-    &.atk-disabled {
-      color: var(--atk-admin-faint);
-      opacity: 0.6;
-
-      &:hover {
-        cursor: default;
-        background: var(--atk-admin-surface);
-        color: var(--atk-admin-faint);
-      }
-    }
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 
-  & > .atk-input {
-    width: 48px;
-    border-right: 0;
-    border-left: 0;
-    color: var(--atk-admin-ink);
-    background: var(--atk-admin-surface);
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid var(--atk-admin-ring);
+    outline-offset: 2px;
+  }
 
-    &:focus {
-      border-color: var(--atk-admin-sage);
-    }
+  &:disabled {
+    cursor: default;
+    opacity: 0.42;
+  }
+}
+
+.page-btn.active {
+  border-color: var(--atk-admin-ink);
+  color: var(--atk-admin-surface);
+  background: var(--atk-admin-ink);
+  box-shadow: 0 8px 18px -12px rgba(18, 46, 38, 0.7);
+
+  &:hover:not(:disabled) {
+    border-color: var(--atk-admin-ink);
+    color: var(--atk-admin-surface);
+    background: var(--atk-admin-ink);
+    transform: none;
+  }
+}
+
+.page-arrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.page-ellipsis {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 34px;
+  color: var(--atk-admin-faint);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  user-select: none;
+}
+
+@media (max-width: 480px) {
+  .atk-pagination {
+    gap: 4px;
+  }
+
+  .page-btn,
+  .page-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .page-ellipsis {
+    width: 16px;
+    height: 30px;
   }
 }
 </style>
