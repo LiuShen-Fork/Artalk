@@ -84,8 +84,8 @@ function fetchPages(offset: number) {
       has_comments: true,
     })
     .then((res) => {
-      pageTotal.value = res.data.count
-      pages.value = res.data.pages
+      pageTotal.value = res.data.count || 0
+      pages.value = res.data.pages || []
       nav.scrollPageToTop()
     })
     .finally(() => {
@@ -181,20 +181,25 @@ function openPage(url: string) {
   <div class="atk-page-list-wrap admin-page">
     <AdminPageHeader :title="t('page')" description="管理评论页面的标题与缓存。" />
     <div class="atk-header-action-bar" :class="{ bordered: showActBarBorder }">
-      <span class="atk-update-all-title-btn" @click="refreshAllPages()">
-        <i class="atk-icon atk-icon-sync" :class="{ 'atk-rotate': refreshBtn.isRun }"></i>
-        <span class="atk-text">
-          {{ refreshBtn.isRun ? refreshBtn.statusText : t('updateTitle') }}
-        </span>
-      </span>
-      <span class="atk-cache-flush-all-btn" @click="cacheFlush()">
-        <span class="atk-text">{{ t('cacheClear') }}</span>
-      </span>
-      <span class="atk-cache-warm-up-btn" @click="cacheWarm()">
-        <span class="atk-text">{{ t('cacheWarm') }}</span>
-      </span>
+      <button
+        type="button"
+        class="atk-update-all-title-btn"
+        :disabled="refreshBtn.isRun"
+        @click="refreshAllPages()"
+      >
+        {{ refreshBtn.isRun ? refreshBtn.statusText : t('updateTitle') }}
+      </button>
+      <button type="button" class="atk-cache-flush-all-btn" @click="cacheFlush()">
+        {{ t('cacheClear') }}
+      </button>
+      <button type="button" class="atk-cache-warm-up-btn" @click="cacheWarm()">
+        {{ t('cacheWarm') }}
+      </button>
     </div>
     <div class="atk-page-list admin-panel">
+      <div v-if="!pages.length && !nav.isPageLoading" class="admin-empty page-empty">
+        {{ t('noPages') }}
+      </div>
       <div v-for="page in pages" :key="page.id" class="atk-page-item">
         <div class="atk-page-main">
           <div class="atk-title" @click="openPage(page.url)">
@@ -245,24 +250,14 @@ function openPage(url: string) {
       border-color: var(--at-color-border);
     }
 
-    & > span {
+    & > button {
       display: inline-flex;
       align-items: center;
       flex-direction: row;
       padding: 2px 10px;
+      border: 0;
       cursor: pointer;
       font-size: 13px;
-
-      i {
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        margin-right: 5px;
-
-        &::after {
-          background-color: var(--at-color-meta);
-        }
-      }
 
       &:hover {
         background: var(--at-color-bg-grey);
@@ -285,19 +280,30 @@ function openPage(url: string) {
       border: 0;
     }
 
-    & > span {
+    & > button {
       height: 36px;
-      padding: 0 12px;
+      padding: 0 13px;
       border: 1px solid var(--atk-admin-border);
       border-radius: var(--atk-admin-radius-xs);
       color: var(--atk-admin-subtle);
       background: var(--atk-admin-surface);
       font-size: 12.5px;
+      font-weight: 550;
+      white-space: nowrap;
+      transition:
+        color 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
 
-      &:hover {
+      &:hover:not(:disabled) {
         border-color: var(--atk-admin-sage);
         color: var(--atk-admin-ink);
         background: var(--atk-admin-surface-muted);
+      }
+
+      &:disabled {
+        cursor: default;
+        opacity: 0.6;
       }
     }
   }
@@ -308,6 +314,24 @@ function openPage(url: string) {
     background: var(--atk-admin-surface);
     border-radius: var(--atk-admin-radius);
     box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .page-empty {
+      min-height: 180px;
+      justify-content: center;
+      font-size: 13px;
+
+      &::before {
+        content: '';
+        width: 24px;
+        height: 24px;
+        margin-bottom: 2px;
+        background: var(--atk-admin-faint);
+        mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 5 5'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 5 5'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+      }
+    }
 
     .atk-page-item {
       min-height: 96px;
@@ -337,7 +361,7 @@ function openPage(url: string) {
     flex-wrap: wrap;
   }
 
-  .atk-page-list-wrap .atk-header-action-bar > span {
+  .atk-page-list-wrap .atk-header-action-bar > button {
     flex: 1 1 auto;
     justify-content: center;
   }
@@ -348,36 +372,70 @@ function openPage(url: string) {
     display: flex;
     flex-direction: row;
     position: relative;
-    min-height: 120px;
+    min-height: 84px;
     align-items: center;
+    transition: background-color 0.18s ease;
 
     &:not(:last-child) {
-      border-bottom: 1px solid var(--at-color-border);
+      border-bottom: 1px solid var(--atk-admin-border);
+    }
+
+    &:hover {
+      background: var(--atk-admin-surface-muted);
     }
   }
 
   .atk-page-main {
     display: flex;
+    min-width: 0;
     flex-direction: column;
     flex: auto;
-    padding: 20px 30px;
+    padding: 15px 18px;
 
     .atk-title {
-      color: var(--at-color-font);
-      font-size: 21px;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
+      color: var(--atk-admin-ink);
+      font-size: 15.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
       cursor: pointer;
     }
 
     .atk-sub {
-      color: var(--at-color-sub);
-      font-size: 14px;
+      overflow: hidden;
+      color: var(--atk-admin-subtle);
+      font-size: 12.5px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       cursor: pointer;
     }
   }
 
   :deep(.atk-page-actions) {
     @extend .atk-list-btn-actions;
+    padding-right: 12px;
+  }
+
+  :deep(.atk-edit-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    color: var(--atk-admin-subtle);
+    cursor: pointer;
+    transition:
+      color 0.18s ease,
+      background-color 0.18s ease,
+      border-color 0.18s ease;
+
+    &:hover {
+      border-color: var(--atk-admin-border);
+      color: var(--atk-admin-ink);
+      background: var(--atk-admin-surface);
+    }
   }
 }
 </style>

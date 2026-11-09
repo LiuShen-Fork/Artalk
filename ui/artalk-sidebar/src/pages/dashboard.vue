@@ -62,18 +62,36 @@ const numberFormatter = new Intl.NumberFormat()
 
 const formatNumber = (value?: number) => numberFormatter.format(value || 0)
 const trendMax = computed(() =>
-  Math.max(1, ...(data.value?.trend || []).map((item) => Math.max(item.comments, item.users))),
+  Math.max(1, ...trendWeeks.value.map((item) => Math.max(item.comments, item.users))),
 )
-const compactTrend = computed(() => {
+/** Group the 90-day series into readable weekly buckets. */
+const trendWeeks = computed(() => {
   const items = data.value?.trend || []
-  if (items.length <= 30) return items
-  return items.filter((_, index) => index % 3 === 0 || index === items.length - 1)
+  const weeks: { label: string; comments: number; users: number; range: string }[] = []
+
+  for (let end = items.length; end > 0; end -= 7) {
+    const start = Math.max(0, end - 7)
+    const slice = items.slice(start, end)
+    const first = slice[0]
+    const last = slice[slice.length - 1]
+    weeks.unshift({
+      label: first.date.slice(5),
+      comments: slice.reduce((sum, item) => sum + item.comments, 0),
+      users: slice.reduce((sum, item) => sum + item.users, 0),
+      range: `${first.date} — ${last.date}`,
+    })
+  }
+
+  return weeks
 })
 const trendRange = computed(() => {
   const items = data.value?.trend || []
   if (!items.length) return ''
   return `${items[0].date} — ${items[items.length - 1].date}`
 })
+const trendPeak = computed(() =>
+  Math.max(0, ...trendWeeks.value.map((item) => Math.max(item.comments, item.users))),
+)
 
 function barHeight(value: number) {
   return String(Math.max(2, (value / trendMax.value) * 100)) + '%'
@@ -155,20 +173,27 @@ onMounted(() => {
         <div class="panel-head">
           <div>
             <h2>90 天趋势</h2>
-            <p>评论与新增用户按天汇总</p>
+            <p>评论与新增用户按周汇总</p>
           </div>
-          <span class="panel-note">{{ trendRange }}</span>
+          <span class="panel-note">
+            {{ trendRange }}<template v-if="trendPeak"> · 峰值 {{ trendPeak }}</template>
+          </span>
         </div>
         <div class="trend-chart">
           <div
-            v-for="point in compactTrend"
-            :key="point.date"
-            class="trend-day"
-            :title="point.date"
+            v-for="week in trendWeeks"
+            :key="week.range"
+            class="trend-week"
+            :title="`${week.range} · 评论 ${week.comments} · 用户 ${week.users}`"
           >
-            <span class="bar comments" :style="{ height: barHeight(point.comments) }" />
-            <span class="bar users" :style="{ height: barHeight(point.users) }" />
+            <span class="bar comments" :style="{ height: barHeight(week.comments) }" />
+            <span class="bar users" :style="{ height: barHeight(week.users) }" />
           </div>
+        </div>
+        <div class="trend-axis">
+          <span v-for="(week, index) in trendWeeks" :key="week.range">
+            {{ index % 2 === 0 ? week.label : '' }}
+          </span>
         </div>
         <div class="legend">
           <span><i class="comments" />评论</span>
@@ -352,9 +377,9 @@ onMounted(() => {
 .trend-chart {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(4px, 1fr));
-  gap: 3px;
+  gap: 5px;
   align-items: end;
-  height: 196px;
+  height: 156px;
   padding: 16px 4px 0;
   border-bottom: 1px solid var(--atk-admin-border);
   background: repeating-linear-gradient(
@@ -367,11 +392,28 @@ onMounted(() => {
   background-size: 100% 100%;
 }
 
-.trend-day {
+.trend-week {
   display: flex;
   align-items: flex-end;
-  gap: 1px;
+  gap: 2px;
   height: 100%;
+}
+
+.trend-axis {
+  display: flex;
+  margin: 8px 4px 0;
+  color: var(--atk-admin-faint);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+
+  span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .bar {
@@ -393,7 +435,7 @@ onMounted(() => {
     opacity: 0.8;
   }
 
-  .trend-day:hover & {
+  .trend-week:hover & {
     opacity: 1;
     filter: brightness(1.08);
   }
@@ -586,7 +628,7 @@ onMounted(() => {
   text-align: center;
 }
 
-@media (max-width: 850px) {
+@media (max-width: 1180px) {
   .stat-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

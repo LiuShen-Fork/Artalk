@@ -73,8 +73,8 @@ function fetchUsers(offset: number) {
       search: search.value,
     })
     .then((res) => {
-      pageTotal.value = res.data.count
-      users.value = res.data.users
+      pageTotal.value = res.data.count || 0
+      users.value = res.data.users || []
       nav.scrollPageToTop()
     })
     .finally(() => {
@@ -153,6 +153,9 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
   <div class="user-list-wrap admin-page">
     <AdminPageHeader :title="t('user')" description="管理站点内的用户、邮箱与权限。" />
     <div class="user-list admin-panel">
+      <div v-if="!users.length && !nav.isPageLoading" class="admin-empty user-empty">
+        {{ t('noUsers') }}
+      </div>
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-main">
           <div class="title">
@@ -277,6 +280,24 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
     background: var(--atk-admin-surface);
     border-radius: var(--atk-admin-radius);
     box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .user-empty {
+      min-height: 180px;
+      justify-content: center;
+      font-size: 13px;
+
+      &::before {
+        content: '';
+        width: 24px;
+        height: 24px;
+        margin-bottom: 2px;
+        background: var(--atk-admin-faint);
+        mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 5 5'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 5 5'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+      }
+    }
 
     .user-item {
       padding: 15px 16px;

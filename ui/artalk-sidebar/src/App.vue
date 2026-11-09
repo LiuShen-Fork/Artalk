@@ -58,7 +58,7 @@ $maxWidth: 1040px;
   .atk-sidebar-inner {
     height: calc(100vh - var(--atk-admin-header-h) - var(--atk-admin-nav-h));
     height: calc(100dvh - var(--atk-admin-header-h) - var(--atk-admin-nav-h));
-    padding-bottom: 34px;
+    padding-bottom: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
@@ -76,7 +76,7 @@ $maxWidth: 1040px;
     margin-left: 0;
   }
 
-  :deep(.atk-pagination-wrap) {
+  :deep(.atk-page-nav-wrap) {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -85,7 +85,7 @@ $maxWidth: 1040px;
     background: linear-gradient(
       to top,
       var(--atk-admin-canvas) 0%,
-      var(--atk-admin-canvas) 70%,
+      var(--atk-admin-canvas) 68%,
       transparent 100%
     );
     pointer-events: none;
@@ -104,7 +104,7 @@ $maxWidth: 1040px;
     padding: 0 28px;
   }
 
-  :deep(.atk-pagination-wrap) {
+  :deep(.atk-page-nav-wrap) {
     left: $railWidth;
     width: calc(100% - $railWidth);
   }

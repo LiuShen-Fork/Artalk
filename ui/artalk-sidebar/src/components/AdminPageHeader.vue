@@ -22,7 +22,8 @@ defineProps<{
 <style scoped lang="scss">
 .admin-page-head-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex: none;
+  flex-wrap: nowrap;
   gap: 8px;
   justify-content: flex-end;
 }

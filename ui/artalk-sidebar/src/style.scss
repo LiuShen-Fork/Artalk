@@ -196,6 +196,7 @@ body {
   p {
     max-width: 640px;
     margin: 8px 0 0;
+    text-wrap: pretty;
     color: var(--atk-admin-subtle);
     font-size: 13.5px;
     line-height: 1.6;
@@ -456,7 +457,7 @@ body {
     outline: none;
   }
 
-  button {
+  > button {
     width: 100%;
     margin: 0 5px;
     padding: 0 20px;
@@ -476,13 +477,13 @@ body {
 
   input,
   select,
-  button {
+  > button {
     font-size: 14px;
   }
 
   .atk-file-upload-group {
-    height: 100px;
-    overflow: hidden;
+    height: auto;
+    overflow: visible;
   }
 
   .atk-uploading-wrap {
@@ -606,12 +607,12 @@ body {
     background: transparent;
   }
 
-  .atk-pagination-wrap {
+  .atk-page-nav-wrap {
     border-color: transparent;
     background: linear-gradient(
       to top,
       var(--atk-admin-canvas) 0%,
-      var(--atk-admin-canvas) 70%,
+      var(--atk-admin-canvas) 68%,
       transparent 100%
     );
   }

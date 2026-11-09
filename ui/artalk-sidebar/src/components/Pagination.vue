@@ -12,11 +12,14 @@ const props = defineProps<{
   /** Page size */
   pageSize: number
 
+  /** Current page, kept in sync by the owner when data reloads */
+  page?: number
+
   /** Disabled */
   disabled?: boolean
 }>()
 
-const { pageSize, total, disabled } = toRefs(props)
+const { pageSize, total, page, disabled } = toRefs(props)
 
 const emit = defineEmits<{
   /** Page change event */
@@ -55,6 +58,15 @@ watch(maxPage, (last) => {
   if (curtPage.value > last) curtPage.value = last
 })
 
+watch(
+  page,
+  (next) => {
+    if (next == null) return
+    curtPage.value = Math.min(maxPage.value, Math.max(1, next))
+  },
+  { immediate: true },
+)
+
 function changePage(page: number) {
   if (disabled?.value) return
   const target = Math.min(maxPage.value, Math.max(1, page))
@@ -82,8 +94,8 @@ defineExpose({ prev, next, reset })
 </script>
 
 <template>
-  <div v-if="maxPage > 1" class="atk-pagination-wrap">
-    <nav class="atk-pagination" aria-label="Pagination">
+  <div v-if="maxPage > 1" class="atk-page-nav-wrap">
+    <nav class="atk-page-nav" aria-label="Pagination">
       <button
         type="button"
         class="page-arrow"
@@ -141,15 +153,15 @@ defineExpose({ prev, next, reset })
 </template>
 
 <style scoped lang="scss">
-.atk-pagination-wrap {
+.atk-page-nav-wrap {
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 30px 12px 16px;
+  padding: 22px 12px 14px;
   pointer-events: none;
 }
 
-.atk-pagination {
+.atk-page-nav {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -244,7 +256,7 @@ defineExpose({ prev, next, reset })
 }
 
 @media (max-width: 480px) {
-  .atk-pagination {
+  .atk-page-nav {
     gap: 4px;
   }
 
