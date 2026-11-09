@@ -140,8 +140,9 @@ function toggleSensitiveHidden() {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    flex: 1;
-    padding-right: 20px;
+    flex: 0 0 34%;
+    min-width: 0;
+    padding-right: 24px;
 
     .title {
     }
@@ -155,11 +156,12 @@ function toggleSensitiveHidden() {
 
   & > .value {
     position: relative;
-    flex: 1;
     display: flex;
+    flex: 1 1 0;
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
+    min-width: 0;
     min-height: 35px;
 
     &:hover {

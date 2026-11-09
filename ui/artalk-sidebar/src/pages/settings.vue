@@ -109,12 +109,19 @@ function save() {
     <div v-if="tree" class="settings-layout">
       <AdminPageHeader :title="t('settings')" :description="t('settingNotice')" />
 
-      <div class="settings-mobile-index">
-        <select v-model="selectedRootPath" :aria-label="t('config')">
-          <option v-for="node in rootGroups" :key="node.path" :value="node.path">
-            {{ node.title }}
-          </option>
-        </select>
+      <div class="settings-mobile-index" role="tablist" :aria-label="t('config')">
+        <button
+          v-for="node in rootGroups"
+          :key="node.path"
+          type="button"
+          role="tab"
+          class="settings-group-chip"
+          :class="{ active: activeRoot?.path === node.path }"
+          :aria-selected="activeRoot?.path === node.path"
+          @click="selectedRootPath = node.path"
+        >
+          {{ node.title }}
+        </button>
       </div>
 
       <aside class="settings-index admin-panel">
@@ -177,7 +184,13 @@ function save() {
     position: sticky;
     bottom: 0;
     z-index: 30;
-    padding: 16px 0;
+    padding: 24px 0 12px;
+    background: linear-gradient(
+      to top,
+      var(--atk-admin-canvas) 0%,
+      var(--atk-admin-canvas) 66%,
+      transparent 100%
+    );
     pointer-events: none;
   }
 
@@ -351,14 +364,25 @@ function save() {
       background: transparent;
     }
 
+    :deep(.pf-grp) {
+      margin-bottom: 0;
+    }
+
     :deep(.pf-body) {
       display: block !important;
     }
 
     :deep(.pf-item) {
-      padding: 12px 0;
+      padding: 14px 0;
       margin-bottom: 0;
       border-bottom: 1px solid var(--atk-admin-border);
+    }
+
+    :deep(.pf-item > .info .title) {
+      color: var(--atk-admin-ink);
+      font-size: 13.5px;
+      font-weight: 550;
+      line-height: 1.45;
     }
 
     :deep(.pf-item:last-child) {
@@ -411,7 +435,7 @@ function save() {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 1000px) {
   .settings {
     .settings-layout {
       display: block;
@@ -422,17 +446,53 @@ function save() {
     }
 
     .settings-mobile-index {
-      display: block;
-      margin-bottom: 12px;
+      display: flex;
+      gap: 6px;
+      margin: 0 -14px 14px;
+      padding: 2px 14px 4px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 12px,
+        #000 calc(100% - 28px),
+        transparent
+      );
 
-      select {
-        width: 100%;
-        min-height: 42px;
-        padding: 8px 12px;
-        border: 1px solid var(--atk-admin-border);
-        border-radius: var(--atk-admin-radius-sm);
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .settings-group-chip {
+      flex: none;
+      height: 34px;
+      padding: 0 13px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: 999px;
+      color: var(--atk-admin-subtle);
+      background: var(--atk-admin-surface);
+      font-size: 12.5px;
+      font-weight: 550;
+      white-space: nowrap;
+      cursor: pointer;
+      transition:
+        color 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
+
+      &:hover {
         color: var(--atk-admin-ink);
-        background: var(--atk-admin-surface);
+        background: var(--atk-admin-surface-muted);
+      }
+
+      &.active {
+        border-color: var(--atk-admin-sage);
+        color: var(--atk-admin-sage-strong);
+        background: var(--atk-admin-sage-soft);
+        font-weight: 650;
       }
     }
 
@@ -482,6 +542,7 @@ function save() {
   :deep(input[type='password']),
   :deep(textarea),
   :deep(select) {
+    min-width: 0;
     min-height: 40px;
     padding: 8px 12px;
     border: 1px solid var(--atk-admin-border);
@@ -532,17 +593,6 @@ function save() {
     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%238a9a93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    background-size: 12px;
-    cursor: pointer;
-  }
-
-  .settings-mobile-index select {
-    appearance: none;
-    -webkit-appearance: none;
-    padding-right: 34px;
-    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%238a9a93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
     background-size: 12px;
     cursor: pointer;
   }
