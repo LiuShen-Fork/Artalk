@@ -348,6 +348,7 @@ function onPasswordCodeError(message: string) {
               v-model="currentPassword"
               type="password"
               autocomplete="current-password"
+              :placeholder="t('inputHint')"
               required
             />
           </label>
@@ -375,6 +376,7 @@ function onPasswordCodeError(message: string) {
                 type="password"
                 autocomplete="new-password"
                 minlength="8"
+                :placeholder="t('inputHint')"
                 required
               />
             </label>
@@ -385,6 +387,7 @@ function onPasswordCodeError(message: string) {
                 type="password"
                 autocomplete="new-password"
                 minlength="8"
+                :placeholder="t('inputHint')"
                 required
               />
             </label>

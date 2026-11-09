@@ -8,6 +8,10 @@ const nav = useNavStore()
 const router = useRouter()
 const user = useUserStore()
 const { t } = useI18n()
+
+// The host page draws its close button in the top-right corner. Only reserve
+// that space when the console actually runs inside the sidebar iframe.
+const embedded = window.self !== window.top
 const { site: curtSite, is_admin: isAdmin, avatar, name: userName } = storeToRefs(user)
 const { darkMode } = storeToRefs(nav)
 
@@ -65,7 +69,7 @@ const logout = () => {
     </div>
 
     <!-- The host page renders its close button over this reserved area. -->
-    <div class="close-btn" />
+    <div v-if="embedded" class="close-btn" />
   </header>
   <SiteSwitcher v-if="isAdmin" />
 </template>
@@ -79,7 +83,7 @@ const logout = () => {
   align-items: center;
   gap: 10px;
   height: var(--atk-admin-header-h);
-  padding-left: 14px;
+  padding: 0 12px 0 14px;
   border-bottom: 1px solid var(--atk-admin-border);
   background: var(--atk-admin-bg-transl);
   backdrop-filter: blur(18px);
