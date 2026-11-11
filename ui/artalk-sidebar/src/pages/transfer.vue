@@ -55,6 +55,7 @@ function fileUploaded(filename: string) {
 }
 
 function startImportTask() {
+  if (isLoading.value) return
   if (!uploadedFilename.value) {
     setError(`Please upload a data file first`)
     return
@@ -204,6 +205,7 @@ const artransferToolHint = computed(() =>
           type="button"
           class="admin-button primary transfer-submit"
           name="AtkSubmit"
+          :disabled="isLoading"
           @click="startImportTask()"
         >
           {{ t('import') }}

@@ -21,6 +21,8 @@ const refreshBtn = ref({
   isRun: false,
   statusText: '',
 })
+let refreshTaskTimer: number | undefined
+let refreshTaskDoneTimer: number | undefined
 
 onMounted(() => {
   nav.updateTabs(
@@ -61,7 +63,11 @@ watch(curtSite, () => {
 })
 
 onMounted(() => nav.scrollableArea?.addEventListener('scroll', scrollHandler))
-onUnmounted(() => nav.scrollableArea?.removeEventListener('scroll', scrollHandler))
+onUnmounted(() => {
+  nav.scrollableArea?.removeEventListener('scroll', scrollHandler)
+  if (refreshTaskTimer !== undefined) window.clearInterval(refreshTaskTimer)
+  if (refreshTaskDoneTimer !== undefined) window.clearTimeout(refreshTaskDoneTimer)
+})
 
 function scrollHandler() {
   showActBarBorder.value = nav.scrollableArea!.scrollTop > 10
@@ -117,24 +123,33 @@ async function getRefreshTaskStatus() {
 }
 
 function startRefreshTaskWatchdog() {
-  // TODO: Not perfect polling update status
-  const timerID = window.setInterval(async () => {
-    const d = await getRefreshTaskStatus()
-
-    if (d.is_progress === false) {
-      clearInterval(timerID)
-      setRefreshTaskDone()
-      return
+  if (refreshTaskTimer !== undefined) window.clearInterval(refreshTaskTimer)
+  refreshTaskTimer = window.setInterval(async () => {
+    try {
+      const status = await getRefreshTaskStatus()
+      if (status.is_progress === false) {
+        if (refreshTaskTimer !== undefined) window.clearInterval(refreshTaskTimer)
+        refreshTaskTimer = undefined
+        setRefreshTaskDone()
+        return
+      }
+      refreshBtn.value.statusText = status.msg
+    } catch {
+      if (refreshTaskTimer !== undefined) window.clearInterval(refreshTaskTimer)
+      refreshTaskTimer = undefined
+      refreshBtn.value.isRun = false
+      refreshBtn.value.statusText = ''
     }
-
-    refreshBtn.value.statusText = d.msg
   }, 1000)
 }
 
 function setRefreshTaskDone() {
   refreshBtn.value.statusText = t('updateComplete')
-  window.setTimeout(() => {
+  if (refreshTaskDoneTimer !== undefined) window.clearTimeout(refreshTaskDoneTimer)
+  refreshTaskDoneTimer = window.setTimeout(() => {
     refreshBtn.value.isRun = false
+    refreshBtn.value.statusText = ''
+    refreshTaskDoneTimer = undefined
   }, 1500)
 }
 
@@ -148,8 +163,9 @@ async function refreshAllPages() {
       site_name: curtSite.value,
     })
   } catch (err: any) {
-    alert(err.msg)
-    setRefreshTaskDone()
+    alert(err?.msg || err?.message || t('opFailed'))
+    refreshBtn.value.statusText = ''
+    refreshBtn.value.isRun = false
     return
   }
 

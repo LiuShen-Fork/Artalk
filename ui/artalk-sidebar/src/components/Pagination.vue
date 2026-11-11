@@ -95,7 +95,7 @@ defineExpose({ prev, next, reset })
 
 <template>
   <div v-if="maxPage > 1" class="atk-page-nav-wrap">
-    <nav class="atk-page-nav" aria-label="Pagination">
+    <nav class="atk-page-nav" aria-label="Pagination" :aria-busy="disabled || undefined">
       <button
         type="button"
         class="page-arrow"

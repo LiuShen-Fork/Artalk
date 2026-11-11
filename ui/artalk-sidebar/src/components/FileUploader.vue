@@ -20,6 +20,7 @@ const fileInputEl = ref<HTMLInputElement | null>(null)
 const remoteFilename = ref('')
 const localFilename = ref('')
 const isUploading = ref(false)
+const isDragging = ref(false)
 const progress = ref(0)
 const isDone = ref(false)
 
@@ -27,102 +28,144 @@ function reset() {
   remoteFilename.value = ''
   localFilename.value = ''
   isUploading.value = false
+  isDragging.value = false
   progress.value = 0
   isDone.value = false
   if (fileInputEl.value) fileInputEl.value.value = ''
 }
 
-async function startUploadFile(file: File) {
+function startUploadFile(file: File) {
   remoteFilename.value = ''
   localFilename.value = file.name
 
-  xhr = new XMLHttpRequest()
+  const request = new XMLHttpRequest()
+  xhr = request
 
-  // Progress bar
-  xhr.upload.addEventListener('progress', (evt) => {
-    if (evt.loaded === evt.total) {
-      // Upload done
-      progress.value = 100
-      return
-    }
+  const setErr = (message: string) => {
+    if (xhr !== request) return
+    xhr = null
+    reset()
+    emit('done', '')
+    alert(`File upload failed: ${message}`)
+  }
 
-    const fileSize = file.size
-    if (evt.loaded <= fileSize) {
-      // Uploading
-      progress.value = Math.round((evt.loaded / fileSize) * 100)
+  request.upload.addEventListener('progress', (event) => {
+    if (event.lengthComputable && event.total > 0) {
+      progress.value = Math.min(99, Math.round((event.loaded / event.total) * 100))
     }
   })
 
-  // Create form data for upload
+  request.onload = () => {
+    if (xhr !== request) return
+    if (request.status < 200 || request.status > 299) {
+      setErr(`Response HTTP Code: ${request.status}`)
+      return
+    }
+
+    let response: { filename?: unknown }
+    try {
+      response = JSON.parse(request.response) as { filename?: unknown }
+    } catch {
+      setErr('Invalid server response')
+      return
+    }
+
+    if (typeof response.filename !== 'string' || !response.filename) {
+      setErr('The server did not return a file name')
+      return
+    }
+
+    progress.value = 100
+    remoteFilename.value = response.filename
+    isDone.value = true
+    isUploading.value = false
+    xhr = null
+    emit('done', remoteFilename.value)
+  }
+
+  request.onerror = () => setErr('Network error')
+  request.ontimeout = () => setErr('Upload timed out')
+  request.onabort = () => {
+    if (xhr === request) {
+      reset()
+      emit('done', '')
+    }
+  }
+
   const formData = new FormData()
   formData.append('file', file)
   formData.append('token', user.token)
 
-  // Start upload
-  xhr.open('post', apiUrl.value)
-  xhr.send(formData)
+  request.open('post', apiUrl.value)
+  request.timeout = 120_000
+  request.send(formData)
+}
 
-  // Update finished event
-  xhr.onload = () => {
-    const setErr = (msg: string): void => {
-      reset()
-      isUploading.value = false
-      alert(`File upload failed: ${msg}`)
-    }
+function startUpload(file: File) {
+  const previousRequest = xhr
+  xhr = null
+  previousRequest?.abort()
 
-    if (!xhr) {
-      setErr('xhr instance is null')
-      return
-    }
-
-    const ok = xhr.status >= 200 && xhr.status <= 299
-    if (!ok) {
-      setErr(`Response HTTP Code: ${xhr.status}, Body: ${xhr.response}`)
-      return
-    }
-
-    let json: any
-    try {
-      json = JSON.parse(xhr.response)
-    } catch (err) {
-      console.error(err)
-      setErr(`JSON parse error: ${err}`)
-      return
-    }
-
-    if (!json.filename) {
-      setErr(`Response filename is empty: ${xhr.response}`)
-      return
-    }
-
-    isDone.value = true
-    remoteFilename.value = json.filename
-    isUploading.value = false
-    emit('done', remoteFilename.value)
+  if (!file.name.toLowerCase().endsWith('.artrans')) {
+    reset()
+    emit('done', '')
+    alert('Please choose an .artrans file')
+    return
   }
+
+  emit('done', '')
+  isUploading.value = true
+  startUploadFile(file)
 }
 
 function onFileInputChange() {
-  const files = fileInputEl.value?.files
-  if (!files || files.length === 0) return
+  const file = fileInputEl.value?.files?.[0]
+  if (!file) return
+  startUpload(file)
+}
 
-  isUploading.value = true
-  setTimeout(async () => {
-    await startUploadFile(files[0])
-    isUploading.value = false
-  }, 80)
+function onDragOver(event: DragEvent) {
+  event.preventDefault()
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'
+  isDragging.value = true
+}
+
+function onDragLeave(event: DragEvent) {
+  if (
+    event.currentTarget instanceof HTMLElement &&
+    event.currentTarget.contains(event.relatedTarget as Node)
+  ) {
+    return
+  }
+  isDragging.value = false
+}
+
+function onDrop(event: DragEvent) {
+  event.preventDefault()
+  isDragging.value = false
+  const file = event.dataTransfer?.files[0]
+  if (file) startUpload(file)
 }
 
 function abortUpload() {
-  xhr?.abort()
+  const request = xhr
+  xhr = null
   reset()
-  isUploading.value = false
+  request?.abort()
+  emit('done', '')
 }
 </script>
 
 <template>
   <div class="atk-file-upload-group">
-    <div v-show="!isUploading" class="upload-zone atk-fade-in" :class="{ done: isDone }">
+    <div
+      v-show="!isUploading"
+      class="upload-zone atk-fade-in"
+      :class="{ done: isDone, dragging: isDragging }"
+      @dragover="onDragOver"
+      @dragleave="onDragLeave"
+      @drop="onDrop"
+    >
       <input
         ref="fileInputEl"
         class="upload-input"
@@ -202,9 +245,15 @@ function abortUpload() {
     background-color 0.18s ease;
 
   &:hover,
-  &:focus-within {
+  &:focus-within,
+  &.dragging {
     border-color: var(--atk-admin-sage);
     background: var(--atk-admin-sage-soft);
+  }
+
+  &.dragging {
+    border-style: solid;
+    box-shadow: 0 0 0 3px var(--atk-admin-ring);
   }
 
   &.done {

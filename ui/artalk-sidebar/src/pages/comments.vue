@@ -15,6 +15,17 @@ const { site: curtSite } = storeToRefs(user)
 const search = ref('')
 const listLoading = ref(false)
 const pageTotal = ref(0)
+let onListFetch: (() => void) | undefined
+let onListFetched: (() => void) | undefined
+let onListFailed: (() => void) | undefined
+let onListLoaded: ((comments: unknown[]) => void) | undefined
+let onCommentRendered:
+  | ((comment: {
+      getData: () => { page_url?: string }
+      getRender: () => { setOpenURL: (url: string) => void }
+      getID: () => number
+    }) => void)
+  | undefined
 const pageSize = ref(20)
 const currentPage = ref(1)
 
@@ -30,6 +41,7 @@ function syncPagination() {
 }
 
 function onPageChange(offset: number) {
+  artalk!.ctx.editorResetState()
   artalk!.ctx.fetch({
     offset,
     onSuccess: () => artalk!.ctx.listGotoFirst(),
@@ -47,6 +59,16 @@ const normalizeEmptyCommentState = (comments: unknown[]) => {
     noComment.textContent = '暂无评论'
   })
 }
+
+onUnmounted(() => {
+  const ctx = artalk?.ctx
+  if (!ctx) return
+  if (onCommentRendered) ctx.off('comment-rendered', onCommentRendered)
+  if (onListLoaded) ctx.off('list-loaded', onListLoaded)
+  if (onListFetch) ctx.off('list-fetch', onListFetch)
+  if (onListFetched) ctx.off('list-fetched', onListFetched)
+  if (onListFailed) ctx.off('list-failed', onListFailed)
+})
 
 onMounted(() => {
   // 初始化导航条
@@ -83,22 +105,31 @@ onMounted(() => {
     artalk!.ctx.reload()
   })
 
-  artalk!.ctx.on('comment-rendered', (comment) => {
+  onCommentRendered = (comment) => {
     const pageURL = comment.getData().page_url
+    if (!pageURL) return
     comment.getRender().setOpenURL(`${pageURL}#atk-comment-${comment.getID()}`)
-  })
+  }
+  artalk!.ctx.on('comment-rendered', onCommentRendered)
 
-  artalk!.ctx.on('list-loaded', normalizeEmptyCommentState)
-  artalk!.ctx.on('list-loaded', syncPagination)
-  artalk!.ctx.on('list-fetch', () => {
+  onListLoaded = (comments) => {
+    normalizeEmptyCommentState(comments)
+    syncPagination()
+  }
+  onListFetch = () => {
     listLoading.value = true
-  })
-  artalk!.ctx.on('list-fetched', () => {
+  }
+  onListFetched = () => {
     listLoading.value = false
-  })
-  artalk!.ctx.on('list-failed', () => {
+  }
+  onListFailed = () => {
     listLoading.value = false
-  })
+  }
+
+  artalk!.ctx.on('list-loaded', onListLoaded)
+  artalk!.ctx.on('list-fetch', onListFetch)
+  artalk!.ctx.on('list-fetched', onListFetched)
+  artalk!.ctx.on('list-failed', onListFailed)
 
   artalk!.ctx.updateConf({
     noComment: '暂无评论',
