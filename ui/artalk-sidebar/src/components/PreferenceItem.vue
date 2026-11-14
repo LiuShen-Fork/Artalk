@@ -11,7 +11,7 @@ const props = defineProps<{
   node: OptionNode
 }>()
 
-const value = ref('')
+const value = ref<any>('')
 const disabled = ref(false)
 const sensitiveHidden = ref(true)
 
@@ -22,10 +22,15 @@ const isKeywordFileSeparator = computed(() => props.node.path === KEYWORD_FILE_S
 const separatorListId = computed(() =>
   isKeywordFileSeparator.value ? 'atk-keyword-separator-options' : undefined,
 )
+const isThinkingMode = computed(() => props.node.path === 'moderator.ai.disable_thinking')
+const booleanValue = computed(() => value.value === true || value.value === 'true')
 
 onBeforeMount(() => {
   // initial value
-  value.value = formatOptionValue(settings.get().getCustom(props.node.path), props.node)
+  value.value = formatOptionValue(
+    settings.get().getCustom(props.node.path) ?? props.node.default ?? '',
+    props.node,
+  )
   disabled.value = !!settings.get().getEnvByPath(props.node.path)
 })
 
@@ -38,6 +43,12 @@ function onChange(event: Event) {
   const v = patchOptionValue(value.value, props.node)
   settings.get().setCustom(props.node.path, v)
   // console.log('[SET]', props.node.path, v)
+}
+
+function onBooleanChange(event: Event) {
+  const checked = event.currentTarget instanceof HTMLInputElement && event.currentTarget.checked
+  value.value = isThinkingMode.value ? !checked : checked
+  onChange(event)
 }
 
 const envVariableName = computed(() => `ATK_${props.node.path.replace(/\./g, '_').toUpperCase()}`)
@@ -76,7 +87,23 @@ function toggleSensitiveHidden() {
 
       <!-- Toggle -->
       <template v-else-if="node.type === 'boolean'">
-        <input v-model="value" type="checkbox" :disabled="disabled" @change="onChange" />
+        <input
+          :checked="isThinkingMode ? !booleanValue : booleanValue"
+          type="checkbox"
+          :disabled="disabled"
+          @change="onBooleanChange"
+        />
+      </template>
+
+      <!-- Textarea -->
+      <template v-else-if="node.control === 'textarea'">
+        <textarea
+          v-model="value"
+          :disabled="disabled"
+          :placeholder="node.placeholder"
+          rows="7"
+          @change="onChange"
+        />
       </template>
 
       <!-- Text -->
@@ -87,6 +114,7 @@ function toggleSensitiveHidden() {
           :list="separatorListId"
           :required="isKeywordFileSeparator"
           :disabled="disabled"
+          :placeholder="node.placeholder"
           @change="onChange"
         />
         <datalist v-if="separatorListId" :id="separatorListId">
@@ -112,8 +140,9 @@ function toggleSensitiveHidden() {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    flex: 1;
-    padding-right: 20px;
+    flex: 0 0 34%;
+    min-width: 0;
+    padding-right: 24px;
 
     .title {
     }
@@ -121,17 +150,18 @@ function toggleSensitiveHidden() {
     .sub-title {
       font-size: 14px;
       margin-top: 4px;
-      color: #697182;
+      color: var(--atk-admin-subtle);
     }
   }
 
   & > .value {
     position: relative;
-    flex: 1;
     display: flex;
+    flex: 1 1 0;
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
+    min-width: 0;
     min-height: 35px;
 
     &:hover {
@@ -163,7 +193,7 @@ function toggleSensitiveHidden() {
 
       .atk-icon {
         &::after {
-          background-color: #697182;
+          background-color: var(--atk-admin-subtle);
         }
 
         &.atk-icon-eye-on::after {
@@ -174,6 +204,18 @@ function toggleSensitiveHidden() {
           mask-image: url('@/assets/icon-eye-off.svg');
         }
       }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .pf-item {
+    display: block;
+    margin-bottom: 24px;
+
+    & > .info {
+      padding-right: 0;
+      margin-bottom: 8px;
     }
   }
 }

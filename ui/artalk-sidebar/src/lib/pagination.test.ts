@@ -1,53 +1,102 @@
 // @vitest-environment jsdom
-import { afterEach, expect, it, vi } from 'vitest'
-import { createApp, nextTick } from 'vue'
+import { expect, it, vi } from 'vitest'
+import { createApp, h, nextTick, ref } from 'vue'
 import Pagination from '../components/Pagination.vue'
 
-afterEach(() => vi.useRealTimers())
-
-function mountPagination(total: number) {
-  const change = vi.fn()
-  const container = document.createElement('div')
-  const app = createApp(Pagination, { total, pageSize: 20, onChange: change })
-  const pagination = app.mount(container) as unknown as { reset: () => void }
-  const input = container.querySelector('input')!
-  return { change, app, input, pagination }
+interface PaginationVm {
+  prev: () => void
+  next: () => void
+  reset: () => void
 }
 
-it('rejects fractional page numbers and keeps empty lists on page one', async () => {
-  const { change, app, input } = mountPagination(0)
+function mountPagination(props: Record<string, unknown>) {
+  const change = vi.fn()
+  const container = document.createElement('div')
+  const app = createApp(Pagination, { pageSize: 20, onChange: change, ...props })
+  const vm = app.mount(container) as unknown as PaginationVm
+  return { change, app, container, vm }
+}
+
+function pageButtons(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLButtonElement>('.page-btn'))
+}
+
+function activePage(container: HTMLElement) {
+  return container.querySelector('.page-btn.active')?.textContent?.trim()
+}
+
+it('hides the pager when everything fits on a single page', () => {
+  const { app, container } = mountPagination({ total: 10 })
   try {
-    for (const value of ['1.5', 'Infinity', '-1', '', 'text']) {
-      input.value = value
-      input.dispatchEvent(new Event('input'))
-      input.dispatchEvent(new KeyboardEvent('keydown', { keyCode: 13 }))
-      await nextTick()
-      expect(input.value).toBe('1')
-      expect(change).not.toHaveBeenCalled()
-    }
-    input.value = '99'
-    input.dispatchEvent(new Event('input'))
-    input.dispatchEvent(new KeyboardEvent('keydown', { keyCode: 13 }))
-    await nextTick()
-    expect(input.value).toBe('1')
-    expect(change).toHaveBeenCalledExactlyOnceWith(0)
+    expect(container.querySelector('.atk-page-nav')).toBeNull()
   } finally {
     app.unmount()
   }
 })
 
-it('cancels delayed page input on reset and unmount', async () => {
-  vi.useFakeTimers()
-  const { change, app, input, pagination } = mountPagination(60)
-  input.value = '2'
-  input.dispatchEvent(new Event('input'))
-  pagination.reset()
-  await vi.advanceTimersByTimeAsync(1000)
-  expect(change).not.toHaveBeenCalled()
-  expect(input.value).toBe('1')
-  input.value = '3'
-  input.dispatchEvent(new Event('input'))
-  app.unmount()
-  await vi.advanceTimersByTimeAsync(1000)
-  expect(change).not.toHaveBeenCalled()
+it('reports the offset of the clicked page and keeps one active page', async () => {
+  const { change, app, container } = mountPagination({ total: 100 })
+  try {
+    expect(activePage(container)).toBe('1')
+    const third = pageButtons(container).find((btn) => btn.textContent?.trim() === '3')
+    third!.dispatchEvent(new MouseEvent('click'))
+    await nextTick()
+    expect(change).toHaveBeenCalledExactlyOnceWith(40)
+    expect(activePage(container)).toBe('3')
+  } finally {
+    app.unmount()
+  }
+})
+
+it('keeps a compact window with ellipsis around the page supplied by the owner', async () => {
+  const page = ref(10)
+  const container = document.createElement('div')
+  const app = createApp({ render: () => h(Pagination, { total: 400, pageSize: 20, page: page.value }) })
+  try {
+    app.mount(container)
+    await nextTick()
+    expect(activePage(container)).toBe('10')
+    expect(container.textContent?.match(/…/g)).toHaveLength(2)
+    expect(pageButtons(container).map((btn) => btn.textContent?.trim())).toEqual([
+      '1',
+      '9',
+      '10',
+      '11',
+      '12',
+      '20',
+    ])
+
+    page.value = 20
+    await nextTick()
+    expect(activePage(container)).toBe('20')
+  } finally {
+    app.unmount()
+  }
+})
+
+it('clamps navigation at the edges and resets without emitting', async () => {
+  const { change, app, container, vm } = mountPagination({ total: 60 })
+  try {
+    const [prevBtn, nextBtn] = Array.from(container.querySelectorAll<HTMLButtonElement>('.page-arrow'))
+    expect(prevBtn.disabled).toBe(true)
+    expect(nextBtn.disabled).toBe(false)
+
+    nextBtn.dispatchEvent(new MouseEvent('click'))
+    await nextTick()
+    expect(change).toHaveBeenLastCalledWith(20)
+    expect(activePage(container)).toBe('2')
+
+    nextBtn.dispatchEvent(new MouseEvent('click'))
+    await nextTick()
+    expect(activePage(container)).toBe('3')
+    expect(nextBtn.disabled).toBe(true)
+
+    change.mockClear()
+    vm.reset()
+    await nextTick()
+    expect(activePage(container)).toBe('1')
+    expect(change).not.toHaveBeenCalled()
+  } finally {
+    app.unmount()
+  }
 })

@@ -83,6 +83,8 @@ export class CommentService {
         flat_mode: params.flatMode,
         page_key: conf.pageKey,
         site_name: conf.site,
+        // AI assistant comments are rendered in a dedicated list at the top.
+        split_ai: true,
       }
       params.paramsModifier?.(reqParams)
       if (!active()) return
@@ -98,8 +100,14 @@ export class CommentService {
       }
       // User and site scopes have no page; keep the existing public ListData type.
       const listData = result as ListData
+      // AI assistant comments are rendered in the dedicated list at the top.
+      // Keep regular comments in the main discussion (including replies to AI),
+      // and keep every comment in one list when the caller asks for no split.
+      if (reqParams.split_ai) {
+        listData.comments = listData.comments.filter((comment) => !comment.is_ai_assistant)
+      }
       data.setListLastFetch({ params, data: listData })
-      data.loadComments(result.comments)
+      data.loadComments(listData.comments)
       if (!active()) return
       if (result.page) data.updatePage(result.page)
       if (!active()) return

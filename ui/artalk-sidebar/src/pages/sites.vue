@@ -98,15 +98,18 @@ function onSiteItemRemove(id: number) {
 </script>
 
 <template>
-  <div class="atk-site-list">
-    <div class="atk-header">
-      <div class="atk-title">{{ t('siteCount', { count: sites.length }) }}</div>
-      <div class="atk-actions">
-        <div class="atk-item atk-site-add-btn" @click="create()">
-          <i class="atk-icon atk-icon-plus"></i>
-        </div>
-      </div>
-    </div>
+  <div class="atk-site-list admin-page">
+    <AdminPageHeader
+      :title="t('siteManage')"
+      :description="t('siteCount', { count: sites.length })"
+    >
+      <template #actions>
+        <button class="admin-button" type="button" @click="create()">
+          <i class="atk-icon atk-icon-plus" />
+          {{ t('createSite') }}
+        </button>
+      </template>
+    </AdminPageHeader>
     <SiteCreate
       v-if="showSiteCreate"
       :init-val="siteCreateInitVal"
@@ -115,15 +118,6 @@ function onSiteItemRemove(id: number) {
     />
     <div class="atk-site-rows-wrap">
       <template v-for="(ss, i) in sitesGrouped" :key="i">
-        <template v-if="curtEditSite !== null">
-          <SiteEditor
-            v-if="!!ss.includes(curtEditSite)"
-            :site="curtEditSite"
-            @close="curtEditSite = null"
-            @update="onSiteItemUpdate"
-            @remove="onSiteItemRemove"
-          />
-        </template>
         <div class="atk-site-row">
           <div
             v-for="site in ss"
@@ -136,6 +130,13 @@ function onSiteItemRemove(id: number) {
             <div class="atk-site-name">{{ site.name }}</div>
           </div>
         </div>
+        <SiteEditor
+          v-if="curtEditSite !== null && ss.includes(curtEditSite)"
+          :site="curtEditSite"
+          @close="curtEditSite = null"
+          @update="onSiteItemUpdate"
+          @remove="onSiteItemRemove"
+        />
       </template>
     </div>
   </div>
@@ -179,57 +180,76 @@ function onSiteItemRemove(id: number) {
     position: relative;
 
     .atk-site-row {
-      display: flex;
-      flex-direction: row;
-      padding: 10px 20px;
-      padding-bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0;
+      padding-bottom: 10px;
+
+      @media (min-width: 700px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      @media (min-width: 1000px) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
     }
 
     .atk-site-item {
       display: flex;
-      flex-basis: 25%;
       flex-direction: column;
       align-items: center;
-      padding-bottom: 5px;
+      padding: 18px 12px 16px;
       user-select: none;
       cursor: pointer;
-      border: 1px solid transparent;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: var(--atk-admin-radius-sm);
+      background: var(--atk-admin-surface);
+      box-shadow: var(--atk-admin-shadow-sm);
+      transition:
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        transform 0.18s ease;
 
       .atk-site-logo {
-        margin: 15px;
-        text-align: center;
-        font-size: 20px;
-        height: 65px;
-        width: 65px;
-        line-height: 65px;
-        background: #5b6f7e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin: 0 0 10px;
+        border-radius: 14px;
+        background: linear-gradient(145deg, var(--atk-admin-sage), var(--atk-admin-sage-strong));
         color: #fff;
-        border-radius: 4px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1;
       }
 
       .atk-site-name {
+        max-width: 100%;
+        padding: 0;
+        overflow: hidden;
+        color: var(--atk-admin-ink);
+        font-size: 13px;
+        font-weight: 600;
         text-align: center;
-        font-size: 15px;
-        color: var(--at-color-sub);
-        padding: 0 17px;
-        word-break: break-word;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       &.atk-active {
-        background-color: var(--at-color-bg-grey);
-        border: 1px solid var(--at-color-border);
-        margin-top: -1px;
-        border-radius: 0 0 4px 4px;
+        border-color: var(--atk-admin-sage);
+        background: var(--atk-admin-sage-soft);
 
         .atk-site-name {
-          color: var(--at-color-deep);
+          color: var(--atk-admin-sage-strong);
         }
       }
 
       &:hover {
-        .atk-site-name {
-          color: var(--at-color-font);
-        }
+        border-color: var(--atk-admin-sage);
+        transform: translateY(-1px);
       }
     }
   }
@@ -358,6 +378,175 @@ function onSiteItemRemove(id: number) {
     .atk-form {
       padding: 20px 40px;
     }
+  }
+}
+
+.atk-site-list {
+  & > .atk-header {
+    margin-bottom: 14px;
+    padding: 16px 18px;
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+    border-radius: var(--atk-admin-radius);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .atk-title {
+      color: var(--atk-admin-ink);
+      font-family: Georgia, 'Songti SC', 'STSong', serif;
+      font-size: 19px;
+    }
+
+    .atk-actions .atk-item {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: 50%;
+
+      &:hover {
+        background: var(--atk-admin-sage-soft);
+      }
+    }
+  }
+
+  .atk-site-rows-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(156px, 220px));
+    justify-content: start;
+    gap: 12px;
+
+    .atk-site-row {
+      display: contents;
+      padding: 0;
+    }
+
+    .atk-site-item {
+      min-height: 150px;
+      justify-content: center;
+      padding: 18px 14px;
+      border: 1px solid var(--atk-admin-border);
+      border-radius: var(--atk-admin-radius-sm);
+      background: var(--atk-admin-surface);
+      box-shadow: var(--atk-admin-shadow-sm);
+      transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+
+      .atk-site-logo {
+        margin: 0 0 12px;
+        background: linear-gradient(145deg, var(--atk-admin-sage), var(--atk-admin-sage-strong));
+        border-radius: 14px;
+      }
+
+      .atk-site-name {
+        color: var(--atk-admin-ink);
+        font-weight: 600;
+      }
+
+      &.atk-active,
+      &:hover {
+        margin-top: 0;
+        background: var(--atk-admin-sage-soft);
+        border-color: var(--atk-admin-sage);
+        border-radius: var(--atk-admin-radius-sm);
+        transform: translateY(-1px);
+
+        .atk-site-name {
+          color: var(--atk-admin-sage-strong);
+        }
+      }
+    }
+  }
+
+  :deep(.atk-site-edit) {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin: 0;
+    border: 1px solid var(--atk-admin-border);
+    border-radius: var(--atk-admin-radius);
+    background: var(--atk-admin-surface);
+    overflow: hidden;
+
+    .atk-header {
+      padding: 20px 24px 10px;
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    .atk-site-info .atk-site-name {
+      font-size: 21px;
+      font-weight: 600;
+
+      &::after {
+        display: none;
+      }
+    }
+
+    .atk-site-info .atk-site-urls {
+      margin-top: 8px;
+      margin-bottom: 0;
+
+      .atk-url-item {
+        margin-right: 6px;
+        padding: 4px 9px;
+        border: 1px solid var(--atk-admin-border);
+        border-radius: 999px;
+        background: var(--atk-admin-surface-muted);
+        color: var(--atk-admin-subtle);
+      }
+    }
+
+    .atk-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+
+      &:hover {
+        background: var(--atk-admin-surface-muted);
+      }
+    }
+
+    .atk-main {
+      align-items: center;
+      padding: 12px 24px 22px;
+    }
+
+    .atk-site-text-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: auto;
+      padding: 0;
+
+      .atk-item {
+        margin: 0;
+        padding: 7px 12px;
+        border: 1px solid var(--atk-admin-border);
+        border-radius: 999px;
+        color: var(--atk-admin-ink);
+
+        &:hover {
+          background: var(--atk-admin-surface-muted);
+        }
+      }
+    }
+
+    .atk-site-btn-actions {
+      margin-left: auto;
+      padding: 0;
+
+      .atk-item {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+      }
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  .atk-site-list .atk-site-rows-wrap {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

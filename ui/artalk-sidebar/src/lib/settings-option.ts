@@ -10,10 +10,48 @@ export interface OptionNode {
   type: 'string' | 'number' | 'boolean' | 'object' | 'array'
   title: string
   subTitle?: string
+  control?: 'input' | 'textarea'
+  placeholder?: string
   items?: OptionNode[]
 }
 
 export const KEYWORD_FILE_SEPARATOR_PATH = 'moderator.keywords.file_sep'
+
+const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placeholder'>> = {
+  'auth.generic.authorize_url': {
+    control: 'input',
+    placeholder: 'https://provider.example.com/oauth/authorize',
+  },
+  'auth.generic.token_url': {
+    control: 'input',
+    placeholder: 'https://provider.example.com/oauth/token',
+  },
+  'auth.generic.user_info_url': {
+    control: 'input',
+    placeholder: 'https://provider.example.com/api/user',
+  },
+  'moderator.ai.base_url': {
+    control: 'input',
+    placeholder: 'https://api.openai.com/v1 or https://api.deepseek.com/v1',
+  },
+  'moderator.ai.api_key': {
+    control: 'input',
+    placeholder: 'sk-...',
+  },
+  'moderator.ai.model': {
+    control: 'input',
+    placeholder: 'e.g. gpt-4.1-mini, deepseek-v4-flash',
+  },
+  'moderator.ai.prompt': {
+    control: 'textarea',
+    placeholder:
+      '默认审核规则已内置；如需覆盖，只写敏感/非敏感判断规则，不需要写 JSON Schema。',
+  },
+  'ai_assistant.prompt': {
+    control: 'textarea',
+    placeholder: '默认提示词已内置；可按需自定义助手的回复风格和行为。',
+  },
+}
 
 function extractItemComment(item: Pair, index: number, parentPair?: Pair): string {
   return index === 0 && parentPair
@@ -68,6 +106,7 @@ export function getTree(yamlObj: YAML.Document.Parsed): OptionNode {
         ...extractComment(key, comment),
         default: defaultValue,
         type: type as any,
+        ...optionPresentation[path.join('.')],
       }
 
       // traverse children

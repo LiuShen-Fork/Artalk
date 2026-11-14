@@ -179,7 +179,11 @@ export const ViteArtalkPluginKit = (opts: ViteArtalkPluginKitOptions = {}): Plug
     },
 
     transform(code, id) {
-      if (tsRE.test(id) && id === ctx.entryPath) {
+      // Vite normalizes ids to forward slashes while ctx.entryPath comes from
+      // path.resolve, which uses backslashes on Windows. Compare resolved paths
+      // so the browser-global registration is injected on every platform.
+      const isEntry = path.resolve(id) === path.resolve(ctx.entryPath)
+      if (tsRE.test(id) && isEntry) {
         return {
           code: `${code}
           // Mount plugin to browser window global

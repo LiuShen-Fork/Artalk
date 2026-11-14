@@ -16,6 +16,7 @@ export default defineLocaleExternal('zh-TW', {
   uploadImage: '上傳圖片',
   uploadFail: '上傳失敗',
   commentFail: '評論失敗',
+  aiAssistant: 'AI 助手',
   restoredMsg: '內容已自動恢復',
   onlyAdminCanReply: '僅管理員可評論',
   uploadLoginMsg: '填入你的名字郵箱才能上傳哦',

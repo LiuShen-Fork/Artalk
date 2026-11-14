@@ -6,6 +6,7 @@ import type { CommentData, EventManager, DataManager, ConfigManager, List as ILi
 import * as Utils from '@/lib/utils'
 import { CommentNode } from '@/comment'
 import type { Api } from '@/api'
+import $t from '@/i18n'
 
 export interface ListOptions {
   /** @internal */
@@ -29,6 +30,9 @@ export class List implements IList {
   }
 
   private $commentsWrap: HTMLElement
+
+  private $aiCommentsSection: HTMLElement
+  private $aiCommentsWrap: HTMLElement
   getCommentsWrapEl() {
     return this.$commentsWrap
   }
@@ -44,6 +48,9 @@ export class List implements IList {
     // Init base element
     this.$el = Utils.createElement(ListHTML)
     this.$commentsWrap = this.$el.querySelector('.atk-list-comments-wrap')!
+    this.$aiCommentsSection = this.$el.querySelector('.atk-ai-comments')!
+    this.$aiCommentsWrap = this.$el.querySelector('.atk-ai-comments-wrap')!
+    this.$aiCommentsSection.querySelector('.atk-ai-comments-header')!.textContent = $t('aiAssistant')
 
     // Init paginator
     initListPaginatorFunc({
@@ -61,8 +68,12 @@ export class List implements IList {
   }
 
   getLayout({ forceFlatMode }: { forceFlatMode?: boolean } = {}) {
+    return this.createLayout(this.$commentsWrap, forceFlatMode, true)
+  }
+
+  private createLayout($commentsWrap: HTMLElement, forceFlatMode?: boolean, trackNodes = true) {
     return new ListLayout({
-      $commentsWrap: this.$commentsWrap,
+      $commentsWrap,
       nestSortBy: this.opts.getConf().get().nestSort,
       nestMax: this.opts.getConf().get().nestMax,
       flatMode:
@@ -72,7 +83,7 @@ export class List implements IList {
       // flatMode must be boolean because it had been handled when Artalk.init
       createCommentNode: (d, r) => {
         const node = createCommentNode({ forceFlatMode, ...this.opts }, d, r)
-        this.commentNodes.push(node) // store node instance
+        if (trackNodes) this.commentNodes.push(node) // store node instance
         return node
       },
       findCommentNode: (id) => this.commentNodes.find((c) => c.getID() === id),
@@ -95,6 +106,15 @@ export class List implements IList {
       if (comments.length === 0) {
         this.clear()
       }
+    })
+
+    this.opts.getEvents().on('list-fetched', ({ data }) => {
+      const aiComments = data?.ai_comments || []
+      this.$aiCommentsWrap.innerHTML = ''
+      this.$aiCommentsSection.hidden = aiComments.length === 0
+      if (aiComments.length === 0) return
+
+      this.createLayout(this.$aiCommentsWrap, true, false).import(aiComments)
     })
 
     // When comment insert

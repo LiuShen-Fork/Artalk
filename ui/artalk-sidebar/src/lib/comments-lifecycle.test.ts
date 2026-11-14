@@ -33,7 +33,7 @@ it('releases the comment listener, editor and callbacks when leaving the route',
     const app = createApp(Comments)
     app.mount(container)
     expect(container.contains(list)).toBe(true)
-    const listener = widget.ctx.on.mock.lastCall![1]
+    const listener = widget.ctx.on.mock.calls.filter((call) => call[0] === 'comment-rendered').pop()![1]
     const setOpenURL = vi.fn()
     listener({
       getData: () => ({ page_url: 'https://example.com/post' }),
@@ -42,7 +42,7 @@ it('releases the comment listener, editor and callbacks when leaving the route',
     })
     expect(setOpenURL).toHaveBeenCalledWith('https://example.com/post#atk-comment-42')
     app.unmount()
-    expect(widget.ctx.off).toHaveBeenLastCalledWith('comment-rendered', listener)
+    expect(widget.ctx.off).toHaveBeenCalledWith('comment-rendered', listener)
     expect(widget.ctx.editorResetState).toHaveBeenCalledTimes(visit + 1)
     expect(widget.update).toHaveBeenLastCalledWith({
       listFetchParamsModifier: undefined,

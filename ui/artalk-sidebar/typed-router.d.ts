@@ -45,6 +45,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/dashboard': RouteRecordInfo<
+      '/dashboard',
+      '/dashboard',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/login': RouteRecordInfo<
       '/login',
       '/login',
@@ -52,9 +59,23 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/moderation': RouteRecordInfo<
+      '/moderation',
+      '/moderation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/pages': RouteRecordInfo<
       '/pages',
       '/pages',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/security': RouteRecordInfo<
+      '/security',
+      '/security',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -116,6 +137,14 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/dashboard.vue': {
+      routes:
+        | '/dashboard'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/login.vue': {
       routes:
         | '/login'
@@ -124,9 +153,25 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/moderation.vue': {
+      routes:
+        | '/moderation'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/pages.vue': {
       routes:
         | '/pages'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/security.vue': {
+      routes:
+        | '/security'
       views:
         | never
       pathParamNames:

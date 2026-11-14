@@ -18,6 +18,7 @@ export default defineLocaleExternal(
     uploadImage: '이미지 업로드',
     uploadFail: '업로드 실패',
     commentFail: '댓글 실패',
+    aiAssistant: 'AI 도우미',
     restoredMsg: '내용이 복원되었습니다',
     onlyAdminCanReply: '관리자만 답글을 달 수 있습니다',
     uploadLoginMsg: '이름과 이메일을 입력하여 업로드하세요',

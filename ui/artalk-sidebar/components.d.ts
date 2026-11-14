@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AdminPageHeader: typeof import('./src/components/AdminPageHeader.vue')['default']
     AppHeader: typeof import('./src/components/AppHeader.vue')['default']
     AppNavigation: typeof import('./src/components/AppNavigation.vue')['default']
     AppNavigationDesktop: typeof import('./src/components/AppNavigationDesktop.vue')['default']
@@ -31,5 +32,6 @@ declare module 'vue' {
     SiteEditor: typeof import('./src/components/SiteEditor.vue')['default']
     SiteSwitcher: typeof import('./src/components/SiteSwitcher.vue')['default']
     UserEditor: typeof import('./src/components/UserEditor.vue')['default']
+    VerifyCodeButton: typeof import('./src/components/VerifyCodeButton.vue')['default']
   }
 }

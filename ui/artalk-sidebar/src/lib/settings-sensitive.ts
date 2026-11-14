@@ -12,6 +12,7 @@ export const SensitiveConfigPaths = [
   'admin_notify.slack.oauth_token',
   'admin_notify.telegram.api_token',
   'admin_notify.webhook.url',
+  'admin_notify.wecom.webhook_url',
   'admin.notify.bark.server',
   'auth.apple.client_secret',
   'auth.auth0.client_secret',
@@ -21,6 +22,7 @@ export const SensitiveConfigPaths = [
   'auth.github.client_secret',
   'auth.gitlab.client_secret',
   'auth.google.client_secret',
+  'auth.generic.client_secret',
   'auth.line.client_secret',
   'auth.mastodon.client_secret',
   'auth.microsoft.client_secret',
@@ -39,6 +41,7 @@ export const SensitiveConfigPaths = [
   'db.password',
   'email.ali_dm.access_key_secret',
   'email.smtp.password',
+  'moderator.ai.api_key',
 ]
 
 export function isSensitiveConfigPath(path: string) {

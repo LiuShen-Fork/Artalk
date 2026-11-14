@@ -82,8 +82,8 @@ function fetchUsers(offset: number) {
     )
     .then((res) => {
       if (current.signal.aborted) return
-      pageTotal.value = res.data.count
-      users.value = res.data.users
+      pageTotal.value = res.data.count || 0
+      users.value = res.data.users || []
       nav.scrollPageToTop()
     })
     .catch((err) => {
@@ -162,8 +162,12 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
 </script>
 
 <template>
-  <div class="user-list-wrap">
-    <div class="user-list">
+  <div class="user-list-wrap admin-page">
+    <AdminPageHeader :title="t('user')" description="管理站点内的用户、邮箱与权限。" />
+    <div class="user-list admin-panel">
+      <div v-if="!users.length && !nav.isPageLoading" class="admin-empty user-empty">
+        {{ t('noUsers') }}
+      </div>
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-main">
           <div class="title">
@@ -244,11 +248,11 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
             color: #fff;
 
             &.admin {
-              background: #0083ff;
+              background: var(--atk-admin-terracotta);
             }
 
             &.in-conf {
-              background: #89b1a5;
+              background: var(--atk-admin-sage);
             }
           }
         }
@@ -278,6 +282,97 @@ function delUser(user: ArtalkType.UserDataForAdmin) {
         }
       }
     }
+  }
+}
+
+.user-list-wrap {
+  .user-list {
+    overflow: hidden;
+    border-color: var(--atk-admin-border);
+    background: var(--atk-admin-surface);
+    border-radius: var(--atk-admin-radius);
+    box-shadow: 0 2px 8px rgba(72, 60, 46, 0.04);
+
+    .user-empty {
+      min-height: 180px;
+      justify-content: center;
+      font-size: 13px;
+
+      &::before {
+        content: '';
+        width: 24px;
+        height: 24px;
+        margin-bottom: 2px;
+        background: var(--atk-admin-faint);
+        mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 5 5'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 5 5'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+      }
+    }
+
+    .user-item {
+      padding: 15px 16px;
+      border-color: var(--atk-admin-border);
+
+      .user-main {
+        .title {
+          color: var(--atk-admin-ink);
+          font-size: 15px;
+          font-weight: 650;
+
+          .badge {
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: var(--atk-admin-sage);
+            font-size: 10.5px;
+            font-weight: 650;
+            line-height: 1.6;
+
+            &.admin {
+              background: var(--atk-admin-terracotta);
+            }
+
+            &.in-conf {
+              background: var(--atk-admin-sage);
+            }
+          }
+        }
+
+        .sub {
+          margin-top: 3px;
+          color: var(--atk-admin-subtle);
+          font-size: 12.5px;
+        }
+      }
+
+      .user-actions {
+        margin-top: 9px;
+
+        & > span {
+          color: var(--atk-admin-subtle);
+          font-size: 12.5px;
+
+          &:not(:last-child) {
+            margin-right: 18px;
+          }
+
+          &:hover {
+            color: var(--atk-admin-sage);
+          }
+
+          &:last-child:hover {
+            color: var(--atk-admin-danger);
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .user-list-wrap .user-list .user-item {
+    padding: 16px;
   }
 }
 </style>

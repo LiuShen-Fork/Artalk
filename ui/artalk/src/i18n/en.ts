@@ -14,6 +14,7 @@ const en = {
   uploadImage: 'Upload Image',
   uploadFail: 'Upload Failed',
   commentFail: 'Failed to comment',
+  aiAssistant: 'AI Assistant',
   restoredMsg: 'Content has been restored',
   onlyAdminCanReply: 'Only admin can reply',
   uploadLoginMsg: 'Please fill in your name and email to upload',

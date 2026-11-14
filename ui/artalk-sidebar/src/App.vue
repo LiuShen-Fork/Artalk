@@ -3,7 +3,14 @@ import { storeToRefs } from 'pinia'
 import { useNavStore } from './stores/nav'
 
 const nav = useNavStore()
+const route = useRoute()
 const { scrollableArea, darkMode } = storeToRefs(nav)
+
+const isLogin = computed(() => String(route.name || '').includes('login'))
+const hasTabs = computed(() => Object.keys(nav.tabs || {}).length > 0)
+const shellStyle = computed(() => ({
+  '--atk-admin-tabs-h': hasTabs.value ? '54px' : '0px',
+}))
 
 const query = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -16,9 +23,13 @@ const onDarkModeChange = (e: MediaQueryListEvent) => {
 </script>
 
 <template>
-  <div class="app-wrap artalk atk-sidebar" :class="{ 'atk-dark-mode': darkMode }">
-    <AppHeader />
-    <AppNavigation />
+  <div
+    class="app-wrap artalk atk-sidebar"
+    :class="{ 'atk-dark-mode': darkMode, 'login-mode': isLogin }"
+    :style="shellStyle"
+  >
+    <AppHeader v-if="!isLogin" />
+    <AppNavigation v-if="!isLogin" />
 
     <div class="main">
       <div ref="scrollableArea" class="atk-sidebar-inner">
@@ -32,39 +43,52 @@ const onDarkModeChange = (e: MediaQueryListEvent) => {
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 61px;
-$subHeaderHeight: 41px;
-$maxWidth: 1100px;
-$sidebarWidth: 280px;
+$headerHeight: 62px;
+$railWidth: 236px;
+$maxWidth: 1040px;
 
 .app-wrap {
-  background: var(--at-color-bg);
-  color: var(--at-color-font);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .main {
   position: relative;
 
   .atk-sidebar-inner {
+    height: calc(100vh - var(--atk-admin-header-h) - var(--atk-admin-nav-h));
+    height: calc(100dvh - var(--atk-admin-header-h) - var(--atk-admin-nav-h));
+    padding-bottom: 0;
     overflow-y: auto;
-    height: calc(100vh - $headerHeight - $subHeaderHeight);
-    padding-bottom: 50px;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 
-    @media (min-width: 1024px) {
-      height: calc(100vh - $headerHeight - 51px);
+    @media (min-width: 860px) {
+      height: calc(100dvh - $headerHeight - var(--atk-admin-tabs-h, 0px));
+      padding-bottom: 0;
+      margin-left: $railWidth;
     }
   }
 
-  // The placeholder area for the pagination bar
-  :deep(.atk-pagination-wrap) {
-    z-index: 200;
+  .login-mode & .atk-sidebar-inner {
+    height: 100dvh;
+    padding-bottom: 0;
+    margin-left: 0;
+  }
+
+  :deep(.atk-page-nav-wrap) {
     position: fixed;
-    width: 100%;
     bottom: 0;
     left: 0;
-    background: var(--at-color-bg);
-    border-top: 1px solid var(--at-color-border);
+    z-index: 200;
+    width: 100%;
+    background: linear-gradient(
+      to top,
+      var(--atk-admin-canvas) 0%,
+      var(--atk-admin-canvas) 68%,
+      transparent 100%
+    );
+    pointer-events: none;
   }
 }
 
@@ -72,18 +96,17 @@ $sidebarWidth: 280px;
   position: relative;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 860px) {
   :deep(.atk-sidebar-container) {
+    width: 100%;
     max-width: $maxWidth;
     margin: 0 auto;
-    width: 100%;
+    padding: 0 28px;
   }
-}
 
-@media (min-width: 1024px) and (max-width: calc($maxWidth + $sidebarWidth * 2)) {
-  :deep(.atk-sidebar-container) {
-    margin-left: $sidebarWidth;
-    max-width: calc(100% - $sidebarWidth);
+  :deep(.atk-page-nav-wrap) {
+    left: $railWidth;
+    width: calc(100% - $railWidth);
   }
 }
 </style>
