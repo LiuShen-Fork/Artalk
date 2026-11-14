@@ -32,6 +32,14 @@ This repository is a personal-maintained fork of [ArtalkJS/Artalk](https://githu
 - `master` is based on `upstream/master`; fork-specific commits are kept here and synchronized manually.
 - The fork does not publish a separate npm client package. The frontend client remains based on the upstream package, while the server and administration console are maintained here.
 
+### Current state of this fork
+
+- Base: `upstream/master` (2026-11-14, `d9b62cba`).
+- History: the fork's customizations are squashed into 3 commits on top of upstream — server, administration frontend, documentation and CI — so a later rebase resolves conflicts in a handful of files in one pass.
+- Size: 213 files changed, +16,126 / −3,803. The server accounts for 88 files (~+7.6k) and `ui/artalk-sidebar` for 46 files (~+6.9k), while the visitor-facing `ui/artalk` client changes only 18 files by roughly 110 lines — the comment widget itself stays close to upstream.
+- Accounts: upstream already provides password and social login. What this fork adds is what happens after login — self-service password changes, binding and unbinding third-party identities, and a security page — plus login and sign-up integrated into the sidebar so ordinary users can manage their own profile without the admin console.
+- Compatibility: the public API and the widget's events and options match upstream; every addition is opt-in and off by default.
+
 ## Differences from Upstream
 
 ### AI comment moderation
