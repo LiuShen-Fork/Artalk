@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/artalkjs/artalk/v2/internal/core"
 	"github.com/artalkjs/artalk/v2/internal/entity"
@@ -144,6 +145,25 @@ func CommentCreate(app *core.App, router fiber.Router) {
 			comment.IsPending = true
 		}
 
+		// Synchronously reject comments matching local interception keywords.
+		// This runs before persistence and notification so rejected comments are never published.
+		if !isAdmin {
+			if antiSpamService, err := core.AppService[*core.AntiSpamService](app); err == nil {
+				blocked, keyword := antiSpamService.CheckIntercept(&core.AntiSpamCheckPayload{
+					Comment:      &comment,
+					ReqReferer:   referer,
+					ReqIP:        ip,
+					ReqUserAgent: ua,
+				})
+				if blocked {
+					return common.RespError(c, fiber.StatusBadRequest,
+						i18n.T("Comment blocked by keyword", Map{"keyword": keyword}))
+				}
+			} else {
+				log.Error("[AntiSpamService] err: ", err)
+			}
+		}
+
 		// Save the comment
 		if err := app.Dao().CreateComment(&comment); err != nil {
 			log.Error("Save Comment error: ", err)
@@ -189,12 +209,44 @@ func isAllowComment(app *core.App, c *fiber.Ctx, name string, email string, page
 
 	// if token is provided, then check token is valid
 	user, err := common.GetUserByReq(app, c)
-	if !errors.Is(err, common.ErrTokenNotProvided) && user.IsEmpty() {
+	isLogin := err == nil && !user.IsEmpty()
+	if !errors.Is(err, common.ErrTokenNotProvided) && !isLogin {
 		// need_auth_login is a hook for frontend to show login modal (new Auth api)
 		return false, common.RespError(c, 401, i18n.T("Login required"), Map{"need_auth_login": true})
 	}
 
+	if !isLogin && app.Conf().Auth.Enabled {
+		// Anonymous comments are disabled entirely.
+		if !app.Conf().Auth.Anonymous {
+			return false, common.RespError(c, 401, i18n.T("Login required"), Map{"need_auth_login": true})
+		}
+
+		// Even with anonymous comments enabled, an anonymous request must not
+		// post as an account that has login credentials. Otherwise anyone who
+		// knows a user's name and email could comment as that user.
+		existing := app.Dao().FindUser(name, email)
+		if !existing.IsEmpty() && userHasLoginCredentials(app, existing) {
+			return false, common.RespError(c, 401, i18n.T("Login required"), Map{"need_auth_login": true})
+		}
+	}
+
 	return true, nil
+}
+
+// userHasLoginCredentials reports whether an account can be signed into, which
+// distinguishes a registered account from a profile created by anonymous
+// commenting.
+func userHasLoginCredentials(app *core.App, user entity.User) bool {
+	if strings.TrimSpace(user.Password) != "" {
+		return true
+	}
+	var count int64
+	if err := app.Dao().DB().Model(&entity.AuthIdentity{}).Where("user_id = ?", user.ID).Count(&count).Error; err != nil {
+		// Fail closed: an unreadable identity table must not turn a registered
+		// account into an anonymously usable profile.
+		return true
+	}
+	return count > 0
 }
 
 // Get and update anonymous user
@@ -273,6 +325,13 @@ func commentCreatedJobs(app *core.App, comment entity.Comment, parentComment ent
 		}
 	} else {
 		log.Error("[NotifyService] err: ", err)
+	}
+
+	// AI assistant replies to explicit mentions and direct replies to the assistant.
+	if assistantService, err := core.AppService[*core.AIAssistantService](app); err == nil {
+		assistantService.ReplyToComment(&comment)
+	} else {
+		log.Error("[AIAssistantService] err: ", err)
 	}
 }
 

@@ -2,7 +2,7 @@ host: "0.0.0.0"
 port: 23366
 app_key: ""
 debug: false
-locale: en
+locale: zh-CN
 timezone: Asia/Shanghai
 site_default: Default Site
 site_url: ""
@@ -58,6 +58,17 @@ moderator:
     access_key_id: ""
     access_key_secret: ""
     region: cn-shanghai
+  ai:
+    enabled: false
+    api_type: responses
+    base_url: "https://api.openai.com/v1"
+    api_key: ""
+    model: ""
+    output_format: json_schema
+    max_tokens: 256
+    disable_thinking: true
+    prompt: |-
+      You are a comment moderation classifier. Classify the supplied nickname and comment as sensitive or non-sensitive only.
   keywords:
     enabled: false
     pending: false
@@ -65,6 +76,9 @@ moderator:
       - ./data/keywords_1.txt
     file_sep: "\n"
     replace_to: x
+  intercept:
+    enabled: false
+    keywords: ""
 captcha:
   enabled: true
   always: false
@@ -92,6 +106,18 @@ img_upload:
   path: ./data/artalk-img/
   max_size: 5
   public_path: null
+  rate_limit:
+    enabled: true
+    ip_limit: 20
+    window_seconds: 3600
+  lsky:
+    enabled: false
+    base_url: ""
+    token: ""
+    permission: public
+    strategy_id: 0
+    album_id: 0
+    del_local: true
   upgit:
     enabled: false
     exec: upgit -c UPGIT_CONF_FILE_PATH -t /artalk-img
@@ -132,6 +158,9 @@ admin_notify:
     enabled: false
     webhook_url: ""
     msg_type: "text"
+  wecom:
+    enabled: false
+    webhook_url: ""
   webhook:
     enabled: false
     url: ""
@@ -157,6 +186,7 @@ auth:
   callback: "http://localhost:23366/api/v2/auth/{provider}/callback"
   email:
     enabled: true
+    label: "Email"
     verify_subject: "Your Code - {{code}}"
     verify_tpl: default
   github:
@@ -234,6 +264,15 @@ auth:
     client_id: ""
     client_secret: ""
     issuer: ""
+  generic:
+    enabled: false
+    label: "OAuth 2.0"
+    client_id: ""
+    client_secret: ""
+    authorize_url: ""
+    token_url: ""
+    user_info_url: ""
+    scopes: []
   sso:
     enabled: false
     issuer: ""
@@ -267,3 +306,27 @@ frontend:
   reqTimeout: 15000
   versionCheck: true
   pluginURLs: []
+
+ai_assistant:
+  enabled: false
+  name: "清羽酱"
+  email: "ai-assistant@example.com"
+  link: ""
+  api_type: responses
+  base_url: "https://api.openai.com/v1"
+  api_key: ""
+  model: ""
+  max_tokens: 512
+  max_reply_chars: 300
+  max_context_comments: 12
+  content_selector: ""
+  exclude_selectors: []
+  daily_limit: 40
+  user_hourly_limit: 5
+  rate_limit_message: "当前小助手累啦，晚点再来看看吧~"
+  max_page_chars: 12000
+  timeout_seconds: 30
+  reply_to_pending: false
+  disable_thinking: true
+  prompt: |-
+    You are the Artalk comment assistant named Qingyu-chan. Answer only from the page content, existing comments, and the current comment. Reply naturally and briefly, without discussing your identity or inventing facts. Keep the reply under 300 Chinese characters.

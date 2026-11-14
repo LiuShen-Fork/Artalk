@@ -21,6 +21,9 @@ func TestAntiSpam(t *testing.T) {
 				Aliyun: config.AliyunAntispamConf{
 					Enabled: true,
 				},
+				AI: config.AIAntispamConf{
+					Enabled: true,
+				},
 				Keywords: config.KeyWordsAntispamConf{
 					Enabled: true,
 				},
@@ -32,11 +35,9 @@ func TestAntiSpam(t *testing.T) {
 		checkerNames := lo.Map[Checker, string](checkers, func(item Checker, index int) string {
 			return item.Name()
 		})
-		expectedCheckers := []string{"akismet", "tencent", "aliyun", "keywords"}
+		expectedCheckers := []string{"akismet", "tencent", "aliyun", "ai", "keywords"}
 
-		for _, expect := range expectedCheckers {
-			assert.Contains(t, checkerNames, expect, "expected %s in %v", expect, checkerNames)
-		}
+		assert.Equal(t, expectedCheckers, checkerNames)
 	})
 
 	t.Run("CheckAndBlock by KeywordsChecker", func(t *testing.T) {
@@ -79,8 +80,9 @@ func TestAntiSpam(t *testing.T) {
 			antiSpam := NewAntiSpam(conf)
 
 			antiSpam.CheckAndBlock(&CheckerParams{
-				CommentID: 1000,
-				Content:   "---\n关键词B\n---",
+				CommentID:     1000,
+				RawContent:    "---\n关键词B\n---",
+				ReviewContent: "---\n关键词B\n---",
 			})
 
 			assert.Equal(t, 1000, blockedID)
@@ -106,8 +108,9 @@ func TestAntiSpam(t *testing.T) {
 			antiSpam := NewAntiSpam(conf)
 
 			antiSpam.CheckAndBlock(&CheckerParams{
-				CommentID: 1000,
-				Content:   "---\n关键词B\n---",
+				CommentID:     1000,
+				RawContent:    "---\n关键词B\n---",
+				ReviewContent: "---\n关键词B\n---",
 			})
 
 			assert.Equal(t, 0, blockedID, "should not block")
@@ -117,6 +120,8 @@ func TestAntiSpam(t *testing.T) {
 	})
 
 	t.Run("MockChecker Error Return", func(t *testing.T) {
+		defer func() { mockCheckerErr = false }()
+
 		t.Run("ApiFailBlock=true", func(t *testing.T) {
 			checker := &mockChecker{}
 			antiSpam := NewAntiSpam(&AntiSpamConf{
@@ -143,6 +148,74 @@ func TestAntiSpam(t *testing.T) {
 			assert.True(t, pass, "should not be blocked when api fail")
 		})
 	})
+
+	t.Run("CheckAndBlock records all checker stages before blocking", func(t *testing.T) {
+		blockedID := uint(0)
+		results := []CheckResult{}
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			OnBlockComment: func(commentID uint) {
+				blockedID = commentID
+			},
+			OnCheckResult: func(result CheckResult) {
+				results = append(results, result)
+			},
+		})
+
+		antiSpam.checkAndBlockWithCheckers(&CheckerParams{CommentID: 1000}, []Checker{
+			fixedChecker{name: "first", pass: false},
+			fixedChecker{name: "second", pass: false},
+			fixedChecker{name: "third", pass: true},
+		})
+
+		assert.Equal(t, uint(1000), blockedID)
+		assert.Len(t, results, 3)
+		assert.Equal(t, "first", results[0].Checker)
+		assert.Equal(t, CheckStatusBlock, results[0].Status)
+		assert.Equal(t, "second", results[1].Checker)
+		assert.Equal(t, CheckStatusBlock, results[1].Status)
+		assert.Equal(t, "third", results[2].Checker)
+		assert.Equal(t, CheckStatusPass, results[2].Status)
+	})
+
+	t.Run("CheckIntercept records a rejected result", func(t *testing.T) {
+		var result CheckResult
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			ModeratorConf: config.ModeratorConf{
+				Intercept: config.CommentInterceptConf{Enabled: true, Keywords: "blocked"},
+			},
+			OnCheckResult: func(value CheckResult) { result = value },
+		})
+
+		blocked, keyword := antiSpam.CheckIntercept(&CheckerParams{
+			SiteName:      "Site A",
+			PageKey:       "page-a",
+			UserName:      "Alice",
+			UserEmail:     "alice@example.com",
+			RawContent:    "contains blocked",
+			ReviewContent: "contains blocked",
+		})
+
+		assert.True(t, blocked)
+		assert.Equal(t, "blocked", keyword)
+		assert.Equal(t, "intercept", result.Checker)
+		assert.Equal(t, CheckStatusBlock, result.Status)
+		assert.Equal(t, CheckActionReject, result.Action)
+		assert.Equal(t, "contains blocked", result.CommentContent)
+	})
+
+	t.Run("CheckIntercept reuses the parsed keywords", func(t *testing.T) {
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			ModeratorConf: config.ModeratorConf{
+				Intercept: config.CommentInterceptConf{Enabled: true, Keywords: "blocked"},
+			},
+		})
+
+		antiSpam.conf.Intercept.Keywords = "changed"
+		blocked, keyword := antiSpam.CheckIntercept(&CheckerParams{ReviewContent: "blocked"})
+
+		assert.True(t, blocked)
+		assert.Equal(t, "blocked", keyword)
+	})
 }
 
 // -------------------------------------------------------------------
@@ -166,4 +239,18 @@ func (c *mockChecker) Check(params *CheckerParams) (bool, error) {
 	}
 
 	return true, nil
+}
+
+type fixedChecker struct {
+	name string
+	pass bool
+	err  error
+}
+
+func (c fixedChecker) Name() string {
+	return c.name
+}
+
+func (c fixedChecker) Check(params *CheckerParams) (bool, error) {
+	return c.pass, c.err
 }

@@ -16,7 +16,7 @@ import (
 )
 
 func Gen(genType string, specificPath string, overwrite bool) {
-	locale := cmp.Or(os.Getenv("ATK_LOCALE"), "en")
+	locale := cmp.Or(os.Getenv("ATK_LOCALE"), "zh-CN")
 
 	// check if generate config file
 	isGenConf := false

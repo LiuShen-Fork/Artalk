@@ -1,0 +1,806 @@
+package core
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+	"sync"
+	"time"
+	"unicode/utf8"
+
+	"github.com/artalkjs/artalk/v2/internal/config"
+	"github.com/artalkjs/artalk/v2/internal/entity"
+	"github.com/artalkjs/artalk/v2/internal/log"
+	"golang.org/x/net/html"
+)
+
+var _ Service = (*AIAssistantService)(nil)
+
+const aiAssistantLogRetention = 90 * 24 * time.Hour
+const maxAIAssistantContextComments = 20
+
+// aiAssistantReasoningEffortThinkingOn is sent while thinking stays enabled.
+// "low" sits at the bottom of every provider's effort enum, so it is accepted
+// wherever a reasoning effort is understood at all and never turns a valid
+// request into a rejection. The effort knob only tunes how deep the thinking
+// goes; it cannot switch it off.
+const aiAssistantReasoningEffortThinkingOn = "low"
+
+// aiAssistantThinkingTypeDisabled is the switch that actually turns thinking
+// off for the chat completions and Anthropic Messages protocols. Thinking has
+// its own field there and is enabled by default.
+const aiAssistantThinkingTypeDisabled = "disabled"
+
+// aiAssistantReasoningEffortDisabled is the Responses API spelling of the same
+// switch, where "none" is the documented way to disable thinking.
+const aiAssistantReasoningEffortDisabled = "none"
+
+const defaultAIPageFetchErrorMessage = "抱歉主人，我获取不到页面的内容哩，可以检查一下网络吗？"
+const defaultAIAPIErrorMessage = "抱歉主人，AI脑子烧掉了，检查一下后端接口呢？"
+const defaultAIRateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
+
+type aiUserRateWindow struct {
+	started time.Time
+	count   int
+}
+
+type AIAssistantService struct {
+	app      *App
+	client   *http.Client
+	mu       sync.Mutex
+	userID   uint
+	userKey  string
+	rateMu   sync.Mutex
+	day      string
+	dayCount int
+	userRate map[uint]aiUserRateWindow
+}
+
+func NewAIAssistantService(app *App) *AIAssistantService {
+	return &AIAssistantService{app: app, userRate: make(map[uint]aiUserRateWindow)}
+}
+
+func (s *AIAssistantService) Init() error {
+	s.client = &http.Client{Timeout: s.timeout()}
+	s.pruneLogs()
+	return nil
+}
+
+func (s *AIAssistantService) Dispose() error {
+	s.client = nil
+	s.userID = 0
+	s.userKey = ""
+	return nil
+}
+
+// ReplyToComment handles a matching comment after the normal comment jobs.
+// It is intentionally synchronous within the caller's background job so a
+// failed request can be recorded with the triggering comment ID.
+func (s *AIAssistantService) ReplyToComment(comment *entity.Comment) {
+	if comment == nil {
+		return
+	}
+	conf := s.app.Conf().AIAssistant
+	trigger := assistantTrigger(conf)
+	if !conf.Enabled {
+		return
+	}
+	latest := s.app.Dao().FindComment(comment.ID)
+	if latest.IsEmpty() {
+		return
+	}
+	var parentUser entity.User
+	if latest.Rid != 0 {
+		p := s.app.Dao().FindComment(latest.Rid)
+		if !p.IsEmpty() {
+			parentUser = s.app.Dao().FetchUserForComment(&p)
+		}
+	}
+	targeted := commentTargetsAssistant(latest.Content, trigger, parentUser)
+	// Older databases predate IsAIAssistant. Match the complete configured
+	// identity so direct replies to historical assistant comments still work,
+	// without treating users who merely share an email as the assistant.
+	if !targeted {
+		targeted = legacyAssistantIdentityMatches(parentUser, conf)
+	}
+	if !targeted {
+		return
+	}
+
+	if err := s.reply(comment, conf, trigger); err != nil {
+		log.Errorf("[AIAssistant] comment=%d failed: %v", comment.ID, err)
+		s.record(comment, nil, trigger, entity.AIAssistantLogStatusError, "", err.Error())
+	}
+}
+
+func (s *AIAssistantService) reply(comment *entity.Comment, conf config.AIAssistantConf, trigger string) error {
+	latest := s.app.Dao().FindComment(comment.ID)
+	if latest.IsEmpty() {
+		return fmt.Errorf("trigger comment %d not found", comment.ID)
+	}
+	if latest.IsPending && !conf.ReplyToPending {
+		return nil
+	}
+
+	assistant, err := s.assistantUser(conf)
+	if err != nil {
+		return fmt.Errorf("prepare assistant user: %w", err)
+	}
+	if latest.UserID == assistant.ID {
+		return nil
+	}
+	var existing entity.Comment
+	result := s.app.Dao().DB().Where("rid = ? AND user_id = ?", latest.ID, assistant.ID).
+		Order("created_at DESC").Limit(1).Find(&existing)
+	if result.Error != nil {
+		return fmt.Errorf("check existing assistant reply: %w", result.Error)
+	}
+	if existing.ID != 0 {
+		return nil
+	}
+
+	response := ""
+	var responseErr error
+	rateLimited := !s.reserveRateLimit(latest.UserID, conf)
+	if rateLimited {
+		response = strings.TrimSpace(conf.RateLimitMessage)
+		if response == "" {
+			response = defaultAIRateLimitMessage
+		}
+	} else {
+		page := s.app.Dao().FindPage(latest.PageKey, latest.SiteName)
+		pageURL := s.app.Dao().GetPageAccessibleURL(&page)
+		pageText, err := fetchPageTextWithSelectors(s.client, pageURL, conf.MaxPageChars, conf.ContentSelector, conf.ExcludeSelectors)
+		if err != nil {
+			response = defaultAIPageFetchErrorMessage
+			responseErr = fmt.Errorf("fetch page context: %w", err)
+		} else if strings.TrimSpace(pageText) == "" {
+			response = defaultAIPageFetchErrorMessage
+			responseErr = fmt.Errorf("fetch page context: no text extracted from %q", pageURL)
+		} else {
+			comments := s.assistantThreadContext(&latest, conf.MaxContextComments)
+			prompt := s.buildAssistantPrompt(trigger, page, pageURL, pageText, comments, latest.Content)
+			response, responseErr = s.request(prompt, conf)
+			if responseErr != nil {
+				response = defaultAIAPIErrorMessage
+			}
+		}
+	}
+	maxReplyChars := conf.MaxReplyChars
+	if maxReplyChars <= 0 || maxReplyChars > 300 {
+		maxReplyChars = 300
+	}
+	response = limitRunes(strings.TrimSpace(response), maxReplyChars)
+	if response == "" {
+		return fmt.Errorf("AI assistant returned an empty response")
+	}
+
+	reply := entity.Comment{
+		Content:     response,
+		PageKey:     latest.PageKey,
+		SiteName:    latest.SiteName,
+		UserID:      assistant.ID,
+		Rid:         latest.ID,
+		RootID:      s.app.Dao().FindCommentRootID(latest.ID),
+		IsVerified:  true,
+		IsPending:   false,
+		IsCollapsed: false,
+	}
+	if err := s.app.Dao().CreateComment(&reply); err != nil {
+		return fmt.Errorf("save assistant reply: %w", err)
+	}
+	if notifyService, err := AppService[*NotifyService](s.app); err == nil {
+		if err := notifyService.Push(&reply, &latest); err != nil {
+			return fmt.Errorf("notify assistant reply: %w", err)
+		}
+	} else {
+		return fmt.Errorf("get notify service: %w", err)
+	}
+	status := entity.AIAssistantLogStatusSuccess
+	errText := ""
+	if responseErr != nil {
+		status = entity.AIAssistantLogStatusError
+		errText = responseErr.Error()
+		log.Errorf("[AIAssistant] comment=%d fallback reply: %v", latest.ID, responseErr)
+	}
+	if rateLimited {
+		status = entity.AIAssistantLogStatusRateLimited
+	}
+	s.record(&latest, &reply, trigger, status, response, errText)
+	return nil
+}
+
+// reserveRateLimit atomically checks and consumes both global and per-user
+// budgets. A non-positive value is treated as the configured default by the
+// compatibility patch in config.base.go.
+func (s *AIAssistantService) reserveRateLimit(userID uint, conf config.AIAssistantConf) bool {
+	dailyLimit, hourlyLimit := conf.DailyLimit, conf.UserHourlyLimit
+	if dailyLimit <= 0 {
+		dailyLimit = 40
+	}
+	if hourlyLimit <= 0 {
+		hourlyLimit = 5
+	}
+	now := time.Now()
+	today := now.Format("2006-01-02")
+	s.rateMu.Lock()
+	defer s.rateMu.Unlock()
+	if s.userRate == nil {
+		s.userRate = make(map[uint]aiUserRateWindow)
+	}
+	if s.day != today {
+		s.day, s.dayCount = today, 0
+	}
+	for id, window := range s.userRate {
+		if now.Sub(window.started) >= time.Hour {
+			delete(s.userRate, id)
+		}
+	}
+	window, ok := s.userRate[userID]
+	if !ok || now.Sub(window.started) >= time.Hour {
+		window = aiUserRateWindow{started: now}
+	}
+	if s.dayCount >= dailyLimit || window.count >= hourlyLimit {
+		return false
+	}
+	s.dayCount++
+	window.count++
+	s.userRate[userID] = window
+	return true
+}
+
+func (s *AIAssistantService) assistantUser(conf config.AIAssistantConf) (entity.User, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	name := assistantName(conf)
+	email := strings.TrimSpace(conf.Email)
+	if name == "" || email == "" {
+		return entity.User{}, fmt.Errorf("ai_assistant name and email are required")
+	}
+	userKey := strings.Join([]string{name, strings.ToLower(email), strings.TrimSpace(conf.Link)}, "\x00")
+	if s.userID != 0 && s.userKey == userKey {
+		user := s.app.Dao().FindUserByID(s.userID)
+		if !user.IsEmpty() {
+			return user, nil
+		}
+		s.userID = 0
+		s.userKey = ""
+	}
+	user, err := s.app.Dao().FindCreateUser(name, email, conf.Link)
+	if err != nil {
+		return entity.User{}, err
+	}
+	if !user.IsAIAssistant {
+		user.IsAIAssistant = true
+		if err := s.app.Dao().UpdateUser(&user); err != nil {
+			return entity.User{}, fmt.Errorf("mark assistant user: %w", err)
+		}
+	}
+	s.userID = user.ID
+	s.userKey = userKey
+	return user, nil
+}
+
+func assistantName(conf config.AIAssistantConf) string {
+	name := strings.TrimSpace(conf.Name)
+	name = strings.TrimLeft(name, "@")
+	if name == "" {
+		name = "清羽酱"
+	}
+	return name
+}
+
+func assistantTrigger(conf config.AIAssistantConf) string {
+	name := assistantName(conf)
+	if name == "" {
+		return ""
+	}
+	return "@" + name
+}
+
+// assistantThreadContext returns the triggering comment's ancestor chain.
+// Sibling branches are deliberately excluded so unrelated conversations do
+// not enter the prompt. Results are ordered oldest-first and the current
+// message remains the dynamic suffix for stable provider prefix caching.
+func (s *AIAssistantService) assistantThreadContext(trigger *entity.Comment, configuredLimit int) []entity.Comment {
+	if trigger == nil || trigger.Rid == 0 {
+		return nil
+	}
+	limit := configuredLimit
+	if limit <= 0 || limit > maxAIAssistantContextComments {
+		limit = maxAIAssistantContextComments
+	}
+	return collectAncestorComments(trigger, limit, func(id uint) entity.Comment {
+		return s.app.Dao().FindComment(id)
+	})
+}
+
+func collectAncestorComments(trigger *entity.Comment, limit int, find func(uint) entity.Comment) []entity.Comment {
+	if trigger == nil || trigger.Rid == 0 || find == nil {
+		return nil
+	}
+	comments := make([]entity.Comment, 0, limit)
+	visited := make(map[uint]struct{}, limit)
+	parentID := trigger.Rid
+	for parentID != 0 && len(comments) < limit {
+		if _, ok := visited[parentID]; ok {
+			break
+		}
+		visited[parentID] = struct{}{}
+		parent := find(parentID)
+		if parent.IsEmpty() {
+			break
+		}
+		comments = append(comments, parent)
+		parentID = parent.Rid
+	}
+	for left, right := 0, len(comments)-1; left < right; left, right = left+1, right-1 {
+		comments[left], comments[right] = comments[right], comments[left]
+	}
+	return comments
+}
+
+func commentTargetsAssistant(content, trigger string, parentUser entity.User) bool {
+	if parentUser.IsAIAssistant {
+		return true
+	}
+	return strings.TrimSpace(trigger) != "" && strings.Contains(content, trigger)
+}
+
+func legacyAssistantIdentityMatches(user entity.User, conf config.AIAssistantConf) bool {
+	if user.IsEmpty() || user.IsAIAssistant {
+		return false
+	}
+	return strings.TrimSpace(user.Name) == assistantName(conf) &&
+		strings.EqualFold(strings.TrimSpace(user.Email), strings.TrimSpace(conf.Email)) &&
+		strings.TrimSpace(user.Link) == strings.TrimSpace(conf.Link)
+}
+
+func (s *AIAssistantService) request(prompt string, conf config.AIAssistantConf) (string, error) {
+	endpoint, err := assistantEndpoint(conf)
+	if err != nil {
+		return "", err
+	}
+	apiType, err := assistantAPIType(conf)
+	if err != nil {
+		return "", err
+	}
+	maxTokens := conf.MaxTokens
+	if maxTokens < 0 {
+		return "", fmt.Errorf("ai_assistant max_tokens must not be negative")
+	}
+	messages := []map[string]string{
+		{"role": "system", "content": assistantPrompt(conf)},
+		{"role": "user", "content": prompt},
+	}
+	bodyMap := map[string]any{"model": strings.TrimSpace(conf.Model)}
+	switch apiType {
+	case config.AIAPITypeResponses:
+		bodyMap["input"] = messages
+		if maxTokens > 0 {
+			bodyMap["max_output_tokens"] = maxTokens
+		}
+		if conf.DisableThinking != nil && *conf.DisableThinking {
+			bodyMap["reasoning"] = map[string]any{"effort": aiAssistantReasoningEffortDisabled}
+		} else {
+			bodyMap["reasoning"] = map[string]any{"effort": aiAssistantReasoningEffortThinkingOn}
+		}
+	case config.AIAPITypeAnthropic:
+		bodyMap["system"] = assistantPrompt(conf)
+		bodyMap["messages"] = []map[string]string{{"role": "user", "content": prompt}}
+		if maxTokens > 0 {
+			bodyMap["max_tokens"] = maxTokens
+		} else {
+			bodyMap["max_tokens"] = 1024
+		}
+		// Thinking is enabled by default on the Messages API, so leaving the
+		// field out keeps it running instead of disabling it.
+		if conf.DisableThinking != nil && *conf.DisableThinking {
+			bodyMap["thinking"] = map[string]any{"type": aiAssistantThinkingTypeDisabled}
+		} else {
+			bodyMap["output_config"] = map[string]any{"effort": aiAssistantReasoningEffortThinkingOn}
+		}
+	default:
+		bodyMap["messages"] = messages
+		if maxTokens > 0 {
+			bodyMap["max_tokens"] = maxTokens
+		}
+		// Thinking is enabled by default, so switching it off needs the thinking
+		// field; the effort knob only tunes an already running thinking mode.
+		if conf.DisableThinking != nil && *conf.DisableThinking {
+			bodyMap["thinking"] = map[string]any{"type": aiAssistantThinkingTypeDisabled}
+		} else {
+			bodyMap["reasoning_effort"] = aiAssistantReasoningEffortThinkingOn
+		}
+	}
+	body, err := json.Marshal(bodyMap)
+	if err != nil {
+		return "", fmt.Errorf("marshal assistant request: %w", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return "", fmt.Errorf("create assistant request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if key := strings.TrimSpace(conf.APIKey); key != "" {
+		if apiType == config.AIAPITypeAnthropic {
+			req.Header.Set("x-api-key", key)
+		} else {
+			req.Header.Set("Authorization", "Bearer "+key)
+		}
+	}
+	if apiType == config.AIAPITypeAnthropic {
+		req.Header.Set("anthropic-version", "2023-06-01")
+	}
+	client := s.client
+	if client == nil {
+		client = &http.Client{Timeout: s.timeout()}
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("request assistant API: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
+	if err != nil {
+		return "", fmt.Errorf("read assistant response: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("assistant API returned HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+	}
+	return extractAssistantText(apiType, respBody)
+}
+
+func assistantEndpoint(conf config.AIAssistantConf) (string, error) {
+	base := strings.TrimRight(strings.TrimSpace(conf.BaseURL), "/")
+	u, err := url.Parse(base)
+	if err != nil || u.Scheme == "" || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") || u.RawQuery != "" || u.Fragment != "" {
+		return "", fmt.Errorf("invalid ai_assistant base_url")
+	}
+	if !strings.HasSuffix(u.Path, "/v1") {
+		return "", fmt.Errorf("ai_assistant base_url must end with /v1")
+	}
+	if strings.TrimSpace(conf.Model) == "" {
+		return "", fmt.Errorf("ai_assistant model is required")
+	}
+	apiType, err := assistantAPIType(conf)
+	if err != nil {
+		return "", err
+	}
+	switch apiType {
+	case config.AIAPITypeResponses:
+		return base + "/responses", nil
+	case config.AIAPITypeAnthropic:
+		return base + "/messages", nil
+	default:
+		return base + "/chat/completions", nil
+	}
+}
+
+func assistantAPIType(conf config.AIAssistantConf) (config.AIAPIType, error) {
+	apiType := config.AIAPIType(strings.TrimSpace(string(conf.APIType)))
+	if apiType == "" {
+		return config.AIAPITypeResponses, nil
+	}
+	switch apiType {
+	case config.AIAPITypeResponses, config.AIAPITypeChatCompletions, config.AIAPITypeAnthropic, config.AIAPITypeDeepSeekJSON:
+		return apiType, nil
+	default:
+		return "", fmt.Errorf("unknown ai_assistant api_type %q", conf.APIType)
+	}
+}
+
+func extractAssistantText(apiType config.AIAPIType, body []byte) (string, error) {
+	if apiType == config.AIAPITypeResponses {
+		var response struct {
+			OutputText string `json:"output_text"`
+			Output     []struct {
+				Content []struct {
+					Type string `json:"type"`
+					Text string `json:"text"`
+				} `json:"content"`
+			} `json:"output"`
+		}
+		if err := json.Unmarshal(body, &response); err != nil {
+			return "", fmt.Errorf("decode assistant responses: %w", err)
+		}
+		if strings.TrimSpace(response.OutputText) != "" {
+			return response.OutputText, nil
+		}
+		for _, output := range response.Output {
+			for _, content := range output.Content {
+				if strings.TrimSpace(content.Text) != "" {
+					return content.Text, nil
+				}
+			}
+		}
+		return "", fmt.Errorf("assistant response contains no output text")
+	}
+
+	if apiType == config.AIAPITypeAnthropic {
+		var response struct {
+			Content []struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"content"`
+		}
+		if err := json.Unmarshal(body, &response); err != nil {
+			return "", fmt.Errorf("decode assistant anthropic response: %w", err)
+		}
+		for _, content := range response.Content {
+			if content.Type == "text" && strings.TrimSpace(content.Text) != "" {
+				return content.Text, nil
+			}
+		}
+		return "", fmt.Errorf("assistant anthropic response contains no text")
+	}
+
+	var response struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+				Refusal string `json:"refusal"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", fmt.Errorf("decode assistant chat response: %w", err)
+	}
+	if len(response.Choices) == 0 {
+		return "", fmt.Errorf("assistant response contains no choices")
+	}
+	if strings.TrimSpace(response.Choices[0].Message.Refusal) != "" {
+		return "", fmt.Errorf("assistant response refused: %s", response.Choices[0].Message.Refusal)
+	}
+	return response.Choices[0].Message.Content, nil
+}
+
+func assistantPrompt(conf config.AIAssistantConf) string {
+	if prompt := strings.TrimSpace(conf.Prompt); prompt != "" {
+		return prompt
+	}
+	return config.DefaultAIAssistantPrompt
+}
+
+func (s *AIAssistantService) buildAssistantPrompt(trigger string, page entity.Page, pageURL, pageText string, comments []entity.Comment, current string) string {
+	var b strings.Builder
+	// Keep the stable page material before the dynamic conversation tail so
+	// providers can reuse the long prefix between adjacent replies.
+	fmt.Fprintf(&b, "页面标题：%s\n页面地址：%s\n页面正文：\n%s\n\n触发标签：%s\n\n按时间顺序的父级评论：\n", page.Title, pageURL, pageText, trigger)
+	for _, c := range comments {
+		user := "匿名用户"
+		fetched := s.app.Dao().FetchUserForComment(&c)
+		if fetched.Name != "" {
+			user = fetched.Name
+		}
+		fmt.Fprintf(&b, "- %s：%s\n", user, limitRunes(c.Content, 1000))
+	}
+	fmt.Fprintf(&b, "\n当前评论：\n%s\n\n请直接给出回复。", current)
+	return b.String()
+}
+
+func (s *AIAssistantService) record(comment, reply *entity.Comment, trigger string, status entity.AIAssistantLogStatus, response, errText string) {
+	row := entity.AIAssistantLog{CommentID: comment.ID, UserID: comment.UserID, SiteName: comment.SiteName, PageKey: comment.PageKey, Trigger: trigger, Status: string(status), AIModel: s.app.Conf().AIAssistant.Model, Response: response, Error: errText}
+	if reply != nil {
+		row.ReplyCommentID = reply.ID
+	}
+	page := s.app.Dao().FindPage(comment.PageKey, comment.SiteName)
+	row.PageURL = s.app.Dao().GetPageAccessibleURL(&page)
+	if err := s.app.Dao().DB().Create(&row).Error; err != nil {
+		log.Errorf("[AIAssistant] record log failed: %v", err)
+	}
+	s.pruneLogs()
+}
+
+func (s *AIAssistantService) pruneLogs() {
+	cutoff := time.Now().Add(-aiAssistantLogRetention)
+	if err := s.app.Dao().DB().Where("created_at < ? OR status = ?", cutoff, "skipped").Delete(&entity.AIAssistantLog{}).Error; err != nil {
+		log.Errorf("[AIAssistant] prune logs failed: %v", err)
+	}
+}
+
+func fetchPageText(client *http.Client, pageURL string, maxChars int) (string, error) {
+	return fetchPageTextWithSelectors(client, pageURL, maxChars, "", nil)
+}
+
+func fetchPageTextWithSelectors(client *http.Client, pageURL string, maxChars int, contentSelector string, excludeSelectors []string) (string, error) {
+	if pageURL == "" {
+		return "", nil
+	}
+	if maxChars <= 0 {
+		maxChars = 12000
+	}
+	if maxChars > 50000 {
+		maxChars = 50000
+	}
+	if !strings.HasPrefix(pageURL, "http://") && !strings.HasPrefix(pageURL, "https://") {
+		return "", nil
+	}
+	if client == nil {
+		client = http.DefaultClient
+	}
+	resp, err := client.Get(pageURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("page returned HTTP %d", resp.StatusCode)
+	}
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+	if err != nil {
+		return "", err
+	}
+	doc, err := html.Parse(bytes.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+	root := doc
+	if strings.TrimSpace(contentSelector) != "" {
+		matches := findHTMLNodes(doc, contentSelector)
+		if len(matches) == 0 {
+			return "", nil
+		}
+		root = matches[0]
+	}
+	excludes := make([]string, 0, len(excludeSelectors)+3)
+	excludes = append(excludes, "script", "style", "noscript")
+	for _, selector := range excludeSelectors {
+		if strings.TrimSpace(selector) != "" {
+			excludes = append(excludes, selector)
+		}
+	}
+	var b strings.Builder
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if n.Type == html.ElementNode {
+			for _, selector := range excludes {
+				if matchesHTMLSelector(n, selector) {
+					return
+				}
+			}
+		}
+		if n.Type == html.TextNode {
+			b.WriteString(n.Data)
+			b.WriteByte(' ')
+		}
+		for child := n.FirstChild; child != nil; child = child.NextSibling {
+			walk(child)
+		}
+	}
+	walk(root)
+	return limitRunes(strings.Join(strings.Fields(b.String()), " "), maxChars), nil
+}
+
+// findHTMLNodes implements the small, predictable selector subset useful for
+// article extraction: comma groups, descendant selectors, tag, #id and .class.
+func findHTMLNodes(root *html.Node, selector string) []*html.Node {
+	var result []*html.Node
+	for _, group := range strings.Split(selector, ",") {
+		parts := strings.Fields(strings.TrimSpace(group))
+		if len(parts) == 0 {
+			continue
+		}
+		var walk func(*html.Node)
+		walk = func(n *html.Node) {
+			if n.Type == html.ElementNode && matchesSelectorChain(n, parts) {
+				result = append(result, n)
+			}
+			for child := n.FirstChild; child != nil; child = child.NextSibling {
+				walk(child)
+			}
+		}
+		walk(root)
+	}
+	return result
+}
+
+func matchesHTMLSelector(n *html.Node, selector string) bool {
+	parts := strings.Fields(strings.TrimSpace(selector))
+	if len(parts) == 0 {
+		return false
+	}
+	for _, group := range strings.Split(selector, ",") {
+		parts = strings.Fields(strings.TrimSpace(group))
+		if len(parts) > 0 && matchesSelectorChain(n, parts) {
+			return true
+		}
+	}
+	return false
+}
+
+func matchesSelectorChain(n *html.Node, parts []string) bool {
+	if !matchesSimpleSelector(n, parts[len(parts)-1]) {
+		return false
+	}
+	ancestor := n.Parent
+	for i := len(parts) - 2; i >= 0; i-- {
+		for ancestor != nil && (ancestor.Type != html.ElementNode || !matchesSimpleSelector(ancestor, parts[i])) {
+			ancestor = ancestor.Parent
+		}
+		if ancestor == nil {
+			return false
+		}
+		ancestor = ancestor.Parent
+	}
+	return true
+}
+
+func matchesSimpleSelector(n *html.Node, selector string) bool {
+	selector = strings.TrimSpace(selector)
+	if selector == "" || n == nil || n.Type != html.ElementNode {
+		return false
+	}
+	tag := selector
+	if i := strings.IndexAny(tag, "#."); i >= 0 {
+		tag = tag[:i]
+	}
+	if tag != "" && tag != "*" && !strings.EqualFold(tag, n.Data) {
+		return false
+	}
+	attrs := make(map[string]string, len(n.Attr))
+	for _, attr := range n.Attr {
+		attrs[strings.ToLower(attr.Key)] = attr.Val
+	}
+	if id := selectorPart(selector, '#'); id != "" && attrs["id"] != id {
+		return false
+	}
+	if classes := selectorParts(selector, '.'); len(classes) > 0 {
+		present := map[string]bool{}
+		for _, class := range strings.Fields(attrs["class"]) {
+			present[class] = true
+		}
+		for _, class := range classes {
+			if !present[class] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func selectorPart(selector string, prefix byte) string {
+	parts := selectorParts(selector, prefix)
+	if len(parts) == 0 {
+		return ""
+	}
+	return parts[0]
+}
+
+func selectorParts(selector string, prefix byte) []string {
+	var result []string
+	for _, part := range strings.Split(selector, string(prefix))[1:] {
+		part = strings.Trim(part, "#.")
+		if i := strings.IndexAny(part, "#."); i >= 0 {
+			part = part[:i]
+		}
+		if part != "" {
+			result = append(result, part)
+		}
+	}
+	return result
+}
+
+func limitRunes(value string, max int) string {
+	value = strings.TrimSpace(value)
+	if max <= 0 || utf8.RuneCountInString(value) <= max {
+		return value
+	}
+	runes := []rune(value)
+	return strings.TrimSpace(string(runes[:max]))
+}
+
+func (s *AIAssistantService) timeout() time.Duration {
+	seconds := s.app.Conf().AIAssistant.TimeoutSeconds
+	if seconds <= 0 {
+		seconds = 30
+	}
+	if seconds > 120 {
+		seconds = 120
+	}
+	return time.Duration(seconds) * time.Second
+}

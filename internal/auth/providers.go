@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/artalkjs/artalk/v2/internal/auth/generic"
 	"github.com/artalkjs/artalk/v2/internal/config"
 	"github.com/artalkjs/artalk/v2/internal/log"
 	"github.com/markbates/goth"
@@ -135,6 +136,24 @@ func GetProviders(conf *config.Config) []goth.Provider {
 		provider, err := newOktaProvider(oktaConf.Issuer, oktaConf.ClientID, oktaConf.ClientSecret, callbackURL("okta"))
 		if err != nil {
 			log.Error("[SocialLogin] ", err)
+		} else {
+			providers = append(providers, provider)
+		}
+	}
+
+	// Generic OAuth 2.0 Authorization Code provider.
+	if genericConf := conf.Auth.Generic; genericConf.Enabled {
+		provider, err := generic.New(generic.Options{
+			ClientID:     genericConf.ClientID,
+			ClientSecret: genericConf.ClientSecret,
+			CallbackURL:  callbackURL(generic.ProviderName),
+			AuthorizeURL: genericConf.AuthorizeURL,
+			TokenURL:     genericConf.TokenURL,
+			UserInfoURL:  genericConf.UserInfoURL,
+			Scopes:       genericConf.Scopes,
+		})
+		if err != nil {
+			log.Errorf("[SocialLogin] Invalid generic OAuth configuration: %v", err)
 		} else {
 			providers = append(providers, provider)
 		}

@@ -10,11 +10,13 @@ type SiteScopeType string
 const (
 	SiteAll     SiteScopeType = "all"
 	SitePending SiteScopeType = "pending"
+	SiteAI      SiteScopeType = "ai"
 )
 
 type SitePayload struct {
-	Type     SiteScopeType
-	SiteName string
+	Type           SiteScopeType
+	SiteName       string
+	AIAssistantIDs []uint
 }
 
 // Site Scope (for message center & admin)
@@ -36,6 +38,12 @@ func SiteScopeQuery(payload SitePayload, user entity.User) func(liteDB) liteDB {
 			},
 			SitePending: func(d liteDB) liteDB {
 				return q.Where("is_pending = ?", true)
+			},
+			SiteAI: func(d liteDB) liteDB {
+				if len(payload.AIAssistantIDs) == 0 {
+					return q.Where("1 = 0")
+				}
+				return q.Where("user_id IN ?", payload.AIAssistantIDs)
 			},
 		}
 

@@ -8,8 +8,12 @@ import (
 )
 
 // Find all nested children (for nested mode)
-func findNestedChildren(dao *dao.Dao, comments []entity.CookedComment, commonScopes []func(*gorm.DB) *gorm.DB) []entity.CookedComment {
+func findNestedChildren(dao *dao.Dao, comments []entity.CookedComment, commonScopes []func(*gorm.DB) *gorm.DB, extraRootIDs []uint) []entity.CookedComment {
 	allRootIDs := lo.Map(comments, func(c entity.CookedComment, _ int) uint { return c.ID })
+	allRootIDs = append(allRootIDs, extraRootIDs...)
+	if len(allRootIDs) == 0 {
+		return comments
+	}
 	// TODO: Add pagination for nested mode
 	// 	All children will be loaded at once without pagination, which may cause performance issues.
 	// 	The backend will response all to the client-side, and render by the client-side itself.

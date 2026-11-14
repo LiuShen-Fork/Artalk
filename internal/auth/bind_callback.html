@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artalk Account Binding</title>
+    <meta name="referrer" content="no-referrer" />
+    <script>
+      var callbackOrigin = ''
+      var result = {
+        ok: {{.ok}},
+        provider: '{{.provider}}',
+        message: '{{.message}}',
+      }
+
+      window.addEventListener('message', function (e) {
+        if (e.source === window.opener && e.data && e.data.type === 'ATK_BIND' && !callbackOrigin) {
+          callbackOrigin = e.origin
+          checkAndCallback()
+        }
+      })
+
+      function checkAndCallback() {
+        if (!callbackOrigin) return
+
+        // The sidebar iframe is served by this same origin. Same-origin
+        // postMessage is safe without consulting the site trust list.
+        if (callbackOrigin === window.location.origin) {
+          finish()
+          return
+        }
+
+        fetch('../../conf/domain?url=' + encodeURIComponent(callbackOrigin))
+          .then(function (res) {
+            return res.json()
+          })
+          .then(function (data) {
+            if (data.is_trusted === true) finish()
+            else fail('Untrusted callback origin')
+          })
+          .catch(function () {
+            fail('Unable to verify the callback origin')
+          })
+      }
+
+      function finish() {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'ATK_BIND_CALLBACK', payload: result }, callbackOrigin)
+        }
+        document.body.innerHTML =
+          '<div class="card ' +
+          (result.ok ? 'ok' : 'bad') +
+          '"><h1>' +
+          (result.ok ? 'Account linked' : 'Binding failed') +
+          '</h1><p>' +
+          escapeHTML(result.message || '') +
+          '</p><p class="hint">You can close this window.</p></div>'
+        if (window.opener) window.close()
+      }
+
+      function fail(message) {
+        result.ok = false
+        result.message = message
+        finish()
+      }
+
+      function escapeHTML(value) {
+        var div = document.createElement('div')
+        div.textContent = value
+        return div.innerHTML
+      }
+
+      window.addEventListener('load', function () {
+        if (result.ok) {
+          document.body.innerHTML =
+            '<div class="card ok"><h1>Account linked</h1><p>Returning to your console...</p></div>'
+        }
+      })
+    </script>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #f2f5f4;
+        color: #13211c;
+        font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      }
+      .card {
+        width: min(360px, calc(100% - 40px));
+        padding: 28px;
+        border: 1px solid #dfe8e4;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 24px 60px -34px rgba(18, 46, 38, 0.45);
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 19px;
+      }
+      p {
+        margin: 0;
+        color: #5d6d67;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .hint {
+        margin-top: 12px;
+        color: #8a9a93;
+      }
+      .ok h1 {
+        color: #0f766e;
+      }
+      .bad h1 {
+        color: #b23b3b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card"><h1>Completing account linking...</h1></div>
+  </body>
+</html>

@@ -18,6 +18,10 @@ site_default: 默认站点
 admin_users:
   - name: admin_in_conf
     email: admin_in_conf@example.org
+    # Deliberately written without a scheme: an admin typing a homepage rarely
+    # types the "https://", and the link has to be normalized before it reaches
+    # the database. See TestAdminLinkFromConfIsNormalized.
+    link: admin_in_conf.example.org
     password: "123456"
     badge_name: 管理员
     badge_color: "#FF6C00"

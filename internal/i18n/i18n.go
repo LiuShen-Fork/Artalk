@@ -12,13 +12,13 @@ var Locales map[string]string
 
 func Load(locale string, localeProvider func(locale string) ([]byte, error)) {
 	if locale == "" { // default lang
-		locale = "en"
+		locale = "zh-CN"
 	}
 
 	yamlStr, err := localeProvider(locale)
 	if err != nil {
-		log.Warn("invalid locale config please check, now it is set to `en`")
-		yamlStr, _ = localeProvider("en")
+		log.Warn("invalid locale config please check, now it is set to `zh-CN`")
+		yamlStr, _ = localeProvider("zh-CN")
 	}
 
 	clear(Locales) // clear map before unmarshal

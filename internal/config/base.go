@@ -1,6 +1,6 @@
 package config
 
-//go:generate go run ./meta/gen --format go --locale en --pkg config -o ./cache.go
+//go:generate go run ./meta/gen --format go --locale zh-CN --pkg config -o ./cache.go
 
 import (
 	"fmt"
@@ -112,6 +112,66 @@ func (conf *Config) normalPatch() {
 		conf.AdminNotify.NoiseMode = true
 	}
 
+	// AI 审核兼容旧配置，避免启用后因缺少新字段而直接请求失败
+	if conf.Moderator.AI.Enabled {
+		if strings.TrimSpace(string(conf.Moderator.AI.APIType)) == "" {
+			conf.Moderator.AI.APIType = AIAPITypeResponses
+		}
+		if strings.TrimSpace(conf.Moderator.AI.BaseURL) == "" {
+			conf.Moderator.AI.BaseURL = "https://api.openai.com/v1"
+		}
+		if strings.TrimSpace(conf.Moderator.AI.Prompt) == "" {
+			conf.Moderator.AI.Prompt = DefaultAIModerationPrompt
+		}
+		if conf.Moderator.AI.DisableThinking == nil {
+			disableThinking := true
+			conf.Moderator.AI.DisableThinking = &disableThinking
+		}
+	}
+
+	// AI comment assistant defaults. These also apply when it is enabled via
+	// environment variables without a complete YAML section.
+	if strings.TrimSpace(conf.AIAssistant.Name) == "" {
+		conf.AIAssistant.Name = "清羽酱"
+	}
+	if strings.TrimSpace(conf.AIAssistant.Email) == "" {
+		conf.AIAssistant.Email = "ai-assistant@example.com"
+	}
+	if strings.TrimSpace(string(conf.AIAssistant.APIType)) == "" {
+		conf.AIAssistant.APIType = AIAPITypeResponses
+	}
+	if strings.TrimSpace(conf.AIAssistant.BaseURL) == "" {
+		conf.AIAssistant.BaseURL = "https://api.openai.com/v1"
+	}
+	if conf.AIAssistant.MaxTokens == 0 {
+		conf.AIAssistant.MaxTokens = 512
+	}
+	if conf.AIAssistant.DailyLimit == 0 {
+		conf.AIAssistant.DailyLimit = 40
+	}
+	if conf.AIAssistant.UserHourlyLimit == 0 {
+		conf.AIAssistant.UserHourlyLimit = 5
+	}
+	if strings.TrimSpace(conf.AIAssistant.RateLimitMessage) == "" {
+		conf.AIAssistant.RateLimitMessage = "当前小助手累啦，晚点再来看看吧~"
+	}
+	if conf.AIAssistant.MaxReplyChars == 0 {
+		conf.AIAssistant.MaxReplyChars = 300
+	}
+	if conf.AIAssistant.MaxContextComments == 0 {
+		conf.AIAssistant.MaxContextComments = 12
+	}
+	if conf.AIAssistant.MaxPageChars == 0 {
+		conf.AIAssistant.MaxPageChars = 12000
+	}
+	if conf.AIAssistant.TimeoutSeconds == 0 {
+		conf.AIAssistant.TimeoutSeconds = 30
+	}
+	if conf.AIAssistant.DisableThinking == nil {
+		disableThinking := true
+		conf.AIAssistant.DisableThinking = &disableThinking
+	}
+
 	// 默认将验证码类型设置为 image
 	if strings.TrimSpace(string(conf.Captcha.CaptchaType)) == "" {
 		conf.Captcha.CaptchaType = TypeImage
@@ -151,10 +211,9 @@ func (conf *Config) normalPatch() {
 // 多语言配置修补
 func (conf *Config) i18nPatch() {
 	if conf.Locale == "" {
-		conf.Locale = "en"
+		conf.Locale = "zh-CN"
 
-		// zh-CN default patch (for 历史兼容)
-		// 判断配置文件中是否有中文，若有中文则将 locale 设置为 zh-CN
+		// Keep old configuration files without an explicit locale in Simplified Chinese.
 		if confRaw, err := os.ReadFile(conf.GetCfgFileLoaded()); err == nil {
 			containsHan := false
 			for _, runeValue := range string(confRaw) {
@@ -205,6 +264,12 @@ func (conf *Config) ipRegionPatch() {
 		log.Warn("未找到 IP 数据库文件：" + strconv.Quote(conf.IPRegion.DBPath) + "，IP 属地功能已禁用，" +
 			"参考链接：https://artalk.js.org/guide/frontend/ip-region.html")
 		conf.IPRegion.Enabled = false
+	}
+
+	// IPv6 数据库为可选配置；未配置时保持原有单库查询逻辑。
+	if strings.TrimSpace(conf.IPRegion.DBPathV6) != "" && !utils.CheckFileExist(conf.IPRegion.DBPathV6) {
+		log.Warn("未找到 IPv6 IP 数据库文件：" + strconv.Quote(conf.IPRegion.DBPathV6) + "，IPv6 IP 属地解析已禁用")
+		conf.IPRegion.DBPathV6 = ""
 	}
 
 	// 默认精确到省

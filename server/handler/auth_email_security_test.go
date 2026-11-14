@@ -158,10 +158,14 @@ func TestEmailCodeResendAfterExpiry(t *testing.T) {
 	handler.AuthEmailSend(app.App, router)
 	handler.AuthEmailLogin(app.App, router)
 	user := app.Dao().FindUserByID(1001)
+	// The package shares a database file; remove challenges created by other
+	// tests so their cooldown does not affect this resend scenario.
+	require.NoError(t, app.Dao().DB().Unscoped().Where("LOWER(email) = LOWER(?)", user.Email).
+		Delete(&entity.UserEmailVerify{}).Error)
 	challenge := entity.UserEmailVerify{Email: strings.ToUpper(user.Email), Code: "654321", Attempts: 5, ExpiresAt: time.Now().Add(-time.Minute)}
 	require.NoError(t, app.Dao().DB().Create(&challenge).Error)
 	require.NoError(t, app.Dao().DB().Model(&challenge).UpdateColumn("updated_at", time.Now().Add(-6*time.Minute)).Error)
-	resp, err := securityRequest(router, "POST", "/auth/email/send", map[string]string{"email": user.Email}, "", "192.0.2.1")
+	resp, err := securityRequest(router, "POST", "/auth/email/send", map[string]string{"email": user.Email}, "", "192.0.2.101")
 	require.NoError(t, err)
 	resp.Body.Close()
 	require.Equal(t, 200, resp.StatusCode)
@@ -175,7 +179,7 @@ func TestEmailCodeResendAfterExpiry(t *testing.T) {
 	resp.Body.Close()
 	require.Equal(t, 200, resp.StatusCode)
 	// Consumption must not remove the one-minute issuance limit.
-	resp, err = securityRequest(router, "POST", "/auth/email/send", map[string]string{"email": user.Email}, "", "192.0.2.2")
+	resp, err = securityRequest(router, "POST", "/auth/email/send", map[string]string{"email": user.Email}, "", "192.0.2.102")
 	require.NoError(t, err)
 	resp.Body.Close()
 	require.Equal(t, 400, resp.StatusCode)
@@ -227,6 +231,8 @@ func TestEmailCodeResendCannotOverwriteConcurrentLockout(t *testing.T) {
 	router.Use(limiter.ActionLimitMiddleware(app.App, limiter.ActionLimitConf{}))
 	handler.AuthEmailSend(app.App, router)
 	challenge := entity.UserEmailVerify{Email: "resend@example.com", Code: "654321", Attempts: 4, ExpiresAt: time.Now().Add(5 * time.Minute)}
+	require.NoError(t, app.Dao().DB().Unscoped().Where("LOWER(email) = LOWER(?)", challenge.Email).
+		Delete(&entity.UserEmailVerify{}).Error)
 	require.NoError(t, app.Dao().DB().Create(&challenge).Error)
 	require.NoError(t, app.Dao().DB().Model(&challenge).UpdateColumn("updated_at", time.Now().Add(-2*time.Minute)).Error)
 	// Inject the fifth failure between the cooldown read and resend write.
@@ -239,7 +245,7 @@ func TestEmailCodeResendCannotOverwriteConcurrentLockout(t *testing.T) {
 		require.NoError(t, app.Dao().DB().Model(&challenge).UpdateColumn("attempts", 5).Error)
 	}))
 	defer app.Dao().DB().Callback().Update().Remove(callback)
-	resp, err := securityRequest(router, "POST", "/auth/email/send", map[string]string{"email": challenge.Email}, "", "192.0.2.1")
+	resp, err := securityRequest(router, "POST", "/auth/email/send", map[string]string{"email": challenge.Email}, "", "192.0.2.111")
 	require.NoError(t, err)
 	resp.Body.Close()
 	require.Equal(t, 400, resp.StatusCode)

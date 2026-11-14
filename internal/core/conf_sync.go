@@ -2,9 +2,11 @@ package core
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/internal/log"
+	"github.com/artalkjs/artalk/v2/internal/utils"
 )
 
 func (app *App) syncFromConf() {
@@ -24,12 +26,24 @@ func (app *App) syncFromConf() {
 		if admin.ReceiveEmail != nil {
 			receiveEmail = *admin.ReceiveEmail
 		}
+
+		// A link written here bypasses every handler that validates one, so it
+		// must be normalized before it reaches the database. Otherwise an admin
+		// who wrote a bare host gets a link the update endpoints refuse, and
+		// approving one of their own comments fails with a 400.
+		adminLink := strings.TrimSpace(admin.Link)
+		link := utils.NormalizeURL(adminLink)
+		if link != adminLink {
+			log.Warn("Admin ", strconv.Quote(admin.Name), " has a link that is not a valid URL: ",
+				strconv.Quote(adminLink), ", using ", strconv.Quote(link), " instead")
+		}
+
 		if user.IsEmpty() {
 			// create
 			user = entity.User{
 				Name:         admin.Name,
 				Email:        admin.Email,
-				Link:         admin.Link,
+				Link:         link,
 				Password:     admin.Password,
 				BadgeName:    admin.BadgeName,
 				BadgeColor:   admin.BadgeColor,
@@ -42,7 +56,7 @@ func (app *App) syncFromConf() {
 			// update
 			user.Name = admin.Name
 			user.Email = admin.Email
-			user.Link = admin.Link
+			user.Link = link
 			user.Password = admin.Password
 			user.BadgeName = admin.BadgeName
 			user.BadgeColor = admin.BadgeColor

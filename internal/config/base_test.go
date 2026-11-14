@@ -8,6 +8,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/artalkjs/artalk/v2/internal/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestI18nPatch(t *testing.T) {
@@ -19,7 +20,7 @@ func TestI18nPatch(t *testing.T) {
 		})
 	}
 
-	test("", "en")
+	test("", "zh-CN")
 	test("en", "en")
 	test("en-US", "en")
 
@@ -32,6 +33,60 @@ func TestI18nPatch(t *testing.T) {
 		test("ZH-cn", "zh-CN")
 		test("EN", "en")
 	})
+}
+
+func TestAIDisableThinkingDefault(t *testing.T) {
+	t.Run("defaults to disabled", func(t *testing.T) {
+		conf := &Config{
+			Moderator: ModeratorConf{
+				AI: AIAntispamConf{Enabled: true},
+			},
+		}
+		conf.historyPatch()
+		conf.normalPatch()
+
+		require.NotNil(t, conf.Moderator.AI.DisableThinking)
+		assert.True(t, *conf.Moderator.AI.DisableThinking)
+	})
+
+	t.Run("explicitly enables thinking", func(t *testing.T) {
+		disableThinking := false
+		conf := &Config{
+			Moderator: ModeratorConf{
+				AI: AIAntispamConf{
+					Enabled:         true,
+					DisableThinking: &disableThinking,
+				},
+			},
+		}
+		conf.historyPatch()
+		conf.normalPatch()
+
+		require.NotNil(t, conf.Moderator.AI.DisableThinking)
+		assert.False(t, *conf.Moderator.AI.DisableThinking)
+	})
+}
+
+func TestAIAssistantDefaults(t *testing.T) {
+	conf := &Config{}
+	conf.historyPatch()
+	conf.normalPatch()
+
+	assert.Equal(t, "\u6e05\u7fbd\u9171", conf.AIAssistant.Name)
+	assert.Equal(t, "ai-assistant@example.com", conf.AIAssistant.Email)
+	assert.Equal(t, AIAPITypeResponses, conf.AIAssistant.APIType)
+	assert.Equal(t, "https://api.openai.com/v1", conf.AIAssistant.BaseURL)
+	assert.Equal(t, 512, conf.AIAssistant.MaxTokens)
+	assert.Equal(t, 40, conf.AIAssistant.DailyLimit)
+	assert.Equal(t, 5, conf.AIAssistant.UserHourlyLimit)
+	assert.Equal(t, "当前小助手累啦，晚点再来看看吧~", conf.AIAssistant.RateLimitMessage)
+	assert.Equal(t, 300, conf.AIAssistant.MaxReplyChars)
+	assert.Equal(t, 12, conf.AIAssistant.MaxContextComments)
+	assert.Equal(t, 12000, conf.AIAssistant.MaxPageChars)
+	assert.Equal(t, 30, conf.AIAssistant.TimeoutSeconds)
+	if assert.NotNil(t, conf.AIAssistant.DisableThinking) {
+		assert.True(t, *conf.AIAssistant.DisableThinking)
+	}
 }
 
 func mockCheckFileExist(mockFiles map[string]bool) func(string) bool {

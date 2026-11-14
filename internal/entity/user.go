@@ -13,15 +13,18 @@ import (
 
 type User struct {
 	gorm.Model
-	Name           string `gorm:"index;size:255"`
-	Email          string `gorm:"index;size:255"`
-	Link           string
-	Password       string
-	BadgeName      string
-	BadgeColor     string
-	LastIP         string
-	LastUA         string
-	IsAdmin        bool
+	Name       string `gorm:"index;size:255"`
+	Email      string `gorm:"index;size:255"`
+	Link       string
+	Password   string
+	BadgeName  string
+	BadgeColor string
+	LastIP     string
+	LastUA     string
+	IsAdmin    bool
+	// IsAIAssistant marks the dedicated user identity used by the AI comment assistant.
+	// It is separate from Email so an assistant may share an address with another user.
+	IsAIAssistant  bool
 	ReceiveEmail   bool `gorm:"default:true"`
 	TokenValidFrom sql.NullTime
 

@@ -41,6 +41,8 @@ Thumbs.db
 /sysroot
 .history
 
+.vscode/
+
 # Logs
 logs
 *.log
