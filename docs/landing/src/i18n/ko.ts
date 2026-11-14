@@ -64,6 +64,7 @@ export const ko: MessageSchema = {
   func_email_aliyun: '알리바바 클라우드 이메일',
   func_captcha_geetest: 'Geetest',
   func_message_pusher_lark: 'Lark',
+  func_message_pusher_wecom: 'WeCom',
   func_message_pusher_dingtalk: 'DingTalk',
   func_moderator_aliyun: '알리바바 클라우드',
   func_moderator_tencent: '텐센트 클라우드',
