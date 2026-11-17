@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"strings"
 	"time"
 
 	"github.com/artalkjs/artalk/v2/internal/core"
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/server/common"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 type SecurityKindCount struct {
@@ -101,9 +99,9 @@ func SecurityReport(app *core.App, router fiber.Router) {
 
 		byDay := []SecurityDayCount{}
 		db.Model(&entity.SecurityEvent{}).
-			Select(securityDateGroupExpr(db)+" as date, count(*) as count").
+			Select(dayGroupExpr(db)+" as date, count(*) as count").
 			Where("created_at >= ?", since).
-			Group(securityDateGroupExpr(db)).Order("date ASC").Scan(&byDay)
+			Group(dayGroupExpr(db)).Order("date ASC").Scan(&byDay)
 		for i := range byDay {
 			byDay[i].Date = normalizeDayString(byDay[i].Date)
 		}
@@ -139,24 +137,3 @@ func SecurityReport(app *core.App, router fiber.Router) {
 	}))
 }
 
-// securityDateGroupExpr 按天分组的 SQL 表达式（兼容不同数据库）
-func securityDateGroupExpr(db *gorm.DB) string {
-	switch db.Dialector.Name() {
-	case "sqlite":
-		return "strftime('%Y-%m-%d', created_at)"
-	case "postgres":
-		return "to_char(created_at, 'YYYY-MM-DD')"
-	default: // mysql 等
-		return "DATE(created_at)"
-	}
-}
-
-// normalizeDayString 部分驱动会把日期表达式解析成 time.Time，
-// 经 database/sql 转成字符串后带上时间部分（如 2026-11-17T00:00:00Z），这里统一成 YYYY-MM-DD
-func normalizeDayString(s string) string {
-	s = strings.TrimSpace(s)
-	if len(s) >= 10 && s[4] == '-' && s[7] == '-' {
-		return s[:10]
-	}
-	return s
-}

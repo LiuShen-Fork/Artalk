@@ -114,6 +114,7 @@ func Serve(app *core.App) (*fiber.App, error) {
 		h.UserIdentityList(app, api)
 		h.UserIdentityBind(app, api)
 		h.UserIdentityUnbind(app, api)
+		h.UserActivity(app, api)
 
 		// admin
 		admin(app, api)
