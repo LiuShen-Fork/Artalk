@@ -66,6 +66,12 @@ export const AdminPages: Record<string, PageItem> = {
     icon: SecurityIcon,
     hideOnMobile: true,
   },
+  account: {
+    label: 'account',
+    link: '/account',
+    icon: SecurityIcon,
+    hideOnMobile: true,
+  },
 }
 
 /**
@@ -76,8 +82,8 @@ export const UserPages: Record<string, PageItem> = {
     // Only show comments page for user
     ...AdminPages.comments,
   },
-  security: {
-    ...AdminPages.security,
+  account: {
+    ...AdminPages.account,
   },
 }
 

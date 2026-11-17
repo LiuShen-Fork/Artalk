@@ -1,7 +1,7 @@
 <route lang="json">
 {
   "meta": {
-    "title": "Security - Artalk Sidebar"
+    "title": "Account - Artalk Sidebar"
   }
 }
 </route>
@@ -266,7 +266,7 @@ function onPasswordCodeError(message: string) {
 
 <template>
   <div class="security admin-page">
-    <AdminPageHeader :title="t('security')" :description="t('securityDesc')" />
+    <AdminPageHeader :title="t('account')" :description="t('securityDesc')" />
 
     <div v-if="loading" class="admin-panel security-state">
       <span class="state-spinner" />
