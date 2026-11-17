@@ -213,6 +213,38 @@ captcha:
     api_endpoint: ""
 
 # Yükleme
+# Güvenlik (IP engelleme, hız sınırı, captcha, saldırı raporu)
+security:
+  # Korumayı etkinleştir (hız sınırı, IP engelleme, captcha)
+  enabled: false
+  # Sınır aşıldığında yapılacak işlem ["captcha", "reject", "ban"]
+  action: "captcha"
+  # Her pencere için izin verilen yazma isteği sayısı (0 = sınırsız)
+  rate_limit:
+    ip:
+      minute: 0
+      hour: 0
+      day: 0
+    global:
+      minute: 0
+      hour: 0
+      day: 0
+  # Otomatik engelleme: pencere içinde N kez sınır aşılırsa IP engellenir
+  auto_ban:
+    enabled: false
+    threshold: 5
+    # Sayım penceresi (birim: s)
+    window: 3600
+    # Engelleme süresi (birim: s, -1 = kalıcı)
+    duration: 86400
+  # Statik kara liste / beyaz liste (IP veya CIDR)
+  blacklist: []
+  whitelist: []
+  # Güvenlik olaylarının saklanma süresi (gün)
+  event_retention_days: 90
+  # Korumadan hariç tutulan yollar (son ek eşleşmesi)
+  exclude_paths: []
+
 img_upload:
   # Resim yüklemeyi etkinleştir
   enabled: true

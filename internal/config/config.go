@@ -26,6 +26,7 @@ type Config struct {
 	Moderator      ModeratorConf          `koanf:"moderator" json:"moderator"`             // 评论审查
 	AIAssistant    AIAssistantConf        `koanf:"ai_assistant" json:"ai_assistant"`       // AI 评论助手
 	Captcha        CaptchaConf            `koanf:"captcha" json:"captcha"`                 // 验证码
+	Security       SecurityConf           `koanf:"security" json:"security"`               // 安全防护（限频、封禁）
 	Email          EmailConf              `koanf:"email" json:"email"`                     // 邮箱提醒
 	IPRegion       IPRegionConf           `koanf:"ip_region" json:"ip_region"`             // IP 属地展示
 	ImgUpload      ImgUploadConf          `koanf:"img_upload" json:"img_upload"`           // 图片上传

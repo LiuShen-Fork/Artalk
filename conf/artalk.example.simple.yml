@@ -101,6 +101,28 @@ captcha:
     key_id: ""
     secret_key: ""
     api_endpoint: ""
+security:
+  enabled: false
+  action: captcha
+  rate_limit:
+    ip:
+      minute: 0
+      hour: 0
+      day: 0
+    global:
+      minute: 0
+      hour: 0
+      day: 0
+  auto_ban:
+    enabled: false
+    threshold: 5
+    window: 3600
+    duration: 86400
+  blacklist: []
+  whitelist: []
+  event_retention_days: 90
+  exclude_paths: []
+
 img_upload:
   enabled: true
   path: ./data/artalk-img/

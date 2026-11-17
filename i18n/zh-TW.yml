@@ -1,3 +1,4 @@
+"Access denied": "拒絕訪問"
 "Account": "賬戶"
 "Admin": "管理員"
 "Admin access required": "需要管理員權限"
@@ -60,6 +61,7 @@
 "Target Site": "目標站點"
 "Task executing in background, please wait...": "任務已開始在後台執行，請稍後..."
 "Task in progress, please wait a moment": "任務執行中，請稍後"
+"Too many requests, please try again later": "請求過於頻繁，請稍後再試"
 "Type": "類型"
 "URL Resolver": "URL 解析器"
 "Unspecified": "未指定"

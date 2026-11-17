@@ -1,3 +1,4 @@
+"Access denied": "Доступ запрещён"
 "Account": "Аккаунт"
 "Admin": "Администратор"
 "Admin access required": "Требуется доступ администратора"
@@ -60,6 +61,7 @@
 "Target Site": "Целевой сайт"
 "Task executing in background, please wait...": "Задача выполняется в фоновом режиме, подождите..."
 "Task in progress, please wait a moment": "Выполняется задача, пожалуйста, подождите..."
+"Too many requests, please try again later": "Слишком много запросов, повторите попытку позже"
 "Type": "Тип"
 "URL Resolver": "Разрешитель URL"
 "Unspecified": "Не указано"

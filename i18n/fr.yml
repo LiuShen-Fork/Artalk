@@ -1,3 +1,4 @@
+"Access denied": "Accès refusé"
 "Account": "Compte"
 "Admin": "Administrateur"
 "Admin access required": "Accès administrateur requis"
@@ -60,6 +61,7 @@
 "Target Site": "Site cible"
 "Task executing in background, please wait...": "Tâche exécutée en arrière-plan, veuillez patienter..."
 "Task in progress, please wait a moment": "Tâche en cours, veuillez patienter un instant"
+"Too many requests, please try again later": "Trop de requêtes, veuillez réessayer plus tard"
 "Type": "Type"
 "URL Resolver": "Résolveur d'URL"
 "Unspecified": "Non spécifié"

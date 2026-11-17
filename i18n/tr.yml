@@ -1,3 +1,4 @@
+"Access denied": "Erişim reddedildi"
 "Account": "Hesap"
 "Admin": "Yönetici"
 "Admin access required": "Yönetici erişimi gerekli"
@@ -60,6 +61,7 @@
 "Target Site": "Hedef Site"
 "Task executing in background, please wait...": "İşlem arka planda yürütülüyor, lütfen bekleyin..."
 "Task in progress, please wait a moment": "İşlem devam ediyor, lütfen biraz bekleyin"
+"Too many requests, please try again later": "Çok fazla istek, lütfen daha sonra tekrar deneyin"
 "Type": "Tür"
 "URL Resolver": "URL Çözücü"
 "Unspecified": "Belirtilmemiş"

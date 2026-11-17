@@ -41,6 +41,12 @@ func LimiterGuard(app *core.App, handler fiber.Handler) fiber.Handler {
 			return handler(c)
 		}
 
+		// 启用统一安全防护后，限频与验证码由 security 中间件处理，
+		// 这里直接放行，避免同一请求被两套逻辑重复计数与挑战。
+		if app.Conf().Security.Enabled {
+			return handler(c)
+		}
+
 		// 管理员直接忽略
 		if CheckIsAdminReq(app, c) {
 			return handler(c)

@@ -226,6 +226,43 @@ ip_region:
   # 显示精度 ["province", "city", "country"]
   precision: province
 
+# 安全防护 (IP 封禁、限频、验证码挑战、攻击报表)
+security:
+  # 启用安全防护 (限频、IP 封禁、验证码挑战)
+  enabled: false
+  # 超出频率限制后的处置 ["captcha", "reject", "ban"]
+  #   captcha: 要求客户端完成验证码
+  #   reject:  返回 429 与 Retry-After 响应头
+  #   ban:     将该 IP 加入封禁名单
+  action: "captcha"
+  # 频率限制：每个窗口内允许的写操作次数 (0 = 不限制)
+  # 先检查单 IP 限额，再检查全局限额。
+  rate_limit:
+    ip:
+      minute: 0
+      hour: 0
+      day: 0
+    global:
+      minute: 0
+      hour: 0
+      day: 0
+  # 自动封禁：在统计窗口内超限 N 次后自动封禁该 IP
+  auto_ban:
+    enabled: false
+    threshold: 5
+    # 统计窗口 (单位：s)
+    window: 3600
+    # 封禁时长 (单位：s, -1 为永久)
+    duration: 86400
+  # 静态黑名单 / 白名单 (IP 或 CIDR 网段，如 "1.2.3.4"、"10.0.0.0/8")
+  # 白名单内的 IP 不会被限频，也不会被封禁。
+  blacklist: []
+  whitelist: []
+  # 安全事件保留天数，过期自动清理
+  event_retention_days: 90
+  # 从安全防护中排除的路径 (按后缀匹配)
+  exclude_paths: []
+
 # 图片上传
 img_upload:
   # 启用图片上传

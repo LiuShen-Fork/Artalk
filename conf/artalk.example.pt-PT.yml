@@ -152,6 +152,42 @@ captcha:
     secret_key: ""
     api_endpoint: ""
 
+# Segurança (bloqueio de IP, limite de requisições, captcha, relatório)
+security:
+  # Ativar a proteção (limite de requisições, bloqueio de IP, captcha)
+  enabled: false
+  # Ação quando o limite é excedido ["captcha", "reject", "ban"]
+  #   captcha: pedir a verificação do captcha
+  #   reject:  responder 429 com o cabeçalho Retry-After
+  #   ban:     adicionar o IP à lista de bloqueios
+  action: "captcha"
+  # Limite de requisições de escrita por janela (0 = sem limite)
+  # O limite por IP é verificado primeiro, depois o global.
+  rate_limit:
+    ip:
+      minute: 0
+      hour: 0
+      day: 0
+    global:
+      minute: 0
+      hour: 0
+      day: 0
+  # Bloqueio automático após exceder o limite N vezes dentro da janela
+  auto_ban:
+    enabled: false
+    threshold: 5
+    # Janela de contagem (unidade: s)
+    window: 3600
+    # Duração do bloqueio (unidade: s, -1 = permanente)
+    duration: 86400
+  # Listas estáticas de bloqueio / permissão (IP ou CIDR, ex.: "10.0.0.0/8")
+  blacklist: []
+  whitelist: []
+  # Dias de retenção dos eventos de segurança
+  event_retention_days: 90
+  # Caminhos excluídos da proteção (correspondência por sufixo)
+  exclude_paths: []
+
 # Upload
 img_upload:
   enabled: true

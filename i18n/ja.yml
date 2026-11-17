@@ -1,3 +1,4 @@
+"Access denied": "アクセスが拒否されました"
 "Account": "アカウント"
 "Admin": "管理者"
 "Admin access required": "管理者アクセスが必要です"
@@ -60,6 +61,7 @@
 "Target Site": "ターゲットサイト"
 "Task executing in background, please wait...": "バックグラウンドでタスクを実行中です。お待ちください..."
 "Task in progress, please wait a moment": "タスクが進行中です。しばらくお待ちください"
+"Too many requests, please try again later": "リクエストが多すぎます。しばらくしてからお試しください"
 "Type": "タイプ"
 "URL Resolver": "URLリゾルバ"
 "Unspecified": "未指定"

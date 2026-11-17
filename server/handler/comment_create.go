@@ -65,7 +65,7 @@ func CommentCreate(app *core.App, router fiber.Router) {
 
 		// Prepare the arguments for creating comment
 		var (
-			ip         = clientIP(c)
+			ip         = common.ClientIP(c)
 			ua         = cmp.Or(p.UA, string(c.Request().Header.UserAgent())) // allows the patched UA from the post data
 			referer    = cmp.Or(c.Get("Referer"), c.Get("Origin"))
 			isAdmin    = common.CheckIsAdminReq(app, c)

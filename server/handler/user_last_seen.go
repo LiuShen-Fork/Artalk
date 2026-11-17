@@ -4,6 +4,7 @@ import (
 	"github.com/artalkjs/artalk/v2/internal/core"
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/internal/log"
+	"github.com/artalkjs/artalk/v2/server/common"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -25,7 +26,7 @@ func updateUserLastSeen(user *entity.User, ip string, ua string) bool {
 // Used on login and on comment creation so the admin panel can show the
 // most recent IP / UA of every user, not only of anonymous commenters.
 func touchUserLastSeen(app *core.App, c *fiber.Ctx, user *entity.User) {
-	if !updateUserLastSeen(user, clientIP(c), c.Get("User-Agent")) {
+	if !updateUserLastSeen(user, common.ClientIP(c), c.Get("User-Agent")) {
 		return
 	}
 	if err := app.Dao().UpdateUserLastSeen(user); err != nil {

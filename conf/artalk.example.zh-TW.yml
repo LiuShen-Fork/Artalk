@@ -226,6 +226,43 @@ ip_region:
   # 顯示精度 ["province", "city", "country"]
   precision: province
 
+# 安全防護 (IP 封禁、限頻、驗證碼挑戰、攻擊報表)
+security:
+  # 啟用安全防護 (限頻、IP 封禁、驗證碼挑戰)
+  enabled: false
+  # 超出頻率限制後的處置 ["captcha", "reject", "ban"]
+  #   captcha: 要求客戶端完成驗證碼
+  #   reject:  返回 429 與 Retry-After 標頭
+  #   ban:     將該 IP 加入封禁名單
+  action: "captcha"
+  # 頻率限制：每個視窗內允許的寫入操作次數 (0 = 不限制)
+  # 先檢查單一 IP 限額，再檢查全域限額。
+  rate_limit:
+    ip:
+      minute: 0
+      hour: 0
+      day: 0
+    global:
+      minute: 0
+      hour: 0
+      day: 0
+  # 自動封禁：在統計視窗內超限 N 次後自動封禁該 IP
+  auto_ban:
+    enabled: false
+    threshold: 5
+    # 統計視窗 (單位：s)
+    window: 3600
+    # 封禁時長 (單位：s, -1 為永久)
+    duration: 86400
+  # 靜態黑名單 / 白名單 (IP 或 CIDR 網段，如 "1.2.3.4"、"10.0.0.0/8")
+  # 白名單內的 IP 不會被限頻，也不會被封禁。
+  blacklist: []
+  whitelist: []
+  # 安全事件保留天數，過期自動清理
+  event_retention_days: 90
+  # 從安全防護中排除的路徑 (按後綴匹配)
+  exclude_paths: []
+
 # 圖片上傳
 img_upload:
   # 啟用圖片上傳

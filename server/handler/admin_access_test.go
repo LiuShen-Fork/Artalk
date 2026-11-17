@@ -35,6 +35,16 @@ func adminOnlyRoutes(app *core.App, router fiber.Router) {
 	handler.AIAssistantLogClear(app, router)
 	handler.CacheFlush(app, router)
 	handler.TransferExport(app, router)
+	handler.SecurityConfigGet(app, router)
+	handler.SecurityConfigSave(app, router)
+	handler.SecurityStatsGet(app, router)
+	handler.SecurityEventList(app, router)
+	handler.SecurityEventDelete(app, router)
+	handler.SecurityEventClear(app, router)
+	handler.SecurityReport(app, router)
+	handler.SecurityBanList(app, router)
+	handler.SecurityBanCreate(app, router)
+	handler.SecurityBanDelete(app, router)
 }
 
 func TestAdminEndpointsRejectNonAdmin(t *testing.T) {
@@ -68,6 +78,16 @@ func TestAdminEndpointsRejectNonAdmin(t *testing.T) {
 		{"DELETE", "/ai-assistant/logs"},
 		{"POST", "/cache/flush"},
 		{"GET", "/transfer/export"},
+		{"GET", "/security/config"},
+		{"PUT", "/security/config"},
+		{"GET", "/security/stats"},
+		{"GET", "/security/events"},
+		{"DELETE", "/security/events/1"},
+		{"DELETE", "/security/events"},
+		{"GET", "/security/report"},
+		{"GET", "/security/bans"},
+		{"POST", "/security/bans"},
+		{"DELETE", "/security/bans/1"},
 	}
 
 	for _, route := range routes {

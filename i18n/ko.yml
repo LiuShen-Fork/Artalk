@@ -1,3 +1,4 @@
+"Access denied": "접근이 거부되었습니다"
 "Account": "계정"
 "Admin": "관리자"
 "Admin access required": "관리자 액세스 필요"
@@ -60,6 +61,7 @@
 "Target Site": "대상 사이트"
 "Task executing in background, please wait...": "작업이 백그라운드에서 실행 중입니다. 잠시 기다려주세요..."
 "Task in progress, please wait a moment": "작업 진행 중입니다. 잠시만 기다려주세요."
+"Too many requests, please try again later": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요"
 "Type": "유형"
 "URL Resolver": "URL 리졸버"
 "Unspecified": "지정되지 않음"

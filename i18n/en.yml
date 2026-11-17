@@ -1,3 +1,4 @@
+"Access denied": ""
 "Account": ""
 "Admin": ""
 "Admin access required": ""
@@ -60,6 +61,7 @@
 "Target Site": ""
 "Task executing in background, please wait...": ""
 "Task in progress, please wait a moment": ""
+"Too many requests, please try again later": ""
 "Type": ""
 "URL Resolver": ""
 "Unspecified": ""

@@ -177,6 +177,22 @@ func (conf *Config) normalPatch() {
 		conf.Captcha.CaptchaType = TypeImage
 	}
 
+	// 安全防护配置
+	if conf.Security.EventRetentionDays <= 0 {
+		conf.Security.EventRetentionDays = DefaultSecurityEventRetentionDays
+	}
+	if conf.Security.Enabled {
+		// 验证码动作依赖验证码模块，未启用时降级为直接拒绝，避免出现「要求验证码却没有验证码」的死循环
+		if conf.Security.ActionType() == SecurityActionCaptcha && !conf.Captcha.Enabled {
+			log.Warn("config `security.action` is \"captcha\" but `captcha.enabled` is false, fallback to \"reject\"")
+			conf.Security.Action = SecurityActionReject
+		}
+		if conf.Security.RateLimit.IP.IsUnlimited() && conf.Security.RateLimit.Global.IsUnlimited() &&
+			len(conf.Security.Blacklist) == 0 && !conf.Security.AutoBan.Enabled {
+			log.Warn("config `security.enabled` is true, but no rate limit, blacklist or auto ban is configured")
+		}
+	}
+
 	// 图片上传存放路径默认设置
 	if conf.ImgUpload.Path == "" {
 		conf.ImgUpload.Path = "./data/artalk-img/"

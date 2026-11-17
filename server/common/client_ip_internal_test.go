@@ -1,4 +1,4 @@
-package handler
+package common
 
 import (
 	"net"
@@ -23,7 +23,7 @@ func TestClientIP(t *testing.T) {
 		defer app.ReleaseCtx(c)
 		c.Request().Header.Set("X-Forwarded-For", "203.0.113.9")
 
-		assert.Equal(t, "203.0.113.9", clientIP(c))
+		assert.Equal(t, "203.0.113.9", ClientIP(c))
 	})
 
 	t.Run("falls back to the connection address", func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestClientIP(t *testing.T) {
 
 		// Fiber reports an empty IP when the trusted header is missing; the
 		// connection address is still a real client address.
-		assert.Equal(t, "198.51.100.7", clientIP(c))
+		assert.Equal(t, "198.51.100.7", ClientIP(c))
 	})
 
 	t.Run("unknown connection address", func(t *testing.T) {
@@ -41,6 +41,6 @@ func TestClientIP(t *testing.T) {
 		defer app.ReleaseCtx(c)
 		c.Context().SetRemoteAddr(&net.TCPAddr{IP: net.IPv4zero, Port: 45678})
 
-		assert.Equal(t, "", clientIP(c))
+		assert.Equal(t, "", ClientIP(c))
 	})
 }

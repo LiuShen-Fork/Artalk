@@ -1,3 +1,4 @@
+"Access denied": "拒绝访问"
 "Account": "账户"
 "Admin": "管理员"
 "Admin access required": "需要管理员权限"
@@ -60,6 +61,7 @@
 "Target Site": "目标站点"
 "Task executing in background, please wait...": "任务已开始在后台执行，请稍后..."
 "Task in progress, please wait a moment": "任务执行中，请稍后"
+"Too many requests, please try again later": "请求过于频繁，请稍后再试"
 "Type": "类型"
 "URL Resolver": "URL 解析器"
 "Unspecified": "未指定"

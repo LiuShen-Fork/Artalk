@@ -44,7 +44,8 @@ func (dao *Dao) MigrateModels() {
 	// Migrate the schema
 	if err := dao.DB().AutoMigrate(&entity.Site{}, &entity.Page{}, &entity.User{},
 		&entity.AuthIdentity{}, &entity.UserEmailVerify{},
-		&entity.Comment{}, &entity.Notify{}, &entity.Vote{}, &entity.ModerationLog{}, &entity.AIAssistantLog{}); err != nil {
+		&entity.Comment{}, &entity.Notify{}, &entity.Vote{}, &entity.ModerationLog{}, &entity.AIAssistantLog{},
+		&entity.SecurityEvent{}, &entity.IPBan{}); err != nil {
 		log.Fatal("[DB Migrator] Failed to migrate schema: ", err)
 	}
 

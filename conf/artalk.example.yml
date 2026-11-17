@@ -214,6 +214,43 @@ captcha:
     secret_key: ""
     api_endpoint: ""
 
+# Security (IP ban, rate limit, captcha challenge, attack report)
+security:
+  # Enable the security guard (rate limit, IP ban, captcha challenge)
+  enabled: false
+  # Action on rate limit exceeded ["captcha", "reject", "ban"]
+  #   captcha: ask the client to verify a captcha
+  #   reject:  respond with 429 and a Retry-After header
+  #   ban:     add the IP to the ban list
+  action: "captcha"
+  # Rate limit: allowed write requests per window (0 = unlimited)
+  # The per-IP limit is checked first, then the global one.
+  rate_limit:
+    ip:
+      minute: 0
+      hour: 0
+      day: 0
+    global:
+      minute: 0
+      hour: 0
+      day: 0
+  # Auto ban: ban an IP after it exceeds the limit N times within the window
+  auto_ban:
+    enabled: false
+    threshold: 5
+    # Counting window (unit: s)
+    window: 3600
+    # Ban duration (unit: s, -1 = permanent)
+    duration: 86400
+  # Static blacklist / whitelist (IP or CIDR, e.g. "1.2.3.4", "10.0.0.0/8")
+  # Whitelisted IPs are never limited nor banned.
+  blacklist: []
+  whitelist: []
+  # Security events are kept for N days, then pruned automatically
+  event_retention_days: 90
+  # Paths excluded from the guard (suffix match)
+  exclude_paths: []
+
 # Upload
 img_upload:
   # Enable image upload

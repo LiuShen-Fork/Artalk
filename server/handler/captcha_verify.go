@@ -55,6 +55,22 @@ func CaptchaVerify(app *core.App, router fiber.Router) {
 			limiter.MarkVerifyFailed(c.IP())
 		}
 
+		// 同步给安全防护服务：通过即清空该 IP 的计数，失败则累计违规次数
+		if securityService, err := core.AppService[*core.SecurityService](app); err == nil && securityService != nil {
+			input := core.SecurityCheckInput{
+				IP:     common.ClientIP(c),
+				Method: c.Method(),
+				Path:   c.Path(),
+				UA:     c.Get("User-Agent"),
+			}
+			if isPass {
+				securityService.MarkVerified(input.IP)
+			} else {
+				// 失败次数达到阈值时会被自动封禁，下一次请求即被中间件拦截
+				securityService.RecordCaptchaFailure(input)
+			}
+		}
+
 		// response result
 		switch cap.Type() {
 		case captcha.Image:

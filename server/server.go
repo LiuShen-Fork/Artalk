@@ -16,6 +16,7 @@ import (
 	h "github.com/artalkjs/artalk/v2/server/handler"
 	"github.com/artalkjs/artalk/v2/server/middleware"
 	"github.com/artalkjs/artalk/v2/server/middleware/limiter"
+	securitymw "github.com/artalkjs/artalk/v2/server/middleware/security"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	fiber_logger "github.com/gofiber/fiber/v2/middleware/logger"
@@ -71,6 +72,9 @@ func Serve(app *core.App) (*fiber.App, error) {
 
 	api := fb.Group("/api/v2")
 	{
+		// 统一安全防护（限频 / 封禁 / 验证码），需在路由注册前挂载
+		api.Use(securitymw.Guard(app))
+
 		h.CommentCreate(app, api)
 		h.CommentList(app, api)
 		h.CommentGet(app, api)
@@ -169,6 +173,16 @@ func admin(app *core.App, api fiber.Router) {
 	h.SettingGet(app, api)
 	h.SettingApply(app, api)
 	h.SettingTemplate(app, api)
+	h.SecurityConfigGet(app, api)
+	h.SecurityConfigSave(app, api)
+	h.SecurityStatsGet(app, api)
+	h.SecurityEventList(app, api)
+	h.SecurityEventDelete(app, api)
+	h.SecurityEventClear(app, api)
+	h.SecurityReport(app, api)
+	h.SecurityBanList(app, api)
+	h.SecurityBanCreate(app, api)
+	h.SecurityBanDelete(app, api)
 	h.Transfer(app, api)
 }
 
