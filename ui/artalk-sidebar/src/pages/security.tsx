@@ -102,7 +102,7 @@ export function SecurityPage() {
   const loading = configQuery.isLoading && !draft
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-3 md:space-y-4 xl:max-w-[1120px]">
       <PageHeader
         title={t('security')}
         description={t('securityAdminDesc')}
@@ -166,7 +166,7 @@ export function SecurityPage() {
               onChange={setTab}
             />
 
-            <div className="min-w-0 flex-1 space-y-3 md:max-w-[820px] md:space-y-4">
+            <div className="min-w-0 flex-1 space-y-3 md:space-y-4">
 
           {tab === 'basic' ? (
             <Section title={t('securityBasic')} description={t('securityBasicDesc')}>

@@ -48,7 +48,7 @@ export function AttackReport() {
               type="button"
               onClick={() => setDays(range)}
               className={cn(
-                'rounded-full border px-2 py-0.5 text-[11px] transition-colors',
+                'h-6 rounded-control border px-2 text-[11px] transition-colors',
                 days === range
                   ? 'border-accent/40 bg-accent/10 text-accent'
                   : 'border-border text-muted hover:text-foreground',

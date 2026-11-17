@@ -12,6 +12,14 @@
 :root {
   --radius: 0.75rem;
 
+  /* One radius for every interactive control. HeroUI derives its own radii from
+     --radius with different multipliers (buttons and tabs x3, chips x2, fields
+     x1.5), which made a pill-shaped button sit next to a squarer input. Console
+     controls all borrow this single value instead; cards keep --radius. */
+  --control-radius: 0.625rem;
+  --control-radius-inner: 0.4375rem;
+  --field-radius: var(--control-radius);
+
   --background: oklch(0.984 0.002 250);
   --foreground: oklch(0.215 0.019 258);
 
@@ -22,6 +30,12 @@
 
   --muted: oklch(0.545 0.016 255);
   --default: oklch(0.94 0.006 250);
+
+  /* Segmented controls read as a raised chip on a sunken track. In light mode
+     "raised" means lighter than the track; in dark mode it means lighter too,
+     which is why the pair is a token rather than `surface` on `default`. */
+  --segment-track: oklch(0.938 0.006 250);
+  --segment-active: oklch(1 0 0);
 
   --accent: oklch(0.6204 0.195 253.83);
   --accent-foreground: oklch(0.995 0 0);
@@ -60,6 +74,9 @@
   --muted: oklch(0.7 0.015 255);
   --default: oklch(0.31 0.015 258);
 
+  --segment-track: oklch(0.243 0.014 258);
+  --segment-active: oklch(0.335 0.016 258);
+
   --accent: oklch(0.71 0.15 253.83);
   --accent-foreground: oklch(0.17 0.02 258);
 
@@ -93,6 +110,8 @@
   --color-overlay: var(--overlay);
   --color-muted: var(--muted);
   --color-default: var(--default);
+  --color-segment-track: var(--segment-track);
+  --color-segment-active: var(--segment-active);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
@@ -121,6 +140,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 10px);
   --radius-3xl: 1.25rem;
+  --radius-control: var(--control-radius);
 
   /* shadcn-style aliases kept for components written against the old tokens */
   --color-primary: var(--accent);
@@ -196,6 +216,21 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/* HeroUI sizes its radii off --radius with different multipliers, so a button
+   (x3) reads as a pill next to a field (x1.5). Pull every control back onto the
+   console's single control radius; utilities in markup still win. */
+@layer components {
+  .button,
+  .input,
+  .textarea,
+  .select__trigger,
+  .search-field__group,
+  .tabs__tab,
+  .chip {
+    border-radius: var(--control-radius);
   }
 }
 

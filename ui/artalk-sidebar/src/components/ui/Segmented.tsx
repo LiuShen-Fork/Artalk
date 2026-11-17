@@ -30,7 +30,7 @@ export function Segmented<T extends string>({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        'grid grid-flow-col auto-cols-fr gap-0.5 rounded-lg bg-default p-0.5 md:inline-grid',
+        'grid grid-flow-col auto-cols-fr gap-0.5 rounded-control bg-segment-track p-0.5 md:inline-grid',
         className,
       )}
     >
@@ -44,9 +44,9 @@ export function Segmented<T extends string>({
             aria-selected={active}
             onClick={() => onChange(item.id)}
             className={cn(
-              'flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[12.5px] font-medium transition-colors',
+              'flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--control-radius-inner)] px-2.5 text-[12.5px] font-medium transition-colors',
               active
-                ? 'bg-surface text-foreground shadow-sm'
+                ? 'bg-segment-active text-foreground shadow-sm'
                 : 'text-muted hover:text-foreground',
             )}
           >

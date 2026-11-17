@@ -274,7 +274,7 @@ export function AccountPage() {
               <Button
                 size="sm"
                 variant="primary"
-                fullWidth
+                className="w-full md:w-auto"
                 isDisabled={profileSaving}
                 onPress={() => void saveProfile()}
               >
@@ -347,7 +347,7 @@ export function AccountPage() {
               <Button
                 size="sm"
                 variant="primary"
-                fullWidth
+                className="w-full md:w-auto"
                 isDisabled={!canSubmitPassword || passwordSaving}
                 onPress={() => void changePassword()}
               >

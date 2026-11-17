@@ -37,7 +37,7 @@ function TabButton({
       onClick={onPress}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex flex-1 flex-col items-center justify-center gap-1 rounded-lg py-1.5 transition-colors',
+        'flex flex-1 flex-col items-center justify-center gap-1 rounded-control py-1.5 transition-colors',
         active ? 'text-accent' : 'text-muted hover:text-foreground',
       )}
     >
@@ -141,7 +141,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     setMoreOpen(false)
     if (next === view) return
     session.setView(next)
-    void navigate({ to: next === 'admin' ? '/dashboard' : '/comments' })
+    void navigate({ to: next === 'admin' ? '/dashboard' : '/activity' })
   }
 
   const logout = async () => {

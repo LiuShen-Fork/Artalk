@@ -31,7 +31,7 @@ export function AccountMenu({
     <Dropdown>
       <Dropdown.Trigger
         className={cn(
-          'h-9 items-center justify-center gap-1.5 rounded-lg bg-transparent px-1 data-[hovered]:bg-surface-secondary',
+          'h-9 items-center justify-center gap-1.5 rounded-control bg-transparent px-1 data-[hovered]:bg-surface-secondary',
           showText ? 'min-w-0 xl:flex-1 xl:justify-start' : 'w-9',
         )}
         aria-label={t('account')}

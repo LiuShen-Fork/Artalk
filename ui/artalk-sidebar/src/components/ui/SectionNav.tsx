@@ -28,7 +28,7 @@ export function SectionNav<T extends string>({ items, value, onChange }: Section
             onClick={() => onChange(item.id)}
             aria-current={item.id === value ? 'true' : undefined}
             className={cn(
-              'rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors',
+              'h-7 rounded-control border px-2.5 text-[12px] font-medium transition-colors',
               item.id === value
                 ? 'border-accent/40 bg-accent/10 text-accent'
                 : 'border-border bg-surface text-muted hover:text-foreground',
@@ -47,7 +47,7 @@ export function SectionNav<T extends string>({ items, value, onChange }: Section
             onClick={() => onChange(item.id)}
             aria-current={item.id === value ? 'page' : undefined}
             className={cn(
-              'rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors',
+              'rounded-control px-2.5 py-1.5 text-left text-[13px] transition-colors',
               item.id === value
                 ? 'bg-accent/10 font-medium text-accent'
                 : 'text-muted hover:bg-surface-secondary hover:text-foreground',
