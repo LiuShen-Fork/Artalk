@@ -35,8 +35,8 @@ This repository is a personal-maintained fork of [ArtalkJS/Artalk](https://githu
 ### Current state of this fork
 
 - Base: `upstream/master` (2026-11-14, `d9b62cba`).
-- History: the fork's customizations are squashed into 3 commits on top of upstream — server, administration frontend, documentation and CI — so a later rebase resolves conflicts in a handful of files in one pass.
-- Size: 213 files changed, +16,126 / −3,803. The server accounts for 88 files (~+7.6k) and `ui/artalk-sidebar` for 46 files (~+6.9k), while the visitor-facing `ui/artalk` client changes only 18 files by roughly 110 lines — the comment widget itself stays close to upstream.
+- History: the fork's customizations are split by feature across a handful of commits on top of upstream — server capabilities, administration frontend, documentation and CI — so a later rebase resolves conflicts in a handful of files in one pass.
+- Size: roughly 250 files changed, +22.6k / −3.8k. The server accounts for ~120 files (~+11.6k) and `ui/artalk-sidebar` for ~49 files (~+9.0k), while the visitor-facing `ui/artalk` client changes only 18 files by roughly 110 lines — the comment widget itself stays close to upstream.
 - Accounts: upstream already provides password and social login. What this fork adds is what happens after login — self-service password changes, binding and unbinding third-party identities, and a security page — plus login and sign-up integrated into the sidebar so ordinary users can manage their own profile without the admin console.
 - Compatibility: the public API and the widget's events and options match upstream; every addition is opt-in and off by default.
 
@@ -57,6 +57,17 @@ The assistant is stored as a dedicated user identity, separate from its configur
 ### Comment interception
 
 Synchronous local keyword interception is available under `moderator.intercept`. Enter comma-separated keywords to match against both the nickname and comment content. A match returns HTTP `400`, prevents persistence and notifications, and records the rejected content in the moderation log. The feature is disabled by default and uses a small local list to avoid external dictionary and performance overhead.
+
+### Security hardening
+
+An opt-in `security` block (off by default) adds rate limiting, banning and attack records on top of the existing captcha action counter:
+
+- Requests are counted per IP and globally over minute, hour and day windows; `0` means unlimited.
+- A trip can require the captcha (reusing the existing `need_captcha` response, so the official widget needs no change), reject with `429`, or ban the IP with `403`.
+- IPs that keep tripping inside a configured window are auto-banned; manual and CIDR bans live in `ip_bans`, config-file bans are read-only in the console.
+- Blocked requests are stored in `security_events` (IP region, path, UA, site, account, counts), pruned after a retention period, and aggregated into a report by kind, day, top IPs and top paths.
+- Admins and whitelisted IPs are not counted; only write methods are; the legacy `LimiterGuard` yields when security is enabled so nothing is counted or challenged twice.
+- The administration console gains a security page that edits the config in place (patching only the `security` and `captcha` YAML blocks, preserving comments and avoiding a restart), manages bans, and shows the report and individual records.
 
 ### Other fork-specific changes
 

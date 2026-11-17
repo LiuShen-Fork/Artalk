@@ -25,6 +25,7 @@ export const zh = defineConfig({
             { text: '多元推送', link: '/zh/guide/backend/admin_notify.md' },
             { text: '社交登录', link: '/zh/guide/frontend/auth.md' },
             { text: '评论审核', link: '/zh/guide/backend/moderator.md' },
+            { text: '安全防护', link: '/zh/guide/backend/security.md' },
             { text: '验证码', link: '/zh/guide/backend/captcha.md' },
             { text: '图片上传', link: '/zh/guide/backend/img-upload.md' },
             { text: '账户与多站点', link: '/zh/guide/backend/multi-site.md' },
