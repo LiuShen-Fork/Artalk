@@ -1,0 +1,215 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+ * Artalk console theme
+ * A quiet, paper-like light theme and a graphite dark theme. The accent is the
+ * Artalk blue (#0083ff) used by the public widget, expressed in oklch so it can
+ * be mixed and adjusted for contrast without hue shifts.
+ * ------------------------------------------------------------------------- */
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.984 0.002 250);
+  --foreground: oklch(0.215 0.019 258);
+
+  --surface: oklch(1 0 0);
+  --surface-secondary: oklch(0.972 0.004 250);
+  --surface-tertiary: oklch(0.952 0.006 250);
+  --overlay: oklch(1 0 0);
+
+  --muted: oklch(0.545 0.016 255);
+  --default: oklch(0.94 0.006 250);
+
+  --accent: oklch(0.6204 0.195 253.83);
+  --accent-foreground: oklch(0.995 0 0);
+
+  --success: oklch(0.62 0.15 152);
+  --warning: oklch(0.74 0.15 79);
+  --danger: oklch(0.6 0.2 25);
+
+  --border: oklch(0.914 0.006 250);
+  --separator: oklch(0.934 0.005 250);
+  --focus: oklch(0.6204 0.195 253.83);
+
+  --field-background: oklch(0.99 0.002 250);
+  --field-border: oklch(0.9 0.007 250);
+
+  --surface-shadow:
+    0 1px 2px oklch(0.25 0.02 255 / 0.05), 0 8px 24px -16px oklch(0.25 0.02 255 / 0.18);
+  --overlay-shadow: 0 24px 60px -24px oklch(0.2 0.02 255 / 0.35);
+
+  --chart-1: oklch(0.6204 0.195 253.83);
+  --chart-2: oklch(0.7 0.14 195);
+  --chart-3: oklch(0.66 0.15 152);
+  --chart-4: oklch(0.78 0.14 85);
+  --chart-5: oklch(0.64 0.18 25);
+}
+
+.dark {
+  --background: oklch(0.19 0.012 258);
+  --foreground: oklch(0.94 0.005 250);
+
+  --surface: oklch(0.229 0.013 258);
+  --surface-secondary: oklch(0.255 0.014 258);
+  --surface-tertiary: oklch(0.285 0.015 258);
+  --overlay: oklch(0.245 0.014 258);
+
+  --muted: oklch(0.7 0.015 255);
+  --default: oklch(0.31 0.015 258);
+
+  --accent: oklch(0.71 0.15 253.83);
+  --accent-foreground: oklch(0.17 0.02 258);
+
+  --success: oklch(0.72 0.15 152);
+  --warning: oklch(0.8 0.14 82);
+  --danger: oklch(0.7 0.18 25);
+
+  --border: oklch(0.32 0.015 258);
+  --separator: oklch(0.3 0.014 258);
+  --focus: oklch(0.71 0.15 253.83);
+
+  --field-background: oklch(0.245 0.014 258);
+  --field-border: oklch(0.35 0.016 258);
+
+  --surface-shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 10px 30px -18px oklch(0 0 0 / 0.6);
+  --overlay-shadow: 0 24px 60px -20px oklch(0 0 0 / 0.7);
+
+  --chart-1: oklch(0.71 0.15 253.83);
+  --chart-2: oklch(0.76 0.13 195);
+  --chart-3: oklch(0.74 0.14 152);
+  --chart-4: oklch(0.82 0.13 85);
+  --chart-5: oklch(0.72 0.17 25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-tertiary: var(--surface-tertiary);
+  --color-overlay: var(--overlay);
+  --color-muted: var(--muted);
+  --color-default: var(--default);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-separator: var(--separator);
+  --color-focus: var(--focus);
+  --color-field-background: var(--field-background);
+  --color-field-border: var(--field-border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: 1.25rem;
+
+  /* shadcn-style aliases kept for components written against the old tokens */
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--surface-secondary);
+  --color-muted-foreground: var(--muted);
+  --color-destructive: var(--danger);
+  --color-ring: var(--focus);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  /* iOS zooms the whole panel when a focused control uses a smaller size */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--accent) 22%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

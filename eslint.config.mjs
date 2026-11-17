@@ -132,9 +132,27 @@ export default defineConfig(
     },
   },
 
+  /* Sidebar console (React + Vite) */
+  {
+    files: ['ui/artalk-sidebar/**/*.{ts,tsx}'],
+    settings: {
+      'import-x/resolver': {
+        typescript: {
+          project: './ui/artalk-sidebar/tsconfig.json',
+        },
+        node: true,
+      },
+    },
+    rules: {
+      // The console is an API consumer, not an ArtalkPlugin: it reaches into the
+      // headless instance's context on purpose (e.g. to adopt the comment list).
+      'artalk/artalk-plugin': 'off',
+    },
+  },
+
   /* React */
   {
-    files: ['docs/landing/**/*.tsx'],
+    files: ['docs/landing/**/*.tsx', 'ui/artalk-sidebar/**/*.{ts,tsx}'],
     plugins: {
       react: pluginReact,
       // @ts-expect-error SEE https://github.com/facebook/react/issues/28313

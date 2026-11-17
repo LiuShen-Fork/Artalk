@@ -1,0 +1,30 @@
+@import 'artalk/Artalk.css';
+@import './theme.css';
+
+/* The console is embedded in a 430px iframe, so the scroll container is the
+ * panel itself rather than the window. Keep the document from bouncing. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Artalk's public widget styles leak into the comment embed. These variables
+ * map its palette onto the console theme so the list looks like part of the
+ * app instead of a foreign block. */
+.atk-comments {
+  --at-color-main: var(--color-accent);
+  --at-color-font: var(--color-foreground);
+  --at-color-font-muted: var(--color-muted);
+  --at-color-border: var(--color-border);
+  --at-color-bg: transparent;
+  --at-color-bg-secondary: var(--color-surface-secondary);
+  --at-font-size: 14px;
+}
+
+/* The console owns paging: the widget's own footer pager would compete with the
+ * `Pager` under the list, so it is hidden rather than restyled. */
+.atk-comments .atk-pagination-wrap {
+  display: none;
+}
+

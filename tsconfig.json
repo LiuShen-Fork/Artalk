@@ -12,10 +12,11 @@
     "scripts/check-npm-publish.mjs",
     "scripts/fetch-registry.mjs"
   ],
+  // `ui/artalk-sidebar` is intentionally not referenced here: it is a plain
+  // non-composite project (`tsc -b` inside the package) because its build runs
+  // `tsc -b && vite build` and it does not emit declarations.
   "references": [
     { "path": "./ui/artalk" },
-    { "path": "./ui/artalk-sidebar" },
-    { "path": "./ui/artalk-sidebar/tsconfig.node.json" },
     { "path": "./ui/plugin-kit" },
     { "path": "./ui/plugin-auth" },
     { "path": "./ui/plugin-katex" },

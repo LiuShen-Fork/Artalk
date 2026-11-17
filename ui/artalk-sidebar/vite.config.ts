@@ -1,51 +1,20 @@
-import { defineConfig } from 'vite'
-import { resolve } from 'path'
-import vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
-import VueRouter from 'vue-router/vite'
-import { VueRouterAutoImports } from 'vue-router/unplugin'
-import Components from 'unplugin-vue-components/vite'
-import { HeadlessUiResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
-import checker from 'vite-plugin-checker'
+import { resolve } from 'node:path'
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
+// The console is served from /sidebar/ inside an iframe of the host page.
+// Everything it loads is resolved relative to that folder (`base: './'`),
+// which keeps a single build working under any mount point.
 export default defineConfig({
   base: './',
   build: {
-    target: 'es2015',
+    target: 'es2020',
     outDir: resolve(__dirname, 'dist'),
     minify: 'terser',
   },
-  plugins: [
-    VueRouter({ importMode: 'sync' }),
-    vue(),
-    Components({ resolvers: [HeadlessUiResolver()] }),
-    AutoImport({
-      imports: ['vue', VueRouterAutoImports, 'vue-i18n'],
-    }),
-    {
-      ...checker({
-        // vueTsc: true, // FIXME: see https://github.com/fi3ework/vite-plugin-checker/issues/306
-        eslint: {
-          useFlatConfig: true,
-          lintCommand: 'eslint .',
-        },
-      }),
-      apply: 'serve',
-    },
-    (() => ({
-      name: 'prod-vue-resolver',
-      resolveId(id) {
-        // @issue https://github.com/vitejs/vite/issues/6607
-        // dev mode vite resolves vue in other way
-        // only in prod mode, `id === vue` is true
-        if (id === 'vue') {
-          return resolve(__dirname, './node_modules/vue/dist/vue.runtime.esm-bundler.js')
-        }
-      },
-    }))(),
-  ],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -58,13 +27,8 @@ export default defineConfig({
       '/dist': 'http://127.0.0.1:23366',
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        loadPaths: [resolve(__dirname, 'src/style')],
-        silenceDeprecations: ['import'], // https://sass-lang.com/documentation/breaking-changes/import/
-        additionalData: `@import "variables";@import "extends";`,
-      },
-    },
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
   },
 })

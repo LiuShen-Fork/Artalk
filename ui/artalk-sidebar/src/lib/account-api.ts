@@ -1,5 +1,5 @@
-import { getArtalk } from '../global'
-import { useUserStore } from '../stores/user'
+import { getArtalk } from './artalk'
+import { session } from './session'
 
 export interface AccountProfile {
   id: number
@@ -62,7 +62,7 @@ export interface PasswordUpdateInput {
 }
 
 function serverRoot() {
-  const server = (getArtalk()?.ctx.conf.server || '.').replace(/\/+$/, '')
+  const server = (getArtalk().ctx.conf.server || '.').replace(/\/+$/, '')
   return server || '.'
 }
 
@@ -84,8 +84,19 @@ export function resolveServerPath(path: string) {
   ).toString()
 }
 
+/** An API failure that keeps the HTTP status for callers that branch on it. */
+export class HttpError extends Error {
+  status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.name = 'HttpError'
+    this.status = status
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = useUserStore().token
+  const token = session.get().user.token
   const headers = new Headers(init.headers)
   if (init.body) headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -99,7 +110,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const json: any = await resp.json().catch(() => ({}))
 
   if (!resp.ok) {
-    throw new Error(json.msg || json.message || resp.statusText || 'Request failed')
+    throw new HttpError(
+      resp.status,
+      json.msg || json.message || resp.statusText || 'Request failed',
+    )
   }
   return json as T
 }
@@ -138,7 +152,14 @@ export const accountApi = {
   },
 
   getProviders() {
-    return request<AuthProviderListResponse>('conf/auth/providers')
+    // The endpoint is only registered when social login is enabled, so a 404
+    // means "no providers" rather than a failure worth surfacing.
+    return request<AuthProviderListResponse>('conf/auth/providers').catch(
+      (error: unknown) => {
+        if (error instanceof HttpError && error.status === 404) return { providers: [] }
+        throw error
+      },
+    )
   },
 }
 

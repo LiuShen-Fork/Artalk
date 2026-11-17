@@ -4,8 +4,8 @@ import { getFlattenNodes, getTree, type OptionNode } from './settings-option'
 export class Settings {
   private tree: OptionNode
   private flatten: { [path: string]: OptionNode }
-  private customs = shallowRef<YAML.Document.Parsed<YAML.ParsedNode>>()
-  private envs = shallowRef<{ [key: string]: string }>()
+  private customs?: YAML.Document.Parsed<YAML.ParsedNode>
+  private envs: { [key: string]: string } = {}
 
   constructor(yamlObj: YAML.Document.Parsed) {
     this.tree = getTree(yamlObj)
@@ -25,20 +25,23 @@ export class Settings {
   }
 
   setCustoms(yamlStr: string) {
-    this.customs.value = YAML.parseDocument(yamlStr)
+    this.customs = YAML.parseDocument(yamlStr)
   }
 
   setEnvs(envs: string[]) {
     const envsObj: { [key: string]: string } = {}
     envs.forEach((env) => {
-      const [key, value] = env.split('=')
+      const index = env.indexOf('=')
+      if (index < 0) return
+      const key = env.slice(0, index)
+      const value = env.slice(index + 1)
       envsObj[key] = value
     })
-    this.envs.value = envsObj
+    this.envs = envsObj
   }
 
   getEnv(key: string) {
-    return this.envs.value?.[key] || null
+    return this.envs[key] || null
   }
 
   getEnvByPath(path: string) {
@@ -57,7 +60,7 @@ export class Settings {
   getCustom(path: string) {
     const env = this.getEnvByPath(path)
     if (env) return env
-    return this.customs.value?.getIn(path.split('.')) as any
+    return this.customs?.getIn(path.split('.')) as any
   }
 
   setCustom(path: string, value: any) {
@@ -65,7 +68,7 @@ export class Settings {
 
     this.makeSureObject(pathArr)
 
-    this.customs.value?.setIn(pathArr, value)
+    this.customs?.setIn(pathArr, value)
   }
 
   // @see https://github.com/eemeli/yaml/issues/174#issuecomment-632281283
@@ -73,9 +76,9 @@ export class Settings {
     for (let i = pathArr.length - 1; i >= 1; i--) {
       const parentPath = pathArr.slice(0, -i)
 
-      const parentNode = this.customs.value?.getIn(parentPath)
+      const parentNode = this.customs?.getIn(parentPath)
       if (!parentNode) {
-        this.customs.value?.setIn(parentPath, new YAML.YAMLMap())
+        this.customs?.setIn(parentPath, new YAML.YAMLMap())
       }
     }
   }

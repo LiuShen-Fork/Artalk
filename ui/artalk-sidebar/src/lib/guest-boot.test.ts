@@ -14,7 +14,7 @@ it('consumes the sidebar fragment before routing and removes credentials from th
     '',
     `/sidebar/?darkMode=1&user=${encodeURIComponent(JSON.stringify({ name: 'Guest', email: 'guest@example.com' }))}#guest_token=${secret}`,
   )
-  const { bootParams } = await import('../global')
+  const { bootParams } = await import('./boot')
   expect(bootParams.guestToken).toBe(secret)
   expect(bootParams.user.token).toBe('')
   expect(bootParams.user.name).toBe('Guest')
@@ -24,7 +24,7 @@ it('consumes the sidebar fragment before routing and removes credentials from th
 
 it('preserves direct sidebar routes and old clients without a guest credential', async () => {
   history.replaceState({}, '', '/sidebar/?darkMode=1#/pages')
-  const { bootParams } = await import('../global')
+  const { bootParams } = await import('./boot')
   expect(bootParams.guestToken).toBe('')
   expect(location.hash).toBe('#/pages')
 })
@@ -32,7 +32,7 @@ it('preserves direct sidebar routes and old clients without a guest credential',
 it('accepts the earlier sidebar fragment during a frontend upgrade', async () => {
   const secret = 'cd'.repeat(32)
   history.replaceState({}, '', `/sidebar/?darkMode=1#atk_guest=${secret}`)
-  const { bootParams } = await import('../global')
+  const { bootParams } = await import('./boot')
   expect(bootParams.guestToken).toBe(secret)
   expect(location.hash).toBe('')
 })
@@ -46,7 +46,7 @@ it('restores login and guest credentials from the fragment before the router sta
     '',
     `/sidebar/?darkMode=1&site=Test&view=comments&pageKey=%2Fpost&user=${encodeURIComponent(JSON.stringify(user))}#token=${token}&guest_token=${guest}`,
   )
-  const { bootParams } = await import('../global')
+  const { bootParams } = await import('./boot')
   expect(bootParams.user).toMatchObject({ ...user, token })
   expect(bootParams.guestToken).toBe(guest)
   expect(bootParams).toMatchObject({
@@ -71,7 +71,7 @@ it.each([
       '',
       `/sidebar/?darkMode=1&user=${encodeURIComponent(JSON.stringify({ email: 'old@example.com', token: 'legacy-token' }))}${fragment}`,
     )
-    const { bootParams } = await import('../global')
+    const { bootParams } = await import('./boot')
     expect(bootParams.user.token).toBe(expected)
     expect(location.search).toBe('')
     expect(location.hash).toBe('')
@@ -82,7 +82,7 @@ it.each(['{', 'null', '{"email":123,"token":{},"is_admin":"false"}'])(
   'safely consumes malformed legacy user data: %s',
   async (user) => {
     history.replaceState({}, '', `/sidebar/?darkMode=1&user=${encodeURIComponent(user)}`)
-    const { bootParams } = await import('../global')
+    const { bootParams } = await import('./boot')
     expect(bootParams.user).toEqual({ name: '', email: '', link: '', token: '', is_admin: false })
     expect(location.search).toBe('')
   },
