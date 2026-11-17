@@ -12,7 +12,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-const GEETEST_API string = "http://gcaptcha4.geetest.com"
+const GEETEST_API string = "https://gcaptcha4.geetest.com"
 
 var _ Checker = (*GeetestCaptchaChecker)(nil)
 
