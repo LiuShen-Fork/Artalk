@@ -259,6 +259,18 @@ export const ko: MessageSchema = {
   view: '보기',
   securityLastIp: '최근 IP',
   securityLastUA: '최근 UA',
+  viewAdmin: '관리',
+  viewUser: '사용자',
+  groupOverview: '개요',
+  groupContent: '콘텐츠',
+  groupCommunity: '커뮤니티',
+  groupSystem: '시스템',
+  groupMine: '내 정보',
+  myComments: '내 댓글',
+  myCommentsDesc: '작성한 모든 댓글과 받은 답글을 확인하세요',
+  loginPanelDesc: '로그인하면 댓글, 프로필, 사이트 설정을 한곳에서 관리할 수 있습니다.',
+  socialLoginHint: '또는 다음으로 로그인',
+  socialLoginUntrusted: '소셜 로그인을 사용할 수 없습니다: 이 도메인이 신뢰 도메인 목록에 없습니다.',
 }
 
 export default ko

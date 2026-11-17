@@ -3,12 +3,12 @@ import { Save } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import YAML from 'yaml'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SectionNav } from '@/components/ui/SectionNav'
 import { OptionGroup } from '@/components/settings/OptionTree'
 import { getArtalk } from '@/lib/artalk'
 import { errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import settings, { type OptionNode } from '@/lib/settings'
-import { cn } from '@/lib/utils'
 
 const HIDDEN_ROOT_NODES = new Set(['admin_users'])
 
@@ -95,7 +95,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader
         title={t('settings')}
         description={t('settingNotice')}
@@ -118,31 +118,26 @@ export function SettingsPage() {
           {t('refreshing')}
         </div>
       ) : (
-        <>
-          <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 no-scrollbar">
-            {groups.map((group) => (
-              <button
-                key={group.path}
-                type="button"
-                onClick={() => setSelected(group.path)}
-                className={cn(
-                  'shrink-0 rounded-full border px-2.5 py-1 text-[12px] transition-colors',
-                  active?.path === group.path
-                    ? 'border-accent/40 bg-accent/10 text-accent'
-                    : 'border-border text-muted hover:text-foreground',
-                )}
-              >
-                {group.title}
-              </button>
-            ))}
-          </div>
+        <div className="md:flex md:items-start md:gap-6">
+          <SectionNav
+            items={groups.map((group) => ({ id: group.path, label: group.title }))}
+            value={active?.path ?? ''}
+            onChange={setSelected}
+          />
 
-          {active ? (
-            <div key={active.path} className="rounded-xl border border-border bg-surface px-3 py-2">
-              <OptionGroup node={active} />
-            </div>
-          ) : null}
-        </>
+          {/* Fields stay readable on a wide screen instead of stretching the
+              full 1000px+ of the content column. */}
+          <div className="min-w-0 flex-1 md:max-w-[820px]">
+            {active ? (
+              <div
+                key={active.path}
+                className="rounded-xl border border-border bg-surface px-3 py-2 md:px-5 md:py-3"
+              >
+                <OptionGroup node={active} />
+              </div>
+            ) : null}
+          </div>
+        </div>
       )}
     </div>
   )

@@ -266,6 +266,18 @@ export const ru: MessageSchema = {
   view: 'Открыть',
   securityLastIp: 'Последний IP',
   securityLastUA: 'Последний User-Agent',
+  viewAdmin: 'Управление',
+  viewUser: 'Посетитель',
+  groupOverview: 'Обзор',
+  groupContent: 'Контент',
+  groupCommunity: 'Сообщество',
+  groupSystem: 'Система',
+  groupMine: 'Моё',
+  myComments: 'Мои комментарии',
+  myCommentsDesc: 'Все ваши комментарии и полученные ответы',
+  loginPanelDesc: 'Войдите, чтобы управлять комментариями, профилем и настройками сайта в одном месте.',
+  socialLoginHint: 'или продолжить через',
+  socialLoginUntrusted: 'Социальный вход недоступен: этот домен отсутствует в списке доверенных.',
 }
 
 export default ru

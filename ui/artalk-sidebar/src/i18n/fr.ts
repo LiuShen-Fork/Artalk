@@ -271,6 +271,18 @@ export const fr: MessageSchema = {
   view: 'Voir',
   securityLastIp: 'Dernière IP',
   securityLastUA: 'Dernier agent utilisateur',
+  viewAdmin: 'Administration',
+  viewUser: 'Visiteur',
+  groupOverview: 'Vue d’ensemble',
+  groupContent: 'Contenu',
+  groupCommunity: 'Communauté',
+  groupSystem: 'Système',
+  groupMine: 'Mes informations',
+  myComments: 'Mes commentaires',
+  myCommentsDesc: 'Tous vos commentaires et les réponses reçues',
+  loginPanelDesc: 'Connectez-vous pour gérer vos commentaires, votre profil et les réglages du site.',
+  socialLoginHint: 'ou continuer avec',
+  socialLoginUntrusted: 'Connexion sociale indisponible : ce domaine n’est pas dans la liste des domaines de confiance.',
 }
 
 export default fr

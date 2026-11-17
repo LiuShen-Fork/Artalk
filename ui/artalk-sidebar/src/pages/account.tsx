@@ -213,7 +213,7 @@ export function AccountPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader title={t('account')} description={t('securityDesc')} />
 
       {loading ? (
@@ -226,7 +226,8 @@ export function AccountPage() {
           <p className="text-[12.5px] text-danger">{loadError}</p>
         </Section>
       ) : (
-        <>
+        <div className="space-y-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:items-start md:gap-3 md:space-y-0">
+          <div className="space-y-3">
           <Section title={t('profileSection')} description={t('emailChangeHint')}>
             <div className="space-y-1.5">
               <TextField className="w-full">
@@ -359,6 +360,7 @@ export function AccountPage() {
               </Button>
             </div>
           </Section>
+          </div>
 
           <Section title={t('bindingsSection')} description={t('bindingsDesc')}>
             {oauthProviders.length ? (
@@ -419,7 +421,7 @@ export function AccountPage() {
               <p className="text-[12px] text-muted">{t('bindingsEmpty')}</p>
             )}
           </Section>
-        </>
+        </div>
       )}
     </div>
   )

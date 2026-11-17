@@ -115,52 +115,54 @@ export function PagesPage() {
   }, 350)
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader title={t('page')} description={t('pageManageDesc')} />
 
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
-          aria-hidden
-        />
-        <Input
-          placeholder={t('search')}
-          aria-label={t('search')}
-          fullWidth
-          className="bg-surface pl-9"
-          onChange={(event) => runSearch(event.target.value)}
-        />
-      </div>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center">
+        <div className="relative md:flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+            aria-hidden
+          />
+          <Input
+            placeholder={t('search')}
+            aria-label={t('search')}
+            fullWidth
+            className="bg-surface pl-9"
+            onChange={(event) => runSearch(event.target.value)}
+          />
+        </div>
 
-      <div className="flex items-center gap-1.5">
-        <Button
-          size="sm"
-          variant="secondary"
-          className="flex-1"
-          isDisabled={task.running}
-          onPress={() => void refreshAllTitles()}
-        >
-          {task.running ? <Spinner size="sm" /> : <RefreshCw className="size-3.5" aria-hidden />}
-          <span className="truncate">{task.running ? task.text : t('updateTitle')}</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          isDisabled={task.running}
-          aria-label={t('cacheClear')}
-          onPress={() => void cacheAction('flush')}
-        >
-          <Trash2 className="size-3.5" aria-hidden />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          isDisabled={task.running}
-          aria-label={t('cacheWarm')}
-          onPress={() => void cacheAction('warm')}
-        >
-          <Flame className="size-3.5" aria-hidden />
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="flex-1 md:flex-none"
+            isDisabled={task.running}
+            onPress={() => void refreshAllTitles()}
+          >
+            {task.running ? <Spinner size="sm" /> : <RefreshCw className="size-3.5" aria-hidden />}
+            <span className="truncate">{task.running ? task.text : t('updateTitle')}</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            isDisabled={task.running}
+            aria-label={t('cacheClear')}
+            onPress={() => void cacheAction('flush')}
+          >
+            <Trash2 className="size-3.5" aria-hidden />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            isDisabled={task.running}
+            aria-label={t('cacheWarm')}
+            onPress={() => void cacheAction('warm')}
+          >
+            <Flame className="size-3.5" aria-hidden />
+          </Button>
+        </div>
       </div>
 
       {isPending ? (
@@ -186,7 +188,10 @@ export function PagesPage() {
                 <p className="truncate text-[11px] text-muted">{item.url || item.key}</p>
               </div>
               <div className="shrink-0 text-right text-[11px] tabular-nums text-muted">
-                <p>{formatNumber(item.comment_count)}</p>
+                <p>
+                  {formatNumber(item.comment_count)}
+                  <span className="ml-0.5 text-[10px]">{t('comment')}</span>
+                </p>
                 <p className="text-[10px]">PV {formatNumber(item.pv)}</p>
               </div>
               {item.url ? (

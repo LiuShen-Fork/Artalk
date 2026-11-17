@@ -1,4 +1,4 @@
-import { Button, Chip, Input, Skeleton, Tabs, toast } from '@heroui/react'
+import { Button, Chip, Input, Skeleton, toast } from '@heroui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ArtalkType } from 'artalk'
 import { Plus, Search, Users } from 'lucide-react'
@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { UserEditorDialog, type EditableUser } from '@/components/UserEditorDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Pager } from '@/components/ui/Pager'
+import { Segmented } from '@/components/ui/Segmented'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useConfirm } from '@/components/ui/confirm'
@@ -63,7 +64,7 @@ export function UsersPage() {
   }, 350)
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader
         title={t('user')}
         description={t('userManageDesc')}
@@ -75,42 +76,35 @@ export function UsersPage() {
         }
       />
 
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
-          aria-hidden
-        />
-        <Input
-          placeholder={t('search')}
-          aria-label={t('search')}
-          fullWidth
-          className="bg-surface pl-9"
-          onChange={(event) => runSearch(event.target.value)}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+        <div className="relative md:flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+            aria-hidden
+          />
+          <Input
+            placeholder={t('search')}
+            aria-label={t('search')}
+            fullWidth
+            className="bg-surface pl-9"
+            onChange={(event) => runSearch(event.target.value)}
+          />
+        </div>
+
+        <Segmented
+          items={(
+            [
+              ['all', 'all'],
+              ['admin', 'admin'],
+            ] as const
+          ).map(([id, label]) => ({ id, label: t(label) }))}
+          value={type}
+          onChange={(next) => {
+            setType(next)
+            setPage(1)
+          }}
         />
       </div>
-
-      <Tabs
-        selectedKey={type}
-        onSelectionChange={(key) => {
-          setType(String(key) as UserType)
-          setPage(1)
-        }}
-      >
-        <Tabs.ListContainer className="w-full">
-          <Tabs.List className="w-full justify-between">
-            {(
-              [
-                ['all', 'all'],
-                ['admin', 'admin'],
-              ] as const
-            ).map(([id, label]) => (
-              <Tabs.Tab key={id} id={id} className="flex-1 text-[12.5px]">
-                {t(label)}
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs.ListContainer>
-      </Tabs>
 
       {isPending ? (
         <div className="space-y-2">
@@ -120,43 +114,55 @@ export function UsersPage() {
         </div>
       ) : users.length ? (
         <div className="overflow-hidden rounded-xl border border-border bg-surface">
+          <div className="hidden items-center gap-3 border-b border-border bg-surface-secondary/40 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-muted md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,200px)_64px_auto]">
+            <span>{t('user')}</span>
+            <span>{t('email')}</span>
+            <span className="text-right">{t('comments')}</span>
+            <span className="w-[108px]" />
+          </div>
           {users.map((user, index) => (
             <div
               key={user.id}
-              className={`flex items-center gap-2.5 px-3 py-2.5 ${
+              className={`flex flex-wrap items-center gap-2.5 px-3 py-2.5 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,200px)_64px_auto] md:gap-3 md:px-4 ${
                 index ? 'border-t border-border' : ''
               }`}
             >
-              <UserAvatar name={user.name} size="sm" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="truncate text-[13px] font-medium">{user.name}</span>
-                  {user.badge_name ? (
-                    <Chip
-                      size="sm"
-                      variant="soft"
-                      style={{ color: user.badge_color, backgroundColor: `${user.badge_color}1f` }}
-                    >
-                      {user.badge_name}
-                    </Chip>
-                  ) : null}
-                  {!user.badge_name && user.is_admin ? (
-                    <Chip size="sm" variant="soft" color="accent">
-                      {t('admin')}
-                    </Chip>
-                  ) : null}
-                  {user.is_in_conf ? (
-                    <Chip size="sm" variant="soft" title={t('userInConfHint')}>
-                      {t('config')}
-                    </Chip>
-                  ) : null}
+              <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                <UserAvatar name={user.name} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate text-[13px] font-medium">{user.name}</span>
+                    {user.badge_name ? (
+                      <Chip
+                        size="sm"
+                        variant="soft"
+                        style={{ color: user.badge_color, backgroundColor: `${user.badge_color}1f` }}
+                      >
+                        {user.badge_name}
+                      </Chip>
+                    ) : null}
+                    {!user.badge_name && user.is_admin ? (
+                      <Chip size="sm" variant="soft" color="accent">
+                        {t('admin')}
+                      </Chip>
+                    ) : null}
+                    {user.is_in_conf ? (
+                      <Chip size="sm" variant="soft" title={t('userInConfHint')}>
+                        {t('config')}
+                      </Chip>
+                    ) : null}
+                  </div>
+                  <p className="truncate text-[11.5px] text-muted md:hidden">{user.email}</p>
                 </div>
-                <p className="truncate text-[11.5px] text-muted">{user.email}</p>
               </div>
-              <div className="flex shrink-0 items-center gap-0.5">
-                <span className="mr-1 text-[11px] tabular-nums text-muted" title={t('comments')}>
-                  {formatNumber(user.comment_count)}
-                </span>
+              <span className="hidden min-w-0 truncate text-[12px] text-muted md:block">{user.email}</span>
+              <span
+                className="mr-1 text-[11px] tabular-nums text-muted md:mr-0 md:block md:text-right"
+                title={t('comments')}
+              >
+                {formatNumber(user.comment_count)}
+              </span>
+              <div className="flex shrink-0 items-center justify-end gap-0.5">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -171,6 +177,7 @@ export function UsersPage() {
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="text-danger"
                   isDisabled={remove.isPending}
                   onPress={async () => {
                     const ok = await confirm({

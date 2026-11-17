@@ -267,6 +267,18 @@ export const tr: MessageSchema = {
   view: 'Görüntüle',
   securityLastIp: 'Son IP',
   securityLastUA: 'Son user agent',
+  viewAdmin: 'Yönetim',
+  viewUser: 'Ziyaretçi',
+  groupOverview: 'Genel bakış',
+  groupContent: 'İçerik',
+  groupCommunity: 'Topluluk',
+  groupSystem: 'Sistem',
+  groupMine: 'Benim',
+  myComments: 'Yorumlarım',
+  myCommentsDesc: 'Yayınladığınız tüm yorumlar ve aldığınız yanıtlar',
+  loginPanelDesc: 'Yorumlarınızı, profilinizi ve site ayarlarınızı tek yerden yönetmek için giriş yapın.',
+  socialLoginHint: 'veya şununla devam edin',
+  socialLoginUntrusted: 'Sosyal giriş kullanılamıyor: bu alan adı güvenilen alan adları listesinde değil.',
 }
 
 export default tr

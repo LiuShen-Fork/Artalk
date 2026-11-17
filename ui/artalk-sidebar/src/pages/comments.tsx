@@ -1,7 +1,8 @@
-import { Input, Spinner, Tabs } from '@heroui/react'
+import { Input, Spinner } from '@heroui/react'
 import { Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Pager } from '@/components/ui/Pager'
+import { Segmented } from '@/components/ui/Segmented'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { t, type MessageKey } from '@/lib/i18n'
 import { getArtalk } from '@/lib/artalk'
@@ -34,9 +35,11 @@ const USER_TABS: TabDef[] = [
  * editor all keep working exactly as on the host site.
  */
 export function CommentsPage() {
-  const { user, site } = useSession()
+  const { user, site, view } = useSession()
   const isAdmin = !!user?.is_admin
-  const tabs = isAdmin ? ADMIN_TABS : USER_TABS
+  // "My pages" mode narrows the same list to what this account wrote.
+  const manage = isAdmin && view === 'admin'
+  const tabs = manage ? ADMIN_TABS : USER_TABS
 
   const wrapRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -47,10 +50,10 @@ export function CommentsPage() {
 
   // The widget's config callbacks run outside React, so the latest filter
   // values are mirrored into a ref that the fetch modifier reads on demand.
-  const filter = useRef({ site, tab, search, isAdmin })
+  const filter = useRef({ site, tab, search, manage })
   useEffect(() => {
-    filter.current = { site, tab, search, isAdmin }
-  }, [site, tab, search, isAdmin])
+    filter.current = { site, tab, search, manage }
+  }, [site, tab, search, manage])
 
   useEffect(() => {
     const artalk = getArtalk()
@@ -89,7 +92,7 @@ export function CommentsPage() {
       listFetchParamsModifier: (params: any) => {
         const current = filter.current
         params.site_name = current.site
-        params.scope = current.isAdmin && current.tab !== 'personal_all' ? 'site' : 'user'
+        params.scope = current.manage && current.tab !== 'personal_all' ? 'site' : 'user'
         params.type = current.tab === 'personal_all' ? 'all' : current.tab
         // Keep AI comments in the normal list; the AI tab filters server-side.
         params.split_ai = false
@@ -121,6 +124,12 @@ export function CommentsPage() {
     // below instead of tearing the list down and rebuilding it.
   }, [])
 
+  // Switching between the admin console and "my pages" swaps the whole tab
+  // set, so an unknown tab falls back to the first one instead of a dead list.
+  useEffect(() => {
+    if (!tabs.some((item) => item.id === tab)) setTab(tabs[0].id)
+  }, [tabs, tab])
+
   useEffect(() => {
     if (!listRef.current?.hasChildNodes()) return
     getArtalk().ctx.fetch({ offset: 0 })
@@ -139,57 +148,59 @@ export function CommentsPage() {
   ).current
 
   return (
-    <div className="space-y-3">
-      <PageHeader title={t('comment')} description={t('commentManageDesc')} />
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
-          aria-hidden
-        />
-        <Input
-          value={search}
-          onChange={(event) => runSearch(event.target.value)}
-          placeholder={t('searchHint')}
-          aria-label={t('searchHint')}
-          fullWidth
-          className="bg-surface pl-9"
-        />
-      </div>
-
-      <Tabs selectedKey={tab} onSelectionChange={(key) => setTab(String(key))}>
-        <Tabs.ListContainer className="w-full">
-          <Tabs.List className="w-full justify-between">
-            {tabs.map((item) => (
-              <Tabs.Tab key={item.id} id={item.id} className="flex-1 text-[12.5px]">
-                {t(item.label)}
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs.ListContainer>
-      </Tabs>
-
-      <div ref={wrapRef} className="relative min-h-40">
-        {loading ? (
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-2">
-            <Spinner size="sm" />
-          </div>
-        ) : null}
-        <div ref={listRef} className="atk-comments" />
-      </div>
-
-      <Pager
-        page={paging.page}
-        pageSize={paging.pageSize}
-        total={paging.total}
-        disabled={loading}
-        onChange={(next) => {
-          getArtalk().ctx.editorResetState()
-          getArtalk().ctx.fetch({
-            offset: (next - 1) * paging.pageSize,
-            onSuccess: () => getArtalk().ctx.listGotoFirst(),
-          })
-        }}
+    <div className="space-y-3 md:mx-auto md:max-w-[780px] md:space-y-4">
+      <PageHeader
+        title={manage ? t('comments') : t('myComments')}
+        description={manage ? t('commentManageDesc') : t('myCommentsDesc')}
       />
+
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+        <div className="relative md:flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+            aria-hidden
+          />
+          <Input
+            value={search}
+            onChange={(event) => runSearch(event.target.value)}
+            placeholder={t('searchHint')}
+            aria-label={t('searchHint')}
+            fullWidth
+            className="bg-surface pl-9"
+          />
+        </div>
+
+        <Segmented
+          items={tabs.map((item) => ({ id: item.id, label: t(item.label) }))}
+          value={tab}
+          onChange={setTab}
+        />
+      </div>
+
+      <div className="mx-auto w-full max-w-[760px] space-y-3">
+        <div ref={wrapRef} className="relative min-h-40">
+          {loading ? (
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-2">
+              <Spinner size="sm" />
+            </div>
+          ) : null}
+          <div ref={listRef} className="atk-comments" />
+        </div>
+
+        <Pager
+          page={paging.page}
+          pageSize={paging.pageSize}
+          total={paging.total}
+          disabled={loading}
+          onChange={(next) => {
+            getArtalk().ctx.editorResetState()
+            getArtalk().ctx.fetch({
+              offset: (next - 1) * paging.pageSize,
+              onSuccess: () => getArtalk().ctx.listGotoFirst(),
+            })
+          }}
+        />
+      </div>
     </div>
   )
 }

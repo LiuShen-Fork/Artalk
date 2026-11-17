@@ -31,7 +31,7 @@ export function SitesPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader
         title={t('siteManage')}
         description={t('siteCount', { count: sites.length })}
@@ -44,19 +44,19 @@ export function SitesPage() {
       />
 
       {isPending ? (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-[92px] rounded-xl" />
           ))}
         </div>
       ) : sites.length ? (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3 xl:grid-cols-4">
           {sites.map((site) => (
             <button
               key={site.id}
               type="button"
               onClick={() => setEditing(site)}
-              className="flex flex-col items-start gap-2 rounded-xl border border-border bg-surface p-3 text-left transition-colors hover:border-accent/40 hover:bg-surface-secondary/50"
+              className="flex flex-col items-start gap-2 rounded-xl border border-border bg-surface p-3 text-left md:p-4 transition-colors hover:border-accent/40 hover:bg-surface-secondary/50"
             >
               <span
                 className="grid size-9 place-items-center rounded-lg text-[15px] font-semibold text-white"
@@ -69,7 +69,7 @@ export function SitesPage() {
                 <span className="mt-0.5 block truncate text-[11px] text-muted">
                   {(site.urls ?? []).length
                     ? `${site.urls[0]}${site.urls.length > 1 ? ` +${site.urls.length - 1}` : ''}`
-                    : t('siteUrls')}
+                    : '—'}
                 </span>
               </span>
               <span className="text-[10.5px] tabular-nums text-muted">

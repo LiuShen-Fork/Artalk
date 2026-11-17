@@ -65,13 +65,13 @@ function Stat({
   tone?: 'warning'
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-3">
+    <div className="rounded-xl border border-border bg-surface p-3 md:p-4">
       <p className="text-[11px] font-medium uppercase tracking-wide text-muted">{label}</p>
       <p
         className={
           tone === 'warning'
-            ? 'mt-1 text-[22px] font-semibold leading-none tabular-nums text-warning'
-            : 'mt-1 text-[22px] font-semibold leading-none tabular-nums'
+            ? 'mt-1 text-[22px] font-semibold leading-none tabular-nums text-warning md:text-[26px]'
+            : 'mt-1 text-[22px] font-semibold leading-none tabular-nums md:text-[26px]'
         }
       >
         {value}
@@ -94,14 +94,14 @@ function Panel({
 }) {
   return (
     <section className="rounded-xl border border-border bg-surface">
-      <header className="flex items-start justify-between gap-2 px-3.5 pb-2 pt-3">
+      <header className="flex items-start justify-between gap-2 px-3.5 pb-2 pt-3 md:px-5 md:pb-2.5 md:pt-4">
         <div>
-          <h2 className="text-[13.5px] font-semibold">{title}</h2>
+          <h2 className="text-[13.5px] font-semibold md:text-[14.5px]">{title}</h2>
           {description ? <p className="mt-0.5 text-[11.5px] text-muted">{description}</p> : null}
         </div>
         {action}
       </header>
-      <div className="px-3.5 pb-3.5">{children}</div>
+      <div className="px-3.5 pb-3.5 md:px-5 md:pb-4.5">{children}</div>
     </section>
   )
 }
@@ -126,7 +126,7 @@ export function DashboardPage() {
     })
   }
   const peak = Math.max(1, ...weeks.map((week) => Math.max(week.comments, week.users)))
-  const bar = (value: number) => `${Math.max(2, (value / peak) * 100)}%`
+  const bar = (value: number) => (value > 0 ? `${Math.max(4, (value / peak) * 100)}%` : '2px')
 
   return (
     <div className="space-y-3">
@@ -148,13 +148,13 @@ export function DashboardPage() {
       />
 
       {isPending ? (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-[74px] rounded-xl" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3">
           <Stat label={t('dashPv')} value={formatNumber(data?.pv.total)} meta={t('dashPvMeta')} />
           <Stat
             label={t('comment')}
@@ -181,14 +181,15 @@ export function DashboardPage() {
         </div>
       )}
 
-      <Panel
-        title={t('dashTrend')}
+      <div className="space-y-3 md:grid md:grid-cols-[1.35fr_1fr] md:items-start md:gap-3 md:space-y-0">
+        <Panel
+          title={t('dashTrend')}
         description={t('dashTrendDesc')}
         action={<TrendingUp className="size-4 text-muted" aria-hidden />}
       >
         {weeks.length ? (
           <>
-            <div className="flex h-28 items-end gap-1">
+            <div className="flex h-28 items-end gap-1 md:h-36 md:gap-1.5">
               {weeks.map((week) => (
                 <div
                   key={week.range}
@@ -197,21 +198,23 @@ export function DashboardPage() {
                 >
                   <span
                     className="w-1/3 rounded-t-[3px] bg-accent"
-                    style={{ height: bar(week.comments) }}
+                    style={{ height: bar(week.comments), opacity: week.comments ? 1 : 0.15 }}
                   />
                   <span
                     className="w-1/3 rounded-t-[3px] bg-accent/30"
-                    style={{ height: bar(week.users) }}
+                    style={{ height: bar(week.users), opacity: week.users ? 1 : 0.15 }}
                   />
                 </div>
               ))}
             </div>
-            <div className="mt-1.5 flex gap-1 text-[9px] text-muted">
-              {weeks.map((week, index) => (
-                <span key={week.range} className="flex-1 text-center">
-                  {index % 2 === 0 ? week.label : ''}
-                </span>
-              ))}
+            {/* First, middle and last week: a legible axis at 430px without
+                crowding the bars. */}
+            <div className="mt-1.5 flex justify-between text-[10px] text-muted">
+              {[weeks[0], weeks[Math.floor((weeks.length - 1) / 2)], weeks[weeks.length - 1]].map(
+                (week, index) => (
+                  <span key={`${week.range}-${index}`}>{week.label}</span>
+                ),
+              )}
             </div>
             <div className="mt-2 flex items-center gap-3 text-[11px] text-muted">
               <span className="flex items-center gap-1">
@@ -285,6 +288,8 @@ export function DashboardPage() {
           ) : null}
         </div>
       </Panel>
+
+      </div>
 
       <Panel title={t('dashTopPages')} description={t('dashTopPagesDesc')}>
         {(data?.top_pages ?? []).length ? (

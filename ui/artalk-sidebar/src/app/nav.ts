@@ -25,16 +25,35 @@ export type PageId =
   | 'security'
   | 'account'
 
+/**
+ * The console has two faces. Admins get the management pages; everybody,
+ * admins included, can drop into "my pages" to read their own comments and
+ * edit their own account. A plain visitor only ever sees the second one.
+ */
+export type ViewMode = 'admin' | 'user'
+
+export type NavGroupId = 'overview' | 'content' | 'community' | 'system' | 'mine'
+
 export interface NavItem {
   id: PageId
   path: `/${string}`
   titleKey: MessageKey
-  descriptionKey?: MessageKey
+  /** Label used in "my pages" mode, where the same route means something else. */
+  userTitleKey?: MessageKey
   icon: LucideIcon
   adminOnly?: boolean
-  /** Shown in the primary bar instead of the "more" sheet. */
+  group: NavGroupId
+  /** Sits in the mobile tab bar instead of the "more" sheet. */
   primary?: boolean
 }
+
+export const NAV_GROUPS: { id: NavGroupId; titleKey: MessageKey }[] = [
+  { id: 'overview', titleKey: 'groupOverview' },
+  { id: 'content', titleKey: 'groupContent' },
+  { id: 'community', titleKey: 'groupCommunity' },
+  { id: 'system', titleKey: 'groupSystem' },
+  { id: 'mine', titleKey: 'groupMine' },
+]
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -43,55 +62,129 @@ export const NAV_ITEMS: NavItem[] = [
     titleKey: 'dashboard',
     icon: LayoutDashboard,
     adminOnly: true,
+    group: 'overview',
     primary: true,
   },
-  { id: 'comments', path: '/comments', titleKey: 'comments', icon: MessagesSquare, primary: true },
+  {
+    id: 'comments',
+    path: '/comments',
+    titleKey: 'comments',
+    userTitleKey: 'myComments',
+    icon: MessagesSquare,
+    group: 'content',
+    primary: true,
+  },
   {
     id: 'moderation',
     path: '/moderation',
     titleKey: 'moderation',
     icon: ShieldCheck,
     adminOnly: true,
+    group: 'content',
     primary: true,
   },
-  { id: 'users', path: '/users', titleKey: 'user', icon: Users, adminOnly: true, primary: true },
-  { id: 'pages', path: '/pages', titleKey: 'page', icon: FileText, adminOnly: true },
-  { id: 'sites', path: '/sites', titleKey: 'site', icon: Globe2, adminOnly: true },
-  { id: 'security', path: '/security', titleKey: 'security', icon: ShieldAlert, adminOnly: true },
+  {
+    id: 'pages',
+    path: '/pages',
+    titleKey: 'page',
+    icon: FileText,
+    adminOnly: true,
+    group: 'content',
+  },
+  {
+    id: 'users',
+    path: '/users',
+    titleKey: 'user',
+    icon: Users,
+    adminOnly: true,
+    group: 'community',
+    primary: true,
+  },
+  {
+    id: 'sites',
+    path: '/sites',
+    titleKey: 'site',
+    icon: Globe2,
+    adminOnly: true,
+    group: 'community',
+  },
+  {
+    id: 'security',
+    path: '/security',
+    titleKey: 'security',
+    icon: ShieldAlert,
+    adminOnly: true,
+    group: 'system',
+  },
   {
     id: 'settings',
     path: '/settings',
     titleKey: 'settings',
     icon: SlidersHorizontal,
     adminOnly: true,
+    group: 'system',
   },
-  { id: 'transfer', path: '/transfer', titleKey: 'transfer', icon: ArrowDownUp, adminOnly: true },
-  { id: 'account', path: '/account', titleKey: 'account', icon: CircleUserRound },
+  {
+    id: 'transfer',
+    path: '/transfer',
+    titleKey: 'transfer',
+    icon: ArrowDownUp,
+    adminOnly: true,
+    group: 'system',
+  },
+  {
+    id: 'account',
+    path: '/account',
+    titleKey: 'account',
+    icon: CircleUserRound,
+    group: 'mine',
+  },
 ]
 
-export function navItemsFor(isAdmin: boolean): NavItem[] {
-  return NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly)
+/** The pages a visitor owns: their comments and their account. */
+const VISITOR_PAGES: PageId[] = ['comments', 'account']
+
+export function isAdminOnly(id: PageId): boolean {
+  return !!NAV_ITEMS.find((item) => item.id === id)?.adminOnly
 }
 
-export function primaryItemsFor(isAdmin: boolean): NavItem[] {
-  if (!isAdmin) {
-    // A signed-in visitor only has two destinations, so both deserve a tab.
-    return navItemsFor(false)
+export function navItemsFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user') {
+  if (!isAdmin || view === 'user') {
+    return NAV_ITEMS.filter((item) => !item.adminOnly && VISITOR_PAGES.includes(item.id))
   }
-  return navItemsFor(true).filter((item) => item.primary)
+  return NAV_ITEMS
 }
 
-export function secondaryItemsFor(isAdmin: boolean): NavItem[] {
-  const primary = new Set(primaryItemsFor(isAdmin).map((item) => item.id))
-  return navItemsFor(isAdmin).filter((item) => !primary.has(item.id))
+export function navGroupsFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user') {
+  const items = navItemsFor(isAdmin, view)
+  return NAV_GROUPS.map((group) => ({
+    ...group,
+    items: items.filter((item) => item.group === group.id),
+  })).filter((group) => group.items.length > 0)
+}
+
+export function labelKeyFor(item: NavItem, view: ViewMode): MessageKey {
+  return view === 'user' && item.userTitleKey ? item.userTitleKey : item.titleKey
+}
+
+export function primaryItemsFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user') {
+  const items = navItemsFor(isAdmin, view)
+  if (!isAdmin || view === 'user') return items
+  return items.filter((item) => item.primary)
+}
+
+export function secondaryItemsFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user') {
+  const primary = new Set(primaryItemsFor(isAdmin, view).map((item) => item.id))
+  return navItemsFor(isAdmin, view).filter((item) => !primary.has(item.id))
 }
 
 export function findNavItem(id: string): NavItem | undefined {
   return NAV_ITEMS.find((item) => item.id === id)
 }
 
-export function defaultPathFor(isAdmin: boolean): string {
-  return isAdmin ? '/dashboard' : '/comments'
+export function defaultPathFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user'): string {
+  if (!isAdmin || view === 'user') return '/comments'
+  return '/dashboard'
 }
 
 export function isPathAllowed(path: string, isAdmin: boolean): boolean {

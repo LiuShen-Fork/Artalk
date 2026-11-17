@@ -1,9 +1,18 @@
 import { Button, Drawer } from '@heroui/react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { ChevronDown, Moon, MoreHorizontal, Sun, type LucideIcon } from 'lucide-react'
+import { ChevronDown, Moon, MoreHorizontal, Sun } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { NAV_ITEMS, findNavItem, primaryItemsFor, secondaryItemsFor, type NavItem } from '@/app/nav'
+import {
+  NAV_ITEMS,
+  findNavItem,
+  labelKeyFor,
+  primaryItemsFor,
+  secondaryItemsFor,
+  type NavItem,
+  type ViewMode,
+} from '@/app/nav'
 import { AccountMenu } from '@/components/layout/AccountMenu'
+import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
 import { useConfirm } from '@/components/ui/confirm'
 import { t } from '@/lib/i18n'
@@ -17,7 +26,7 @@ function TabButton({
   active,
   onPress,
 }: {
-  icon: LucideIcon
+  icon: NavItem['icon']
   label: string
   active: boolean
   onPress: () => void
@@ -44,12 +53,18 @@ function MoreSheet({
   onOpenChange,
   current,
   onPick,
+  isAdmin,
+  view,
+  onSwitchView,
 }: {
   items: NavItem[]
   open: boolean
   onOpenChange: (open: boolean) => void
   current: string
   onPick: (item: NavItem) => void
+  isAdmin: boolean
+  view: ViewMode
+  onSwitchView: (view: ViewMode) => void
 }) {
   return (
     <Drawer isOpen={open} onOpenChange={onOpenChange}>
@@ -60,6 +75,11 @@ function MoreSheet({
             <Drawer.Header className="px-4 pt-1 text-start">
               <Drawer.Heading className="text-base">{t('nav')}</Drawer.Heading>
             </Drawer.Header>
+            {isAdmin ? (
+              <div className="px-3">
+                <ModeSwitch view={view} onChange={onSwitchView} layout="list" />
+              </div>
+            ) : null}
             <div className="grid grid-cols-3 gap-2 px-3 pb-1">
               {items.map((item) => {
                 const Icon = item.icon
@@ -77,7 +97,9 @@ function MoreSheet({
                     )}
                   >
                     <Icon className="size-5" aria-hidden />
-                    <span className="text-[11px] font-medium leading-none">{t(item.titleKey)}</span>
+                    <span className="text-[11px] font-medium leading-none">
+                      {t(labelKeyFor(item, view))}
+                    </span>
                   </button>
                 )
               })}
@@ -90,13 +112,12 @@ function MoreSheet({
 }
 
 /**
- * The console frame: a compact header (site scope + account), the scrolling page
- * body and a bottom bar. The panel is usually an iframe a few hundred pixels
- * wide, so a side rail would waste the whole viewport — navigation lives at the
- * bottom where a thumb can reach it.
+ * The console frame. On a phone (and in the 430px widget iframe) navigation is
+ * a bottom tab bar; from 768px up it becomes a sidebar — an icon rail until
+ * 1280px, then a full column with section headings.
  */
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user, site } = useSession()
+  const { user, site, view } = useSession()
   const isAdmin = !!user?.is_admin
   const dark = useDarkMode()
   const navigate = useNavigate()
@@ -105,15 +126,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [siteOpen, setSiteOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
 
-  const primary = primaryItemsFor(isAdmin)
-  const secondary = secondaryItemsFor(isAdmin)
+  const primary = primaryItemsFor(isAdmin, view)
+  const secondary = secondaryItemsFor(isAdmin, view)
   const moreActive = secondary.some((item) => item.path === pathname)
-  const currentId = pathname.replace('/', '')
-  const currentItem = findNavItem(currentId) ?? NAV_ITEMS.find((item) => item.path === pathname)
+  const currentItem =
+    findNavItem(pathname.replace('/', '')) ?? NAV_ITEMS.find((item) => item.path === pathname)
 
   const go = (path: string) => {
     setMoreOpen(false)
     void navigate({ to: path })
+  }
+
+  const switchView = (next: ViewMode) => {
+    setMoreOpen(false)
+    if (next === view) return
+    session.setView(next)
+    void navigate({ to: next === 'admin' ? '/dashboard' : '/comments' })
   }
 
   const logout = async () => {
@@ -129,79 +157,88 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-2">
-        {isAdmin ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onPress={() => setSiteOpen(true)}
-            className="min-w-0 gap-1.5 px-2 text-[13px] font-medium"
-          >
-            <span
-              className={cn('size-1.5 shrink-0 rounded-full', site ? 'bg-accent' : 'bg-muted')}
-            />
-            <span className="truncate">{site || t('allSites')}</span>
-            <ChevronDown className="size-3.5 shrink-0 opacity-60" aria-hidden />
-          </Button>
-        ) : (
-          <span className="flex min-w-0 items-center gap-2 px-1 text-[13px] font-medium">
-            <span className="grid size-6 shrink-0 place-items-center rounded-md bg-accent text-[11px] font-bold text-accent-foreground">
-              A
+    <div className="flex h-full min-h-0 bg-background text-foreground">
+      <Sidebar onOpenSites={() => setSiteOpen(true)} onLogout={logout} />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-2 md:hidden">
+          {isAdmin && view === 'admin' ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => setSiteOpen(true)}
+              className="min-w-0 gap-1.5 px-2 text-[13px] font-medium"
+            >
+              <span
+                className={cn('size-1.5 shrink-0 rounded-full', site ? 'bg-accent' : 'bg-muted')}
+              />
+              <span className="truncate">{site || t('allSites')}</span>
+              <ChevronDown className="size-3.5 shrink-0 opacity-60" aria-hidden />
+            </Button>
+          ) : (
+            <span className="flex min-w-0 items-center gap-2 px-1 text-[13px] font-medium">
+              <span className="grid size-6 shrink-0 place-items-center rounded-md bg-accent text-[11px] font-bold text-accent-foreground">
+                A
+              </span>
+              <span className="truncate">
+                {currentItem ? t(labelKeyFor(currentItem, view)) : t('ctrlCenter')}
+              </span>
             </span>
-            <span className="shrink-0">Artalk</span>
-            {currentItem ? (
-              <span className="truncate text-muted">/ {t(currentItem.titleKey)}</span>
-            ) : null}
-          </span>
-        )}
+          )}
 
-        <div className="flex shrink-0 items-center gap-0.5">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="ghost"
-            aria-label={dark ? t('lightTheme') : t('darkTheme')}
-            onPress={() => theme.toggle()}
-          >
-            {dark ? (
-              <Sun className="size-4" aria-hidden />
-            ) : (
-              <Moon className="size-4" aria-hidden />
-            )}
-          </Button>
-          <AccountMenu
-            name={user?.name ?? ''}
-            email={user?.email ?? ''}
-            onAccount={() => go('/account')}
-            onLogout={logout}
-          />
-        </div>
-      </header>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="ghost"
+              aria-label={dark ? t('lightTheme') : t('darkTheme')}
+              onPress={() => theme.toggle()}
+            >
+              {dark ? (
+                <Sun className="size-4" aria-hidden />
+              ) : (
+                <Moon className="size-4" aria-hidden />
+              )}
+            </Button>
+            <AccountMenu
+              name={user?.name ?? ''}
+              email={user?.email ?? ''}
+              view={isAdmin ? view : undefined}
+              onSwitchView={switchView}
+              onAccount={() => go('/account')}
+              onLogout={logout}
+            />
+          </div>
+        </header>
 
-      <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto w-full max-w-[560px] px-3 py-3.5">{children}</div>
-      </main>
+        <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
+          <div className="mx-auto w-full max-w-[600px] px-3.5 py-4 md:max-w-[920px] md:px-8 md:py-7 xl:max-w-[1080px]">
+            {children}
+          </div>
+        </main>
 
-      <nav className="flex shrink-0 items-stretch gap-1 border-t border-border bg-surface/95 px-1.5 pb-[max(env(safe-area-inset-bottom),6px)] pt-1.5 backdrop-blur">
-        {primary.map((item) => (
-          <TabButton
-            key={item.id}
-            icon={item.icon}
-            label={t(item.titleKey)}
-            active={item.path === pathname}
-            onPress={() => go(item.path)}
-          />
-        ))}
-        {secondary.length ? (
-          <TabButton
-            icon={MoreHorizontal}
-            label={t('nav')}
-            active={moreActive}
-            onPress={() => setMoreOpen(true)}
-          />
-        ) : null}
-      </nav>
+        <nav className="flex shrink-0 items-stretch gap-1 border-t border-border bg-surface/95 px-1.5 pb-[max(env(safe-area-inset-bottom),6px)] pt-1.5 backdrop-blur md:hidden">
+          {primary.map((item) => (
+            <TabButton
+              key={item.id}
+              icon={item.icon}
+              label={t(labelKeyFor(item, view))}
+              active={item.path === pathname}
+              onPress={() => go(item.path)}
+            />
+          ))}
+          {/* An admin in "my pages" has no secondary pages left, but still needs
+              the sheet for the trip back to the management console. */}
+          {secondary.length || isAdmin ? (
+            <TabButton
+              icon={MoreHorizontal}
+              label={t('nav')}
+              active={moreActive}
+              onPress={() => setMoreOpen(true)}
+            />
+          ) : null}
+        </nav>
+      </div>
 
       <SiteSwitcher open={siteOpen} onOpenChange={setSiteOpen} />
       <MoreSheet
@@ -210,6 +247,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         onOpenChange={setMoreOpen}
         current={pathname}
         onPick={(item) => go(item.path)}
+        isAdmin={isAdmin}
+        view={view}
+        onSwitchView={switchView}
       />
     </div>
   )

@@ -43,7 +43,7 @@ function requireAdmin() {
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
   notFoundComponent: () => {
-    throw redirect({ to: defaultPathFor(!!session.get().user.is_admin), replace: true })
+    throw redirect({ to: defaultPathFor(!!session.get().user.is_admin, session.get().view), replace: true })
   },
 })
 
@@ -53,7 +53,7 @@ const loginRoute = createRoute({
   component: LoginPage,
   beforeLoad: () => {
     if (session.get().user?.email) {
-      throw redirect({ to: defaultPathFor(!!session.get().user.is_admin), replace: true })
+      throw redirect({ to: defaultPathFor(!!session.get().user.is_admin, session.get().view), replace: true })
     }
   },
 })
@@ -93,7 +93,7 @@ const routeTree = rootRoute.addChildren([
       getParentRoute: () => shellRoute,
       path: '/',
       beforeLoad: () => {
-        throw redirect({ to: defaultPathFor(!!session.get().user.is_admin), replace: true })
+        throw redirect({ to: defaultPathFor(!!session.get().user.is_admin, session.get().view), replace: true })
       },
     }),
     createRoute({

@@ -262,6 +262,18 @@ export const ja: MessageSchema = {
   view: '表示',
   securityLastIp: '最終 IP',
   securityLastUA: '最終 UA',
+  viewAdmin: '管理',
+  viewUser: 'ユーザー',
+  groupOverview: '概要',
+  groupContent: 'コンテンツ',
+  groupCommunity: 'コミュニティ',
+  groupSystem: 'システム',
+  groupMine: 'マイページ',
+  myComments: '自分のコメント',
+  myCommentsDesc: '投稿したすべてのコメントと受け取った返信を確認できます',
+  loginPanelDesc: 'ログインすると、コメント・プロフィール・サイト設定をまとめて管理できます。',
+  socialLoginHint: 'または次でログイン',
+  socialLoginUntrusted: 'ソーシャルログインは利用できません：このドメインは信頼済みドメインに含まれていません。',
 }
 
 export default ja

@@ -267,6 +267,18 @@ export const ptPT: MessageSchema = {
   view: 'Ver',
   securityLastIp: 'Último IP',
   securityLastUA: 'Último agente',
+  viewAdmin: 'Administração',
+  viewUser: 'Visitante',
+  groupOverview: 'Visão geral',
+  groupContent: 'Conteúdo',
+  groupCommunity: 'Comunidade',
+  groupSystem: 'Sistema',
+  groupMine: 'Meu',
+  myComments: 'Meus comentários',
+  myCommentsDesc: 'Todos os comentários que publicou e as respostas recebidas',
+  loginPanelDesc: 'Inicie sessão para gerir os seus comentários, perfil e configurações do site.',
+  socialLoginHint: 'ou continuar com',
+  socialLoginUntrusted: 'Início de sessão social indisponível: este domínio não está na lista de domínios de confiança.',
 }
 
 export default ptPT

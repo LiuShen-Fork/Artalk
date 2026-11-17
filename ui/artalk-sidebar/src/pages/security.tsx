@@ -8,6 +8,7 @@ import { AttackReport } from '@/components/security/AttackReport'
 import { EventLog } from '@/components/security/EventLog'
 import { SelectField } from '@/components/ui/SelectField'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SectionNav } from '@/components/ui/SectionNav'
 import { errorMessage } from '@/lib/api'
 import { t, type MessageKey } from '@/lib/i18n'
 import {
@@ -101,7 +102,7 @@ export function SecurityPage() {
   const loading = configQuery.isLoading && !draft
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader
         title={t('security')}
         description={t('securityAdminDesc')}
@@ -147,7 +148,7 @@ export function SecurityPage() {
         </Section>
       ) : draft && captcha && runtime ? (
         <>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
             <Stat label={t('securityTrackedIPs')} value={runtime.tracked_ips} />
             <Stat label={t('securityActiveBans')} value={runtime.active_bans} />
             <Stat label={t('securityViolators')} value={runtime.tracked_violators} />
@@ -158,23 +159,14 @@ export function SecurityPage() {
             />
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
-            {TABS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTab(item.id)}
-                className={cn(
-                  'rounded-full border px-2.5 py-1 text-[12px] transition-colors',
-                  tab === item.id
-                    ? 'border-accent/40 bg-accent/10 text-accent'
-                    : 'border-border text-muted hover:text-foreground',
-                )}
-              >
-                {t(item.label)}
-              </button>
-            ))}
-          </div>
+          <div className="md:flex md:items-start md:gap-6">
+            <SectionNav
+              items={TABS.map((item) => ({ id: item.id, label: t(item.label) }))}
+              value={tab}
+              onChange={setTab}
+            />
+
+            <div className="min-w-0 flex-1 space-y-3 md:max-w-[820px] md:space-y-4">
 
           {tab === 'basic' ? (
             <Section title={t('securityBasic')} description={t('securityBasicDesc')}>
@@ -405,6 +397,8 @@ export function SecurityPage() {
           {tab === 'bans' ? <BanManager /> : null}
           {tab === 'report' ? <AttackReport /> : null}
           {tab === 'events' ? <EventLog /> : null}
+            </div>
+          </div>
         </>
       ) : null}
     </div>

@@ -170,6 +170,14 @@
     font-size: 16px;
   }
 
+  /* HeroUI fields size to their content (a bare input is ~20 characters wide),
+     which leaves ragged columns in these label-above-field forms. Opt out with
+     `w-auto` on any field that shares a row. */
+  [data-slot='input']:not(.w-auto):not(.w-fit),
+  [data-slot='textarea']:not(.w-auto):not(.w-fit) {
+    width: 100%;
+  }
+
   ::selection {
     background: color-mix(in oklch, var(--accent) 22%, transparent);
   }
@@ -211,5 +219,23 @@
 
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* The one surface every console panel is drawn on, so a page never has to
+     restate the border / radius / background triple. */
+  .card {
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+  }
+
+  .card-pad {
+    padding: 0.875rem;
+  }
+
+  @media (min-width: 768px) {
+    .card-pad {
+      padding: 1.125rem 1.25rem;
+    }
   }
 }

@@ -225,18 +225,18 @@ function UserForm({
             {t('admin')}
           </Switch.Content>
         </Switch>
-        {form.is_admin ? (
-          <TextField>
-            <Label className="text-[12px] text-muted">{t('password')}</Label>
-            <Input
-              type="text"
-              value={form.password}
-              onChange={(event) => set('password', event.target.value)}
-              autoComplete="new-password"
-              placeholder={isCreate ? '' : `(${t('passwordEmptyHint')})`}
-            />
-          </TextField>
-        ) : null}
+        {/* A local password is what lets the account sign in without social
+            login, so it is offered for ordinary users too — not just admins. */}
+        <TextField>
+          <Label className="text-[12px] text-muted">{t('password')}</Label>
+          <Input
+            type="text"
+            value={form.password}
+            onChange={(event) => set('password', event.target.value)}
+            autoComplete="new-password"
+            placeholder={isCreate ? '' : `(${t('passwordEmptyHint')})`}
+          />
+        </TextField>
         <Switch isSelected={form.receive_email} onChange={(value) => set('receive_email', value)}>
           <Switch.Content>
             <Switch.Control>

@@ -28,3 +28,12 @@
   display: none;
 }
 
+/* The widget's own "no comment" placeholder is a bare div; give it the spacing
+ * and muted tone of an empty state so an empty list does not read as a glitch. */
+.atk-comments .atk-list-no-comment {
+  padding: 56px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+

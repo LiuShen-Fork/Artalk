@@ -151,6 +151,26 @@ export const accountApi = {
     return request<{ msg: string }>(`user/identities/${id}`, { method: 'DELETE' })
   },
 
+  /**
+   * The OAuth callback page only hands the token back to an origin the server
+   * trusts, so the console asks first instead of opening a popup that is bound
+   * to fail. A console served from a domain that is not in the site URLs has to
+   * add it there before social login can work.
+   */
+  async isOriginTrusted() {
+    try {
+      const resp = await fetch(
+        apiURL(`conf/domain?url=${encodeURIComponent(window.location.origin)}`),
+        { credentials: 'same-origin' },
+      )
+      if (!resp.ok) return false
+      const json = (await resp.json()) as { is_trusted?: boolean }
+      return json.is_trusted === true
+    } catch {
+      return false
+    }
+  },
+
   getProviders() {
     // The endpoint is only registered when social login is enabled, so a 404
     // means "no providers" rather than a failure worth surfacing.

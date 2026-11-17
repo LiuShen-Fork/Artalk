@@ -1,9 +1,13 @@
-import { Button, Input } from '@heroui/react'
+import { Button, Input, Separator } from '@heroui/react'
 import { useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { defaultPathFor } from '@/app/nav'
+import { VerifyCodeButton } from '@/components/VerifyCodeButton'
+import { accountApi, errorMessage, resolveServerPath, type AuthProviderInfo } from '@/lib/account-api'
 import { getArtalk } from '@/lib/artalk'
 import { t } from '@/lib/i18n'
+import { startOAuthLogin } from '@/lib/oauth-login'
 import { session } from '@/lib/session'
 import { cn } from '@/lib/utils'
 
@@ -32,6 +36,44 @@ function Field({
   )
 }
 
+function PasswordInput({
+  value,
+  onChange,
+  autoComplete,
+  placeholder,
+  minLength,
+}: {
+  value: string
+  onChange: (value: string) => void
+  autoComplete: string
+  placeholder: string
+  minLength?: number
+}) {
+  const [visible, setVisible] = useState(false)
+  return (
+    <div className="relative">
+      <Input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        autoComplete={autoComplete}
+        minLength={minLength}
+        placeholder={placeholder}
+        fullWidth
+        className="pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((prev) => !prev)}
+        aria-label={visible ? t('hide') : t('view')}
+        className="absolute right-1.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+      >
+        {visible ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+      </button>
+    </div>
+  )
+}
+
 export function LoginPage() {
   const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('login')
@@ -45,6 +87,9 @@ export function LoginPage() {
   const [userSelector, setUserSelector] = useState<string[] | null>(null)
   const [version, setVersion] = useState('')
   const [buildHash, setBuildHash] = useState('')
+  const [providers, setProviders] = useState<AuthProviderInfo[]>([])
+  const [trustedOrigin, setTrustedOrigin] = useState<boolean | null>(null)
+  const [socialBusy, setSocialBusy] = useState('')
 
   useEffect(() => {
     getArtalk()
@@ -55,7 +100,23 @@ export function LoginPage() {
         setBuildHash(res.data.commit_hash)
       })
       .catch(() => undefined)
+
+    let alive = true
+    void accountApi
+      .getProviders()
+      .then((res) => {
+        if (alive) setProviders((res.providers ?? []).filter((item) => item.name !== 'email'))
+      })
+      .catch(() => undefined)
+    void accountApi.isOriginTrusted().then((trusted) => {
+      if (alive) setTrustedOrigin(trusted)
+    })
+    return () => {
+      alive = false
+    }
   }, [])
+
+  const socialProviders = useMemo(() => providers, [providers])
 
   const finishLogin = (data: { user: any; token: string }) => {
     const artalk = getArtalk()
@@ -115,6 +176,26 @@ export function LoginPage() {
     }
   }
 
+  const socialLogin = async (provider: AuthProviderInfo) => {
+    if (socialBusy) return
+    setError('')
+    setSocialBusy(provider.name)
+    try {
+      const path = provider.path || `/auth/${provider.name}`
+      const token = await startOAuthLogin(resolveServerPath(path))
+      const artalk = getArtalk()
+      artalk.ctx.getUser().update({ token })
+      session.setUser({ token })
+      const profile = await accountApi.getProfile()
+      finishLogin({ user: profile.user, token })
+    } catch (e) {
+      const message = errorMessage(e)
+      setError(message === 'canceled' ? '' : message || t('loginFailure'))
+    } finally {
+      setSocialBusy('')
+    }
+  }
+
   const switchMode = (next: Mode) => {
     setMode(next)
     setError('')
@@ -125,152 +206,215 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative grid min-h-full place-items-center bg-background px-6 py-10">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(120%_100%_at_50%_0%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_70%)]"
-      />
-      <div className="relative w-full max-w-[340px]">
-        <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <span className="grid size-12 place-items-center rounded-2xl bg-accent text-lg font-bold text-accent-foreground shadow-lg shadow-accent/25">
+    <div className="flex min-h-full bg-background">
+      {/* Wide screens get a brand panel; the iframe and phones go straight to the form. */}
+      <aside className="relative hidden flex-1 overflow-hidden border-r border-border bg-surface/60 lg:flex lg:flex-col lg:justify-between lg:p-10">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_20%_0%,color-mix(in_oklab,var(--accent)_22%,transparent),transparent_65%)]"
+        />
+        <div className="relative flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-xl bg-accent text-[14px] font-bold text-accent-foreground">
             A
           </span>
-          <div>
-            <h1 className="text-[17px] font-semibold tracking-tight">Artalk</h1>
-            <p className="mt-0.5 text-[13px] text-muted">
-              {mode === 'login' ? t('ctrlCenter') : t(MODE_TITLE[mode])}
-            </p>
-          </div>
+          <span className="text-[15px] font-semibold">Artalk</span>
         </div>
-
-        <form onSubmit={submit} className="space-y-3.5">
-          {mode === 'register' ? (
-            <Field label={t('username')}>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="nickname"
-                placeholder={t('username')}
-                fullWidth
-                required
-              />
-            </Field>
-          ) : null}
-
-          <Field label={t('email')}>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="username"
-              placeholder={t('email')}
-              fullWidth
-              required
-            />
-          </Field>
-
-          <Field label={mode === 'login' ? t('password') : t('newPassword')}>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              placeholder={mode === 'login' ? t('password') : t('newPassword')}
-              fullWidth
-              required
-            />
-          </Field>
-
-          {mode !== 'login' ? (
-            <>
-              <Field label={t('confirmPassword')}>
-                <Input
-                  type="password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  autoComplete="new-password"
-                  minLength={8}
-                  placeholder={t('confirmPassword')}
-                  fullWidth
-                  required
-                />
-              </Field>
-              <Field label={t('verificationCode')}>
-                <Input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder={t('verificationCode')}
-                  fullWidth
-                  required
-                />
-              </Field>
-            </>
-          ) : null}
-
-          {error ? (
-            <p
-              role="alert"
-              className="rounded-lg bg-danger/10 px-3 py-2 text-[12px] leading-relaxed text-danger"
-            >
-              {error}
-            </p>
-          ) : null}
-
-          <Button type="submit" variant="primary" fullWidth isDisabled={submitting}>
-            {submitting ? '…' : t(MODE_TITLE[mode])}
-          </Button>
-        </form>
-
-        <div className="mt-4 flex flex-col items-center gap-2 text-[12px] text-muted">
-          {mode === 'login' ? (
-            <>
-              <span>
-                {t('noAccountPrompt')}{' '}
-                <button
-                  type="button"
-                  className="font-medium text-accent"
-                  onClick={() => switchMode('register')}
-                >
-                  {t('signUp')}
-                </button>
-              </span>
-              <button
-                type="button"
-                className="font-medium text-accent"
-                onClick={() => switchMode('reset')}
-              >
-                {t('forgetPassword')}
-              </button>
-            </>
-          ) : (
-            <span>
-              {t('haveAccountPrompt')}{' '}
-              <button
-                type="button"
-                className="font-medium text-accent"
-                onClick={() => switchMode('login')}
-              >
-                {t('signIn')}
-              </button>
-            </span>
-          )}
+        <div className="relative max-w-[320px] space-y-3">
+          <h1 className="text-[26px] font-semibold leading-tight tracking-[-0.02em]">
+            {t('ctrlCenter')}
+          </h1>
+          <p className="text-[13.5px] leading-relaxed text-muted">{t('loginPanelDesc')}</p>
         </div>
-
-        <p className="mt-8 text-center text-[11px] text-muted">
-          Powered by{' '}
-          <a href="https://artalk.js.org" target="_blank" rel="noreferrer" className="text-accent">
-            Artalk
-          </a>
+        <p className="relative text-[11px] text-muted">
           {version ? (
-            <span className="ml-1 tabular-nums">
+            <span className="tabular-nums">
               v{version}
               {buildHash ? ` / ${buildHash.slice(0, 7)}` : ''}
             </span>
           ) : null}
         </p>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 items-center justify-center px-5 py-8 lg:px-8">
+        <div className="w-full max-w-[340px] lg:max-w-[360px]">
+          <div className="mb-6 flex flex-col items-center gap-3 text-center lg:hidden">
+            <span className="grid size-12 place-items-center rounded-2xl bg-accent text-lg font-bold text-accent-foreground shadow-lg shadow-accent/25">
+              A
+            </span>
+            <div>
+              <h1 className="text-[17px] font-semibold tracking-tight">Artalk</h1>
+              <p className="mt-0.5 text-[13px] text-muted">
+                {mode === 'login' ? t('ctrlCenter') : t(MODE_TITLE[mode])}
+              </p>
+            </div>
+          </div>
+          <h2 className="mb-4 hidden text-[17px] font-semibold tracking-tight lg:block">
+            {mode === 'login' ? t('ctrlCenter') : t(MODE_TITLE[mode])}
+          </h2>
+
+          <form onSubmit={submit} className="space-y-3.5">
+            {mode === 'register' ? (
+              <Field label={t('username')}>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="nickname"
+                  placeholder={t('username')}
+                  fullWidth
+                  required
+                />
+              </Field>
+            ) : null}
+
+            <Field label={t('email')}>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="username"
+                placeholder={t('email')}
+                fullWidth
+                required
+              />
+            </Field>
+
+            <Field label={mode === 'login' ? t('password') : t('newPassword')}>
+              <PasswordInput
+                value={password}
+                onChange={setPassword}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                placeholder={mode === 'login' ? t('password') : t('newPassword')}
+                minLength={mode === 'login' ? undefined : 8}
+              />
+            </Field>
+
+            {mode !== 'login' ? (
+              <>
+                <Field label={t('confirmPassword')}>
+                  <PasswordInput
+                    value={confirm}
+                    onChange={setConfirm}
+                    autoComplete="new-password"
+                    minLength={8}
+                    placeholder={t('confirmPassword')}
+                  />
+                </Field>
+                <Field label={t('verificationCode')}>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      placeholder={t('verificationCode')}
+                      fullWidth
+                      required
+                    />
+                    <VerifyCodeButton email={email} disabled={!email.trim()} onError={setError} />
+                  </div>
+                </Field>
+              </>
+            ) : null}
+
+            {error ? (
+              <p
+                role="alert"
+                className="rounded-lg bg-danger/10 px-3 py-2 text-[12px] leading-relaxed text-danger"
+              >
+                {error}
+              </p>
+            ) : null}
+
+            <Button type="submit" variant="primary" fullWidth isDisabled={submitting}>
+              {submitting ? '…' : t(MODE_TITLE[mode])}
+            </Button>
+          </form>
+
+          {socialProviders.length ? (
+            <div className="mt-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Separator className="flex-1" />
+                <span className="text-[11px] text-muted">{t('socialLoginHint')}</span>
+                <Separator className="flex-1" />
+              </div>
+              <div className="grid gap-1.5">
+                {socialProviders.map((provider) => (
+                  <Button
+                    key={provider.name}
+                    variant="outline"
+                    fullWidth
+                    isDisabled={!!socialBusy || trustedOrigin === false}
+                    onPress={() => void socialLogin(provider)}
+                    className="justify-center gap-2 text-[13px]"
+                  >
+                    {socialBusy === provider.name ? (
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
+                    ) : provider.icon ? (
+                      <img src={provider.icon} alt="" className="size-4" />
+                    ) : (
+                      <LogIn className="size-4" aria-hidden />
+                    )}
+                    <span className="truncate">{provider.label || provider.name}</span>
+                  </Button>
+                ))}
+              </div>
+              {trustedOrigin === false ? (
+                <p className="text-center text-[11px] leading-relaxed text-warning">
+                  {t('socialLoginUntrusted')}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="mt-4 flex flex-col items-center gap-2 text-[12px] text-muted">
+            {mode === 'login' ? (
+              <>
+                <span>
+                  {t('noAccountPrompt')}{' '}
+                  <button
+                    type="button"
+                    className="font-medium text-accent"
+                    onClick={() => switchMode('register')}
+                  >
+                    {t('signUp')}
+                  </button>
+                </span>
+                <button
+                  type="button"
+                  className="font-medium text-accent"
+                  onClick={() => switchMode('reset')}
+                >
+                  {t('forgetPassword')}
+                </button>
+              </>
+            ) : (
+              <span>
+                {t('haveAccountPrompt')}{' '}
+                <button
+                  type="button"
+                  className="font-medium text-accent"
+                  onClick={() => switchMode('login')}
+                >
+                  {t('signIn')}
+                </button>
+              </span>
+            )}
+          </div>
+
+          <p className="mt-8 text-center text-[11px] text-muted lg:hidden">
+            Powered by{' '}
+            <a href="https://artalk.js.org" target="_blank" rel="noreferrer" className="text-accent">
+              Artalk
+            </a>
+            {version ? (
+              <span className="ml-1 tabular-nums">
+                v{version}
+                {buildHash ? ` / ${buildHash.slice(0, 7)}` : ''}
+              </span>
+            ) : null}
+          </p>
+        </div>
       </div>
 
       {userSelector ? (

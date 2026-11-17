@@ -256,6 +256,18 @@ export const zhCN: MessageSchema = {
   view: '查看',
   securityLastIp: '最近 IP',
   securityLastUA: '最近 UA',
+  viewAdmin: '管理',
+  viewUser: '用户',
+  groupOverview: '概览',
+  groupContent: '内容',
+  groupCommunity: '社区',
+  groupSystem: '系统',
+  groupMine: '我的',
+  myComments: '我的评论',
+  myCommentsDesc: '查看你发表过的全部评论和收到的回复',
+  loginPanelDesc: '登录后即可集中管理你的评论、个人资料与站点设置。',
+  socialLoginHint: '或使用以下方式登录',
+  socialLoginUntrusted: '无法使用第三方登录：当前域名不在受信任域名列表中。',
 }
 
 export default zhCN

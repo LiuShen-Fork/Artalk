@@ -256,6 +256,18 @@ export const zhTW: MessageSchema = {
   view: '查看',
   securityLastIp: '最近 IP',
   securityLastUA: '最近 UA',
+  viewAdmin: '管理',
+  viewUser: '使用者',
+  groupOverview: '概覽',
+  groupContent: '內容',
+  groupCommunity: '社群',
+  groupSystem: '系統',
+  groupMine: '我的',
+  myComments: '我的評論',
+  myCommentsDesc: '檢視你發表過的所有評論與收到的回覆',
+  loginPanelDesc: '登入後即可集中管理你的評論、個人資料與站點設定。',
+  socialLoginHint: '或使用以下方式登入',
+  socialLoginUntrusted: '無法使用第三方登入：目前網域不在受信任網域清單中。',
 }
 
 export default zhTW

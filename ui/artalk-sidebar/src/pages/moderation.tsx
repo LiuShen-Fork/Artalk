@@ -1,10 +1,11 @@
-import { Button, Chip, Skeleton, Tabs, toast } from '@heroui/react'
+import { Button, Chip, Skeleton, toast } from '@heroui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Check, RefreshCw, ShieldCheck, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Pager } from '@/components/ui/Pager'
+import { Segmented } from '@/components/ui/Segmented'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useConfirm } from '@/components/ui/confirm'
 import { api, siteQuery, errorMessage } from '@/lib/api'
@@ -139,7 +140,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
         : t('opFailed')
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader
         title={t('moderation')}
         description={t('moderationIntro')}
@@ -173,31 +174,22 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
         }
       />
 
-      <Tabs
-        selectedKey={tab}
-        onSelectionChange={(key) => {
-          setTab(String(key) as ModerationTab)
+      <Segmented
+        items={(
+          [
+            ['all', 'all'],
+            ['replace', 'moderationReplaced'],
+            ['block', 'moderationBlocked'],
+            ['error', 'opFailed'],
+          ] as const
+        ).map(([id, label]) => ({ id, label: t(label) }))}
+        value={tab}
+        onChange={(next) => {
+          setTab(next)
           setPage(1)
-          void navigate({ to: '/moderation', search: { status: String(key) }, replace: true })
+          void navigate({ to: '/moderation', search: { status: next }, replace: true })
         }}
-      >
-        <Tabs.ListContainer className="w-full">
-          <Tabs.List className="w-full justify-between">
-            {(
-              [
-                ['all', 'all'],
-                ['replace', 'moderationReplaced'],
-                ['block', 'moderationBlocked'],
-                ['error', 'opFailed'],
-              ] as const
-            ).map(([id, label]) => (
-              <Tabs.Tab key={id} id={id} className="flex-1 text-[12.5px]">
-                {t(label)}
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs.ListContainer>
-      </Tabs>
+      />
 
       <p className="px-0.5 text-[11.5px] text-muted">
         {t('moderationSummary', { total, count: logs.length })}
@@ -217,7 +209,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
             const Icon = meta.icon
             const operable = item.comment_available && item.comment_id > 0
             return (
-              <article key={item.id} className="rounded-xl border border-border bg-surface p-3">
+              <article key={item.id} className="rounded-xl border border-border bg-surface p-3 md:p-4">
                 <div className="flex items-start gap-2">
                   <Icon className={`mt-0.5 size-4 shrink-0 ${meta.tone}`} aria-hidden />
                   <div className="min-w-0 flex-1">

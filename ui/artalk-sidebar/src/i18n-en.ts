@@ -264,6 +264,18 @@ export const en = {
   view: 'View',
   securityLastIp: 'Last IP',
   securityLastUA: 'Last user agent',
+  viewAdmin: 'Admin',
+  viewUser: 'Visitor',
+  groupOverview: 'Overview',
+  groupContent: 'Content',
+  groupCommunity: 'Community',
+  groupSystem: 'System',
+  groupMine: 'Mine',
+  myComments: 'My comments',
+  myCommentsDesc: 'Everything you have posted, and the replies you received',
+  loginPanelDesc: 'Sign in to manage your comments, profile and site settings from one place.',
+  socialLoginHint: 'or continue with',
+  socialLoginUntrusted: 'Social login is unavailable: this domain is not in the trusted domain list.',
 }
 
 export default en

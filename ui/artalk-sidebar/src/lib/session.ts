@@ -1,7 +1,26 @@
 import { useSyncExternalStore } from 'react'
 import type { ArtalkType, LocalUser } from 'artalk'
-import { bootParams } from './boot'
 import { getArtalkOrNull } from './artalk'
+import { bootParams } from './boot'
+import type { ViewMode } from '@/app/nav'
+
+const VIEW_STORAGE_KEY = 'ATK_SIDEBAR_VIEW'
+
+function readStoredView(): ViewMode {
+  try {
+    return localStorage.getItem(VIEW_STORAGE_KEY) === 'user' ? 'user' : 'admin'
+  } catch {
+    return 'admin'
+  }
+}
+
+function storeView(view: ViewMode) {
+  try {
+    localStorage.setItem(VIEW_STORAGE_KEY, view)
+  } catch {
+    // Private mode: the preference simply does not survive the session.
+  }
+}
 
 export interface SessionState {
   user: LocalUser
@@ -9,6 +28,8 @@ export interface SessionState {
   site: string
   sites: ArtalkType.SiteData[]
   sitesLoaded: boolean
+  /** Which half of the console the sidebar is showing. Visitors are pinned to `user`. */
+  view: ViewMode
 }
 
 let state: SessionState = {
@@ -16,6 +37,7 @@ let state: SessionState = {
   site: bootParams.site,
   sites: [],
   sitesLoaded: false,
+  view: bootParams.user?.is_admin ? readStoredView() : 'user',
 }
 
 const listeners = new Set<() => void>()
@@ -32,13 +54,22 @@ export const session = {
     return () => listeners.delete(listener)
   },
   setUser(user: Partial<LocalUser>) {
-    publish({ user: { ...state.user, ...user } })
+    const next = { ...state.user, ...user }
+    // A fresh login (or a boot without a signed-in user) has no view yet, so an
+    // admin lands in the console they manage rather than in "my pages".
+    const becameAdmin = next.is_admin && !state.user.is_admin
+    publish({ user: next, view: next.is_admin ? (becameAdmin ? readStoredView() : state.view) : 'user' })
   },
   setSite(site: string) {
     publish({ site })
   },
   setSites(sites: ArtalkType.SiteData[]) {
     publish({ sites, sitesLoaded: true })
+  },
+  setView(view: ViewMode) {
+    if (!state.user.is_admin && view === 'admin') return
+    storeView(view)
+    publish({ view })
   },
   async refreshSites() {
     const artalk = getArtalkOrNull()
@@ -48,7 +79,11 @@ export const session = {
   },
   logout() {
     getArtalkOrNull()?.ctx.getUser().logout()
-    publish({ user: { name: '', email: '', link: '', token: '', is_admin: false }, site: '' })
+    publish({
+      user: { name: '', email: '', link: '', token: '', is_admin: false },
+      site: '',
+      view: 'user',
+    })
   },
 }
 

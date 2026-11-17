@@ -74,7 +74,8 @@ export function TransferPage() {
     <div className="space-y-3">
       <PageHeader title={t('transfer')} description={t('transferDesc')} />
 
-      <section className="space-y-3 rounded-xl border border-border bg-surface p-3">
+<div className="space-y-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-3 md:space-y-0">
+      <section className="space-y-3 rounded-xl border border-border bg-surface p-3 md:p-5">
         <div>
           <h2 className="text-[13px] font-semibold">{t('import')}</h2>
           <p className="mt-0.5 text-[11.5px] text-muted">{t('importDesc')}</p>
@@ -134,7 +135,7 @@ export function TransferPage() {
         </div>
       </section>
 
-      <section className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3">
+      <section className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3 md:flex-col md:items-start md:p-5">
         <div className="min-w-0">
           <h2 className="text-[13px] font-semibold">{t('export')}</h2>
           <p className="mt-0.5 text-[11.5px] text-muted">{t('exportDesc')}</p>
@@ -149,6 +150,7 @@ export function TransferPage() {
           {t('export')}
         </Button>
       </section>
+      </div>
     </div>
   )
 }

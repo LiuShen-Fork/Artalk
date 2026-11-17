@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useSession, session } from '@/lib/session'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { useMediaQuery } from '@/lib/use-media'
 
 interface SiteSwitcherProps {
   open: boolean
@@ -19,6 +20,9 @@ interface SiteSwitcherProps {
 export function SiteSwitcher({ open, onOpenChange }: SiteSwitcherProps) {
   const { site, sites, sitesLoaded } = useSession()
   const navigate = useNavigate()
+  // A bottom sheet suits a phone; on a desktop window the same list reads
+  // better sliding in from the edge it was opened from.
+  const wide = useMediaQuery('(min-width: 768px)')
 
   useEffect(() => {
     if (open && !sitesLoaded) void session.refreshSites()
@@ -27,9 +31,9 @@ export function SiteSwitcher({ open, onOpenChange }: SiteSwitcherProps) {
   return (
     <Drawer isOpen={open} onOpenChange={onOpenChange}>
       <Drawer.Backdrop>
-        <Drawer.Content placement="bottom">
-          <Drawer.Dialog className="max-h-[72vh] gap-0 p-0">
-            <Drawer.Handle />
+        <Drawer.Content placement={wide ? 'right' : 'bottom'}>
+          <Drawer.Dialog className={wide ? 'h-full gap-0 p-0' : 'max-h-[72vh] gap-0 p-0'}>
+            {wide ? null : <Drawer.Handle />}
             <Drawer.Header className="px-4 pb-2 pt-1 text-start">
               <Drawer.Heading className="text-base">{t('siteManage')}</Drawer.Heading>
             </Drawer.Header>
