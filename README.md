@@ -41,6 +41,12 @@ This repository is a personal-maintained fork of [ArtalkJS/Artalk](https://githu
 - Accounts: upstream already provides password and social login. What this fork adds is what happens after login — self-service password changes, binding and unbinding third-party identities, and a security page — plus login and sign-up integrated into the sidebar so ordinary users can manage their own profile without the admin console.
 - Compatibility: the public API and the widget's events and options match upstream; every addition is opt-in and off by default.
 
+### Hard fork and data compatibility
+
+- Starting with **v2.10.1** this repository is a hard fork: upstream changes are still merged by hand, but the fork’s schema and configuration keep moving ahead of upstream.
+- **Data compatibility is not guaranteed.** The fork adds its own tables and columns (`security_events`, `ip_bans`, `users.last_ip`, `users.last_ua`) and migrates them automatically on start. A database written by this fork is not guaranteed to be readable by an upstream release, and the reverse only holds for the Artalk tables the two share. Export a backup before upgrading across the fork point.
+- **Export always works, in the upstream format.** The console’s *Transfer* page produces `.artrans` archives with the untouched upstream export handler, so the file format is identical to upstream Artalk. Import accepts backups from upstream and from this fork, so data can move in either direction.
+
 ## Differences from Upstream
 
 ### AI comment moderation
