@@ -36,7 +36,8 @@ This repository is a personal-maintained fork of [ArtalkJS/Artalk](https://githu
 
 - Base: `upstream/master` (2026-11-14, `d9b62cba`).
 - History: the fork's customizations are split by feature across a handful of commits on top of upstream — server capabilities, administration frontend, documentation and CI — so a later rebase resolves conflicts in a handful of files in one pass.
-- Size: roughly 250 files changed, +22.6k / −3.8k. The server accounts for ~120 files (~+11.6k) and `ui/artalk-sidebar` for ~49 files (~+9.0k), while the visitor-facing `ui/artalk` client changes only 18 files by roughly 110 lines — the comment widget itself stays close to upstream.
+- Size: roughly 330 files changed, +23.3k / −9.3k. The server accounts for ~125 files (~+12.4k) and `ui/artalk-sidebar` for ~122 files, while the visitor-facing `ui/artalk` client changes only 18 files by roughly 110 lines — the comment widget itself stays close to upstream.
+- Administration console: `ui/artalk-sidebar` is a React 19 console built on HeroUI v3, Tailwind CSS v4, TanStack Router and TanStack Query. It talks to the same `/api/v2` endpoints as before, runs at 430px inside the widget's iframe, keeps every locale of the widget client and adds no hard-coded deployment details. See [Administration console](#administration-console).
 - Accounts: upstream already provides password and social login. What this fork adds is what happens after login — self-service password changes, binding and unbinding third-party identities, and a security page — plus login and sign-up integrated into the sidebar so ordinary users can manage their own profile without the admin console.
 - Compatibility: the public API and the widget's events and options match upstream; every addition is opt-in and off by default.
 
@@ -68,6 +69,16 @@ An opt-in `security` block (off by default) adds rate limiting, banning and atta
 - Blocked requests are stored in `security_events` (IP region, path, UA, site, account, counts), pruned after a retention period, and aggregated into a report by kind, day, top IPs and top paths.
 - Admins and whitelisted IPs are not counted; only write methods are; the legacy `LimiterGuard` yields when security is enabled so nothing is counted or challenged twice.
 - The administration console gains a security page that edits the config in place (patching only the `security` and `captcha` YAML blocks, preserving comments and avoiding a restart), manages bans, and shows the report and individual records.
+
+### Administration console
+
+`ui/artalk-sidebar` is the page the widget opens in an iframe. This fork rebuilds it from scratch on a current stack instead of the previous Vue components:
+
+- React 19, HeroUI v3 (`@heroui/react` + `@heroui/styles`), Tailwind CSS v4 with an oklch token theme, TanStack Router (hash history, so it keeps working inside the iframe) and TanStack Query for server state.
+- Pages keep their previous behavior — dashboard, comments, moderation, pages, users, sites, transfer, settings, security and account — but share one layout: a compact header with the site switcher, theme toggle and account menu, a bottom navigation bar for the four primary destinations, and a sheet with the rest. The console runs at 430px wide, so nothing depends on a desktop media query.
+- The comment list is not reimplemented: the page mounts the widget's own list element, so rendering, replying, moderation and AI-assistant behavior stay exactly as the public client does them.
+- Every request still goes through the widget's API client (`ctx.getApi()`), so tokens, guest credentials and error messages behave as before; the backend was not changed for this rewrite.
+- All nine locales of the console are kept in sync (`src/i18n-en.ts` defines the message schema), and it contains no deployment-specific values.
 
 ### Other fork-specific changes
 
