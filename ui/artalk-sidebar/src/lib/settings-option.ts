@@ -51,6 +51,15 @@ const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placehold
     control: 'textarea',
     placeholder: '默认提示词已内置；可按需自定义助手的回复风格和行为。',
   },
+  // The console's own font-end customization: a snippet, not a one-line value.
+  'custom.css': {
+    control: 'textarea',
+    placeholder: '/* .button { --radius: 4px; } */',
+  },
+  'custom.js': {
+    control: 'textarea',
+    placeholder: "// document.title = 'my console'",
+  },
 }
 
 function extractItemComment(item: Pair, index: number, parentPair?: Pair): string {

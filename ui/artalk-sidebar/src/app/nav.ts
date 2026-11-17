@@ -4,8 +4,10 @@ import {
   CircleUserRound,
   FileText,
   Globe2,
+  Flame,
   LayoutDashboard,
   MessagesSquare,
+  Paintbrush,
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
@@ -23,6 +25,8 @@ export type PageId =
   | 'transfer'
   | 'settings'
   | 'security'
+  | 'customize'
+  | 'activity'
   | 'account'
 
 /**
@@ -45,6 +49,8 @@ export interface NavItem {
   group: NavGroupId
   /** Sits in the mobile tab bar instead of the "more" sheet. */
   primary?: boolean
+  /** Belongs to the visitor's own pages; admins reach it by switching view. */
+  visitorOnly?: boolean
 }
 
 export const NAV_GROUPS: { id: NavGroupId; titleKey: MessageKey }[] = [
@@ -125,12 +131,32 @@ export const NAV_ITEMS: NavItem[] = [
     group: 'system',
   },
   {
+    id: 'customize',
+    path: '/customize',
+    titleKey: 'customize',
+    icon: Paintbrush,
+    adminOnly: true,
+    group: 'system',
+  },
+  {
     id: 'transfer',
     path: '/transfer',
     titleKey: 'transfer',
     icon: ArrowDownUp,
     adminOnly: true,
     group: 'system',
+  },
+  {
+    id: 'activity',
+    path: '/activity',
+    titleKey: 'myActivity',
+    icon: Flame,
+    // The overview of a visitor's own footprint. It heads their list, so it
+    // borrows the "overview" group: group titles are hidden in visitor view
+    // anyway, and admins never see this row.
+    group: 'overview',
+    primary: true,
+    visitorOnly: true,
   },
   {
     id: 'account',
@@ -142,7 +168,7 @@ export const NAV_ITEMS: NavItem[] = [
 ]
 
 /** The pages a visitor owns: their comments and their account. */
-const VISITOR_PAGES: PageId[] = ['comments', 'account']
+const VISITOR_PAGES: PageId[] = ['activity', 'comments', 'account']
 
 export function isAdminOnly(id: PageId): boolean {
   return !!NAV_ITEMS.find((item) => item.id === id)?.adminOnly
@@ -150,9 +176,15 @@ export function isAdminOnly(id: PageId): boolean {
 
 export function navItemsFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user') {
   if (!isAdmin || view === 'user') {
-    return NAV_ITEMS.filter((item) => !item.adminOnly && VISITOR_PAGES.includes(item.id))
+    // Ordered by the visitor's own priority, not by where the entries happen
+    // to sit in the admin list.
+    const byId = new Map(NAV_ITEMS.map((item) => [item.id, item]))
+    return VISITOR_PAGES.flatMap((id) => {
+      const item = byId.get(id)
+      return item ? [item] : []
+    })
   }
-  return NAV_ITEMS
+  return NAV_ITEMS.filter((item) => !item.visitorOnly)
 }
 
 export function navGroupsFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user') {
@@ -182,8 +214,11 @@ export function findNavItem(id: string): NavItem | undefined {
   return NAV_ITEMS.find((item) => item.id === id)
 }
 
-export function defaultPathFor(isAdmin: boolean, view: ViewMode = isAdmin ? 'admin' : 'user'): string {
-  if (!isAdmin || view === 'user') return '/comments'
+export function defaultPathFor(
+  isAdmin: boolean,
+  view: ViewMode = isAdmin ? 'admin' : 'user',
+): string {
+  if (!isAdmin || view === 'user') return '/activity'
   return '/dashboard'
 }
 

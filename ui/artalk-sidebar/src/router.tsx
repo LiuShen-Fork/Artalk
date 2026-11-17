@@ -26,6 +26,8 @@ const SitesPage = lazyRouteComponent(() => import('@/pages/sites'), 'SitesPage')
 const TransferPage = lazyRouteComponent(() => import('@/pages/transfer'), 'TransferPage')
 const SettingsPage = lazyRouteComponent(() => import('@/pages/settings'), 'SettingsPage')
 const SecurityPage = lazyRouteComponent(() => import('@/pages/security'), 'SecurityPage')
+const CustomizePage = lazyRouteComponent(() => import('@/pages/customize'), 'CustomizePage')
+const ActivityPage = lazyRouteComponent(() => import('@/pages/activity'), 'ActivityPage')
 const AccountPage = lazyRouteComponent(() => import('@/pages/account'), 'AccountPage')
 
 const MODERATION_TABS: ModerationTab[] = ['all', 'block', 'replace', 'error']
@@ -37,13 +39,20 @@ function requireLogin() {
 
 function requireAdmin() {
   requireLogin()
-  if (!session.get().user.is_admin) throw redirect({ to: '/comments' })
+  const { user, view } = session.get()
+  if (!user.is_admin) throw redirect({ to: '/comments' })
+  // An admin browsing the "user" half of the console should see exactly what a
+  // visitor sees, so admin-only pages bounce back to the visitor home.
+  if (view === 'user') throw redirect({ to: '/activity' })
 }
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
   notFoundComponent: () => {
-    throw redirect({ to: defaultPathFor(!!session.get().user.is_admin, session.get().view), replace: true })
+    throw redirect({
+      to: defaultPathFor(!!session.get().user.is_admin, session.get().view),
+      replace: true,
+    })
   },
 })
 
@@ -53,7 +62,10 @@ const loginRoute = createRoute({
   component: LoginPage,
   beforeLoad: () => {
     if (session.get().user?.email) {
-      throw redirect({ to: defaultPathFor(!!session.get().user.is_admin, session.get().view), replace: true })
+      throw redirect({
+        to: defaultPathFor(!!session.get().user.is_admin, session.get().view),
+        replace: true,
+      })
     }
   },
 })
@@ -93,7 +105,10 @@ const routeTree = rootRoute.addChildren([
       getParentRoute: () => shellRoute,
       path: '/',
       beforeLoad: () => {
-        throw redirect({ to: defaultPathFor(!!session.get().user.is_admin, session.get().view), replace: true })
+        throw redirect({
+          to: defaultPathFor(!!session.get().user.is_admin, session.get().view),
+          replace: true,
+        })
       },
     }),
     createRoute({
@@ -143,6 +158,17 @@ const routeTree = rootRoute.addChildren([
       path: '/security',
       beforeLoad: requireAdmin,
       component: SecurityPage,
+    }),
+    createRoute({
+      getParentRoute: () => shellRoute,
+      path: '/customize',
+      beforeLoad: requireAdmin,
+      component: CustomizePage,
+    }),
+    createRoute({
+      getParentRoute: () => shellRoute,
+      path: '/activity',
+      component: ActivityPage,
     }),
     createRoute({
       getParentRoute: () => shellRoute,
