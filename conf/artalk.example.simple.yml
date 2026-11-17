@@ -123,6 +123,11 @@ security:
   event_retention_days: 90
   exclude_paths: []
 
+# Management console customization
+custom:
+  css: ""
+  js: ""
+
 img_upload:
   enabled: true
   path: ./data/artalk-img/

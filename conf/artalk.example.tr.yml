@@ -245,6 +245,12 @@ security:
   # Korumadan hariç tutulan yollar (son ek eşleşmesi)
   exclude_paths: []
 
+# Yönetim konsolu özelleştirmesi
+custom:
+  # Konsola eklenen ek stil dosyası
+  css: ""
+  # Konsolda çalıştırılan ek betik (yalnızca kendi kodunuzu kullanın)
+  js: ""
 img_upload:
   # Resim yüklemeyi etkinleştir
   enabled: true

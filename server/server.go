@@ -89,6 +89,7 @@ func Serve(app *core.App) (*fiber.App, error) {
 
 		h.Conf(app, api)
 		h.Version(app, api)
+		h.CustomCodeGet(app, api)
 		h.ConfDomain(app, api)
 
 		// captcha
@@ -173,6 +174,7 @@ func admin(app *core.App, api fiber.Router) {
 	h.SettingGet(app, api)
 	h.SettingApply(app, api)
 	h.SettingTemplate(app, api)
+	h.CustomCodeSave(app, api)
 	h.SecurityConfigGet(app, api)
 	h.SecurityConfigSave(app, api)
 	h.SecurityStatsGet(app, api)

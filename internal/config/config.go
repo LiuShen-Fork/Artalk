@@ -32,6 +32,7 @@ type Config struct {
 	ImgUpload      ImgUploadConf          `koanf:"img_upload" json:"img_upload"`           // 图片上传
 	AdminNotify    AdminNotifyConf        `koanf:"admin_notify" json:"admin_notify"`       // 其他通知方式
 	Auth           AuthConf               `koanf:"auth" json:"auth"`                       // Social Login
+	Custom         CustomConf             `koanf:"custom" json:"custom"`                   // 控制台自定义 CSS / JS
 	Frontend       map[string]interface{} `koanf:"frontend" json:"frontend"`
 
 	PageTitleAutoFetch bool `koanf:"page_title_auto_fetch" json:"page_title_auto_fetch"` // 自动抓取页面标题（默认关闭）

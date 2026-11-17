@@ -251,6 +251,12 @@ security:
   # Paths excluded from the guard (suffix match)
   exclude_paths: []
 
+# Management console customization
+custom:
+  # Extra stylesheet appended to the console
+  css: ""
+  # Extra script executed inside the console (trust only your own code)
+  js: ""
 # Upload
 img_upload:
   # Enable image upload

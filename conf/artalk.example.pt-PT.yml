@@ -188,6 +188,12 @@ security:
   # Caminhos excluídos da proteção (correspondência por sufixo)
   exclude_paths: []
 
+# Personalização do painel de administração
+custom:
+  # Folha de estilos extra aplicada ao painel
+  css: ""
+  # Script extra executado no painel (use apenas código da sua confiança)
+  js: ""
 # Upload
 img_upload:
   enabled: true

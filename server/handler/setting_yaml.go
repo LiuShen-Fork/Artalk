@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -44,7 +45,34 @@ func patchYAMLValues(src []byte, updates map[string]any) ([]byte, error) {
 		}
 	}
 
-	return yaml.Marshal(&doc)
+	// yaml.v3 indents nested mappings by 4 spaces by default, which rewrites a
+	// hand-written 2-space config into a different shape on every save. Match
+	// whatever the file already uses.
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(detectYAMLIndent(src))
+	if err := enc.Encode(&doc); err != nil {
+		return nil, err
+	}
+	if err := enc.Close(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// detectYAMLIndent reports the indentation step used by an existing document.
+func detectYAMLIndent(src []byte) int {
+	for _, line := range strings.Split(string(src), "\n") {
+		trimmed := strings.TrimLeft(line, " ")
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") || len(trimmed) == len(line) {
+			continue
+		}
+		if spaces := len(line) - len(trimmed); spaces == 4 {
+			return 4
+		}
+		return 2
+	}
+	return 2
 }
 
 func yamlDocumentRoot(doc *yaml.Node) *yaml.Node {
@@ -142,5 +170,29 @@ func writeConfigFile(app *core.App, updates map[string]any) (*config.Config, err
 		return nil, err
 	}
 
-	return config.NewFromFile(cfgFile)
+	newConf, err := config.NewFromFile(cfgFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// 配置文件里的 app_key 为空时，加载过程会随机生成一个。
+	// 这类部署保存配置后必须沿用运行中的密钥，否则所有人的登录态会立刻失效。
+	if newConf.AppKey != app.Conf().AppKey && yamlAppKeyValue(out) == "" {
+		newConf.AppKey = app.Conf().AppKey
+	}
+
+	return newConf, nil
+}
+
+// yamlAppKeyValue 读取配置文件里的 app_key 值（不存在时返回空字符串）
+func yamlAppKeyValue(src []byte) string {
+	var doc yaml.Node
+	if err := yaml.Unmarshal(src, &doc); err != nil {
+		return ""
+	}
+	node := yamlMappingValue(yamlDocumentRoot(&doc), "app_key")
+	if node == nil {
+		return ""
+	}
+	return strings.TrimSpace(node.Value)
 }
