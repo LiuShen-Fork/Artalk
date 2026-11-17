@@ -65,7 +65,7 @@ func CommentCreate(app *core.App, router fiber.Router) {
 
 		// Prepare the arguments for creating comment
 		var (
-			ip         = c.IP()
+			ip         = clientIP(c)
 			ua         = cmp.Or(p.UA, string(c.Request().Header.UserAgent())) // allows the patched UA from the post data
 			referer    = cmp.Or(c.Get("Referer"), c.Get("Origin"))
 			isAdmin    = common.CheckIsAdminReq(app, c)
@@ -108,8 +108,12 @@ func CommentCreate(app *core.App, router fiber.Router) {
 			// Login user error
 			log.Error("[CommentCreate] Get user error: ", err)
 			return common.RespError(c, 500, i18n.T("Comment failed"))
+		} else if updateUserLastSeen(&user, ip, ua) {
+			// Keep the recent IP / UA fresh for logged-in commenters too.
+			if err := app.Dao().UpdateUserLastSeen(&user); err != nil {
+				log.Error("[CommentCreate] update last seen error: ", err)
+			}
 		}
-
 		page = app.Dao().FindCreatePage(p.PageKey, p.PageTitle, p.SiteName)
 		if page.IsEmpty() {
 			return common.RespError(c, 500, i18n.T("Comment failed"))
@@ -269,16 +273,30 @@ func getUpdateAnonymousUser(app *core.App, name string, email string, link strin
 
 	// Update anonymous user profile
 	// (only works when social login is disabled, @see GitHub issue #921)
+	profileChanged := false
 	if !app.Conf().Auth.Enabled {
 		user.Link = link
-		user.LastIP = ip
-		user.LastUA = ua
 
 		// for modify the case of name but with the same name
 		user.Name = name
 		user.Email = email
 
+		profileChanged = true
+	}
+
+	// The recent IP / UA are always refreshed, even when social login is enabled
+	// and the rest of the profile stays untouched, so the admin panel can show
+	// where an anonymous commenter last came from.
+	seenChanged := updateUserLastSeen(&user, ip, ua)
+
+	switch {
+	case profileChanged:
+		// A full save is required: the profile fields above changed.
 		app.Dao().UpdateUser(&user)
+	case seenChanged:
+		if err := app.Dao().UpdateUserLastSeen(&user); err != nil {
+			log.Error("[CommentCreate] update last seen error: ", err)
+		}
 	}
 
 	return user, nil

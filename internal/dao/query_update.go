@@ -44,6 +44,25 @@ func (dao *Dao) UpdateUser(user *entity.User) error {
 	return err
 }
 
+// UpdateUserLastSeen writes only the recent IP / UA columns. A full row Save
+// would write every other column back from a possibly cached user snapshot and
+// could overwrite a concurrent profile change.
+func (dao *Dao) UpdateUserLastSeen(user *entity.User) error {
+	if user == nil || user.ID == 0 {
+		return nil
+	}
+	err := dao.DB().Model(&entity.User{}).Where("id = ?", user.ID).
+		Updates(map[string]any{"last_ip": user.LastIP, "last_ua": user.LastUA}).Error
+	if err != nil {
+		log.Error("Update User Last Seen error: ", err)
+		return err
+	}
+	dao.CacheAction(func(cache *DaoCache) {
+		cache.UserCacheSave(user)
+	})
+	return nil
+}
+
 func (dao *Dao) UpdatePage(page *entity.Page) error {
 	err := dao.DB().Save(page).Error
 	if err != nil {

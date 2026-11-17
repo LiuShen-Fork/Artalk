@@ -172,6 +172,8 @@ func AuthSocialLogin(app *core.App, router fiber.Router) {
 			return common.RespError(c, 500, "Failed to find user")
 		}
 
+		touchUserLastSeen(app, c, &user)
+
 		// Get user token
 		jwtToken, err := common.LoginGetUserToken(user, app.Conf().AppKey, app.Conf().LoginTimeout)
 		if err != nil {

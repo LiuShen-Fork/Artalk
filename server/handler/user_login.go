@@ -77,6 +77,8 @@ func UserLogin(app *core.App, router fiber.Router) {
 			return common.RespError(c, 401, i18n.T("Password is incorrect"))
 		}
 
+		touchUserLastSeen(app, c, &user)
+
 		jwtToken, err := common.LoginGetUserToken(user, app.Conf().AppKey, app.Conf().LoginTimeout)
 		if err != nil {
 			log.Error("[LoginGetUserToken] ", err)

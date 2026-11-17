@@ -73,6 +73,8 @@ func AuthEmailLogin(app *core.App, router fiber.Router) {
 			return common.RespError(c, 401, "User not found")
 		}
 
+		touchUserLastSeen(app, c, &user)
+
 		// Get user token
 		jwtToken, err := common.LoginGetUserToken(user, app.Conf().AppKey, app.Conf().LoginTimeout)
 		if err != nil {

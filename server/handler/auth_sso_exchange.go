@@ -108,6 +108,8 @@ func AuthSSOExchange(app *core.App, router fiber.Router) {
 			return common.RespError(c, 500, "User lookup failed: "+err.Error())
 		}
 
+		touchUserLastSeen(app, c, &user)
+
 		jwtToken, err := common.LoginGetUserToken(user, app.Conf().AppKey, app.Conf().LoginTimeout)
 		if err != nil {
 			return common.RespError(c, 500, err.Error())
