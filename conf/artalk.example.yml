@@ -174,7 +174,7 @@ moderator:
   # Comment interception (synchronous rejection; comments are not saved)
   intercept:
     enabled: false
-    # Keywords (comma-separated; matched against nickname and comment content)
+    # Keywords (comma-separated; matched against nickname, comment content and link targets)
     keywords: ""
 
 # Captcha

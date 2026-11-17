@@ -1,6 +1,8 @@
 package anti_spam
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,4 +39,68 @@ func TestNormalizeReviewContent(t *testing.T) {
 
 func TestBuildReviewText(t *testing.T) {
 	assert.Equal(t, "昵称: 张三\n评论: 正文", BuildReviewText("张三", "正文"))
+	assert.Equal(t,
+		"昵称: 张三\n评论: 正文\n链接: https://a.example/1 https://b.example/2",
+		BuildReviewText("张三", "正文", "https://a.example/1", "https://b.example/2"))
+}
+
+func TestExtractReviewLinks(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{name: "none", input: "普通评论", expected: []string{}},
+		{
+			name:     "markdown link",
+			input:    "[点击领取](https://spam.example/ad)",
+			expected: []string{"https://spam.example/ad"},
+		},
+		{
+			name:     "html link",
+			input:    `<a href="https://spam.example/ad">点击领取</a>`,
+			expected: []string{"https://spam.example/ad"},
+		},
+		{
+			name:     "bare url",
+			input:    "看看这个 https://spam.example/ad 很不错",
+			expected: []string{"https://spam.example/ad"},
+		},
+		{
+			name:     "image source",
+			input:    `![](https://spam.example/ad.jpg)`,
+			expected: []string{"https://spam.example/ad.jpg"},
+		},
+		{
+			name:     "deduplicated",
+			input:    "[a](https://spam.example/ad) https://spam.example/ad",
+			expected: []string{"https://spam.example/ad"},
+		},
+		{
+			name:     "script ignored",
+			input:    `<script>var u = "https://evil.example/x"</script>正文`,
+			expected: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, ExtractReviewLinks(tt.input))
+		})
+	}
+
+	t.Run("capped", func(t *testing.T) {
+		input := ""
+		for i := 0; i < reviewLinkMaxCount+3; i++ {
+			input += fmt.Sprintf("https://spam.example/%d ", i)
+		}
+		assert.Len(t, ExtractReviewLinks(input), reviewLinkMaxCount)
+	})
+
+	t.Run("truncated", func(t *testing.T) {
+		input := "https://spam.example/" + strings.Repeat("a", reviewLinkMaxLen*2)
+		links := ExtractReviewLinks(input)
+		require.Len(t, links, 1)
+		assert.Len(t, []rune(links[0]), reviewLinkMaxLen)
+	})
 }

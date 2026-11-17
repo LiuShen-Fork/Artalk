@@ -229,6 +229,7 @@ type CheckerParams struct {
 	RawContent     string
 	ReviewContent  string
 	ReviewText     string
+	Links          []string
 	UpdatedContent string
 	ResultReason   string
 

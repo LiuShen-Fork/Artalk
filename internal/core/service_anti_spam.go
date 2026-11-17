@@ -95,12 +95,21 @@ func (s *AntiSpamService) pruneModerationLogs() {
 }
 
 func (s *AntiSpamService) CheckAndBlock(data *AntiSpamCheckPayload) {
-	s.client.CheckAndBlock(s.payload2CheckerParams(data))
+	if s == nil {
+		// The service (or the app it belongs to) may already be torn down while a
+		// comment-created goroutine is still running, for example during shutdown.
+		return
+	}
+	client := s.client
+	if client == nil || s.app == nil || s.app.dao == nil {
+		return
+	}
+	client.CheckAndBlock(s.payload2CheckerParams(data))
 }
 
 // CheckIntercept synchronously checks a comment before it is persisted.
 func (s *AntiSpamService) CheckIntercept(data *AntiSpamCheckPayload) (bool, string) {
-	if s.client == nil {
+	if s == nil || s.client == nil {
 		return false, ""
 	}
 	return s.client.CheckIntercept(s.payload2CheckerParams(data))
@@ -139,6 +148,8 @@ func (s *AntiSpamService) payload2CheckerParams(payload *AntiSpamCheckPayload) *
 		reviewContent = strings.Join(strings.Fields(payload.Comment.Content), " ")
 	}
 
+	links := anti_spam.ExtractReviewLinks(payload.Comment.Content)
+
 	return &anti_spam.CheckerParams{
 		BlogURL: siteURL,
 
@@ -147,7 +158,8 @@ func (s *AntiSpamService) payload2CheckerParams(payload *AntiSpamCheckPayload) *
 		PageKey:       payload.Comment.PageKey,
 		RawContent:    payload.Comment.Content,
 		ReviewContent: reviewContent,
-		ReviewText:    anti_spam.BuildReviewText(user.Name, reviewContent),
+		ReviewText:    anti_spam.BuildReviewText(user.Name, reviewContent, links...),
+		Links:         links,
 
 		UserName:  user.Name,
 		UserEmail: user.Email,

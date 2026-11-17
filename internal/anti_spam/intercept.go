@@ -26,9 +26,16 @@ func NewCommentInterceptor(keywords string) *CommentInterceptor {
 }
 
 func (c *CommentInterceptor) Check(p *CheckerParams) (bool, string) {
+	// Links are checked as their own fields: the visible text a keyword filter
+	// sees has every URL stripped out of it.
 	for _, keyword := range c.keywords {
 		if strings.Contains(p.UserName, keyword) || strings.Contains(p.ReviewContent, keyword) {
 			return true, keyword
+		}
+		for _, link := range p.Links {
+			if strings.Contains(link, keyword) {
+				return true, keyword
+			}
 		}
 	}
 	return false, ""

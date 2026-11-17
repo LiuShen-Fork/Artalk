@@ -40,6 +40,11 @@ func (s *NotifyService) Dispose() error {
 }
 
 func (s *NotifyService) Push(comment *entity.Comment, pComment *entity.Comment) error {
+	if s == nil || s.pusher == nil {
+		// The service (or the app it belongs to) may already be torn down while a
+		// comment-created goroutine is still running, for example during shutdown.
+		return nil
+	}
 	s.pusher.Push(comment, pComment)
 	return nil
 }

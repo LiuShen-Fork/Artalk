@@ -8,6 +8,7 @@ import (
 	"github.com/artalkjs/artalk/v2/internal/config"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAntiSpam(t *testing.T) {
@@ -215,6 +216,31 @@ func TestAntiSpam(t *testing.T) {
 
 		assert.True(t, blocked)
 		assert.Equal(t, "blocked", keyword)
+	})
+
+	t.Run("CheckIntercept matches a link target", func(t *testing.T) {
+		antiSpam := NewAntiSpam(&AntiSpamConf{
+			ModeratorConf: config.ModeratorConf{
+				Intercept: config.CommentInterceptConf{Enabled: true, Keywords: "spam.example"},
+			},
+		})
+
+		content := "自宿主的老友可以看看 NodeKeeper [了解详情](https://spam.example/cn/)"
+		reviewContent, err := NormalizeReviewContent(content)
+		require.NoError(t, err)
+
+		// The visible text carries no URL, so only the link list can match.
+		assert.NotContains(t, reviewContent, "spam.example")
+
+		blocked, keyword := antiSpam.CheckIntercept(&CheckerParams{
+			UserName:      "Alice",
+			RawContent:    content,
+			ReviewContent: reviewContent,
+			Links:         ExtractReviewLinks(content),
+		})
+
+		assert.True(t, blocked)
+		assert.Equal(t, "spam.example", keyword)
 	})
 }
 
