@@ -2,11 +2,12 @@ import { Button, Skeleton } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { RefreshCw, TrendingUp } from 'lucide-react'
+import { useState } from 'react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { api, siteQuery } from '@/lib/api'
 import { t } from '@/lib/i18n'
-import { formatNumber } from '@/lib/utils'
+import { formatNumber, cn } from '@/lib/utils'
 import { useSession } from '@/lib/session'
 
 interface Metric {
@@ -93,7 +94,7 @@ function Panel({
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-xl border border-border bg-surface">
+    <section className="flex h-full flex-col rounded-xl border border-border bg-surface">
       <header className="flex items-start justify-between gap-2 px-3.5 pb-2 pt-3 md:px-5 md:pb-2.5 md:pt-4">
         <div>
           <h2 className="text-[13.5px] font-semibold md:text-[14.5px]">{title}</h2>
@@ -101,7 +102,7 @@ function Panel({
         </div>
         {action}
       </header>
-      <div className="px-3.5 pb-3.5 md:px-5 md:pb-4.5">{children}</div>
+      <div className="flex-1 px-3.5 pb-3.5 md:px-5 md:pb-4.5">{children}</div>
     </section>
   )
 }
@@ -109,6 +110,7 @@ function Panel({
 export function DashboardPage() {
   const { site } = useSession()
   const navigate = useNavigate()
+  const [hoverWeek, setHoverWeek] = useState<number | null>(null)
   const { data, isPending, isFetching, refetch } = useQuery({
     queryKey: ['dashboard', site],
     queryFn: () => api<DashboardData>('/dashboard', { query: siteQuery() }),
@@ -181,7 +183,7 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="space-y-3 md:grid md:grid-cols-[1.35fr_1fr] md:items-start md:gap-3 md:space-y-0">
+      <div className="space-y-3 md:grid md:grid-cols-[1.35fr_1fr] md:items-stretch md:gap-3 md:space-y-0">
         <Panel
           title={t('dashTrend')}
           description={t('dashTrendDesc')}
@@ -189,23 +191,36 @@ export function DashboardPage() {
         >
           {weeks.length ? (
             <>
-              <div className="flex h-28 items-end gap-1 md:h-36 md:gap-1.5">
-                {weeks.map((week) => (
-                  <div
-                    key={week.range}
-                    title={`${week.range} · ${t('comment')} ${week.comments} · ${t('user')} ${week.users}`}
-                    className="flex h-full flex-1 items-end justify-center gap-0.5"
-                  >
-                    <span
-                      className="w-1/3 rounded-t-[3px] bg-accent"
-                      style={{ height: bar(week.comments), opacity: week.comments ? 1 : 0.15 }}
-                    />
-                    <span
-                      className="w-1/3 rounded-t-[3px] bg-accent/30"
-                      style={{ height: bar(week.users), opacity: week.users ? 1 : 0.15 }}
-                    />
-                  </div>
-                ))}
+              <div
+                className="relative flex h-28 items-end gap-1 md:h-36 md:gap-1.5"
+                onMouseLeave={() => setHoverWeek(null)}
+              >
+                {weeks.map((week, index) => {
+                  const active = hoverWeek === index
+                  return (
+                    <div
+                      key={week.range}
+                      tabIndex={0}
+                      aria-label={`${week.range} · ${t('comment')} ${week.comments} · ${t('user')} ${week.users}`}
+                      onMouseEnter={() => setHoverWeek(index)}
+                      onFocus={() => setHoverWeek(index)}
+                      onBlur={() => setHoverWeek(null)}
+                      className={cn(
+                        'relative flex h-full flex-1 items-end justify-center gap-0.5 rounded-t-[4px] outline-none transition-colors',
+                        active ? 'bg-accent/[0.06]' : 'focus-visible:bg-accent/[0.06]',
+                      )}
+                    >
+                      <span
+                        className="w-1/3 rounded-t-[3px] bg-accent"
+                        style={{ height: bar(week.comments), opacity: week.comments ? 1 : 0.15 }}
+                      />
+                      <span
+                        className="w-1/3 rounded-t-[3px] bg-accent/30"
+                        style={{ height: bar(week.users), opacity: week.users ? 1 : 0.15 }}
+                      />
+                    </div>
+                  )
+                })}
               </div>
               {/* First, middle and last week: a legible axis at 430px without
                 crowding the bars. */}
@@ -216,14 +231,18 @@ export function DashboardPage() {
                   ),
                 )}
               </div>
-              <div className="mt-2 flex items-center gap-3 text-[11px] text-muted">
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
                 <span className="flex items-center gap-1">
                   <i className="size-2 rounded-sm bg-accent" /> {t('comment')}
                 </span>
                 <span className="flex items-center gap-1">
                   <i className="size-2 rounded-sm bg-accent/30" /> {t('user')}
                 </span>
-                <span className="ml-auto tabular-nums">{t('dashPeak', { value: peak })}</span>
+                <span className="ml-auto whitespace-nowrap tabular-nums">
+                  {hoverWeek !== null
+                    ? `${weeks[hoverWeek].label} · ${t('comment')} ${formatNumber(weeks[hoverWeek].comments)} · ${t('user')} ${formatNumber(weeks[hoverWeek].users)}`
+                    : t('dashPeak', { value: peak })}
+                </span>
               </div>
             </>
           ) : (
