@@ -86,6 +86,8 @@ An opt-in `security` block (off by default) adds rate limiting, banning and atta
 - The login screen is part of the console: password sign-in, sign-up with an email verification code, password reset, and third-party providers when the backend enables them. Provider buttons are disabled with an explanation when the console's own origin is not in the trusted domain list, since the callback would be rejected.
 - The comment list is not reimplemented: the page mounts the widget's own list element, so rendering, replying, moderation and AI-assistant behavior stay exactly as the public client does them.
 - Every request still goes through the widget's API client (`ctx.getApi()`), so tokens, guest credentials and error messages behave as before; the backend was not changed for this rewrite.
+- One component per job: every list pages through the same pager (page numbers with gaps, first/last jumps, a live total and a page-size picker that remembers the choice), and every comment card takes its look from one stylesheet (`src/styles/comments.css`) instead of the widget defaults.
+- The console is brandable from its own **Console** page (name, icon, description, custom CSS/JS), stored in the `console` section of the config file and served by `GET/PUT /api/v2/sidebar/console`; the name and description also appear on the sign-in screen.
 - All nine locales of the console are kept in sync (`src/i18n-en.ts` defines the message schema), and it contains no deployment-specific values.
 
 ### Other fork-specific changes
