@@ -44,7 +44,8 @@ This repository is a personal-maintained fork of [ArtalkJS/Artalk](https://githu
 ### Hard fork and data compatibility
 
 - Starting with **v2.10.1** this repository is a hard fork: upstream changes are still merged by hand, but the fork’s schema and configuration keep moving ahead of upstream.
-- **Data compatibility is not guaranteed.** The fork adds its own tables and columns (`security_events`, `ip_bans`, `users.last_ip`, `users.last_ua`) and migrates them automatically on start. A database written by this fork is not guaranteed to be readable by an upstream release, and the reverse only holds for the Artalk tables the two share. Export a backup before upgrading across the fork point.
+- **Upgrading from upstream to this fork is additive.** Drop in a binary built from this repository and start it with your existing `artalk.yml`: on start it creates the tables and columns the fork added (`moderation_logs`, `security_events`, `ip_bans` and `users.is_ai_assistant`), and de-duplicates the auth-identity table before adding its unique indexes. Nothing existing is rewritten or dropped. The new configuration sections (`security`, `console`, `http.trusted_proxies`, …) are optional — left empty they keep the old behaviour, and with `security.enabled: false` the upstream limiter still runs. The administration console is replaced wholesale and holds no data.
+- **Data compatibility is not guaranteed.** The fork adds its own tables and columns (`moderation_logs`, `security_events`, `ip_bans`, `users.is_ai_assistant`) and migrates them automatically on start. A database written by this fork is not guaranteed to be readable by an upstream release, and the reverse only holds for the Artalk tables the two share. Export a backup before upgrading across the fork point.
 - **Export always works, in the upstream format.** The console’s *Transfer* page produces `.artrans` archives with the untouched upstream export handler, so the file format is identical to upstream Artalk. Import accepts backups from upstream and from this fork, so data can move in either direction.
 
 ## Differences from Upstream
@@ -88,6 +89,7 @@ An opt-in `security` block (off by default) adds rate limiting, banning and atta
 - Every request still goes through the widget's API client (`ctx.getApi()`), so tokens, guest credentials and error messages behave as before; the backend was not changed for this rewrite.
 - One component per job: every list pages through the same pager (page numbers with gaps, first/last jumps, a live total and a page-size picker that remembers the choice), and every comment card takes its look from one stylesheet (`src/styles/comments.css`) instead of the widget defaults.
 - The console is brandable from its own **Console** page (name, icon, description, custom CSS/JS), stored in the `console` section of the config file and served by `GET/PUT /api/v2/sidebar/console`; the name and description also appear on the sign-in screen.
+- **My account** is the single page for the profile form, the credential change, linked identities and sign-out; the avatar in the corner opens a small menu that jumps to that page, switches between the management and visitor views, and signs out. Inside the widget iframe the host page's close button can cover the avatar, but every one of those actions is also reachable from the navigation and from that page.
 - All nine locales of the console are kept in sync (`src/i18n-en.ts` defines the message schema), and it contains no deployment-specific values.
 
 ### Other fork-specific changes
