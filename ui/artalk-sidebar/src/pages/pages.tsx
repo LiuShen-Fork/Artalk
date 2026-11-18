@@ -11,8 +11,7 @@ import { t } from '@/lib/i18n'
 import { debounce, formatNumber } from '@/lib/utils'
 import { getArtalk } from '@/lib/artalk'
 import { useSession } from '@/lib/session'
-
-const PAGE_SIZE = 20
+import { usePageSize } from '@/lib/use-page-size'
 
 interface PagesResponse {
   count: number
@@ -24,6 +23,11 @@ export function PagesPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = usePageSize('pages', 20)
+  const changePageSize = (next: number) => {
+    setPageSize(next)
+    setPage(1)
+  }
   const [editing, setEditing] = useState<PageData>()
   const [task, setTask] = useState<{ running: boolean; text: string }>({
     running: false,
@@ -33,15 +37,15 @@ export function PagesPage() {
   const cancelled = useRef(false)
 
   const { data, isPending, isFetching } = useQuery({
-    queryKey: ['pages', site, page, search],
+    queryKey: ['pages', site, page, pageSize, search],
     queryFn: async ({ signal }) => {
       const res = await getArtalk()
         .ctx.getApi()
         .pages.getPages(
           {
             site_name: site || undefined,
-            offset: (page - 1) * PAGE_SIZE,
-            limit: PAGE_SIZE,
+            offset: (page - 1) * pageSize,
+            limit: pageSize,
             search,
             has_comments: true,
           },
@@ -116,7 +120,7 @@ export function PagesPage() {
 
   return (
     <div className="space-y-3 md:space-y-4">
-      <PageHeader title={t('page')} description={t('pageManageDesc')} />
+      <PageHeader title={t('navPages')} description={t('pageManageDesc')} />
 
       <div className="flex flex-col gap-2 md:flex-row md:items-center">
         <div className="relative md:flex-1">
@@ -215,10 +219,11 @@ export function PagesPage() {
 
       <Pager
         page={page}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         total={data?.count ?? 0}
         disabled={isFetching}
         onChange={setPage}
+        onPageSizeChange={changePageSize}
       />
 
       <PageEditorDialog page={editing} onClose={() => setEditing(undefined)} onSaved={refresh} />

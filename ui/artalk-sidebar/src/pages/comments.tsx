@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { t, type MessageKey } from '@/lib/i18n'
 import { getArtalk } from '@/lib/artalk'
 import { useSession } from '@/lib/session'
+import { usePageSize } from '@/lib/use-page-size'
 import { debounce } from '@/lib/utils'
 
 interface TabDef {
@@ -46,7 +47,12 @@ export function CommentsPage() {
   const [tab, setTab] = useState('all')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
-  const [paging, setPaging] = useState({ total: 0, pageSize: 20, page: 1 })
+  const [pageSize, setPageSize] = usePageSize('comments', 20)
+  const [paging, setPaging] = useState({ total: 0, page: 1 })
+
+  // The widget reads its page size from its own config, which its fetch
+  // callbacks cannot reach from React, so the current value is mirrored here.
+  const pageSizeRef = useRef(pageSize)
 
   // The widget's config callbacks run outside React, so the latest filter
   // values are mirrored into a ref that the fetch modifier reads on demand.
@@ -71,7 +77,6 @@ export function CommentsPage() {
       if (last?.data) {
         setPaging({
           total: last.params.flatMode ? last.data.count : last.data.roots_count,
-          pageSize: last.params.limit,
           page: Math.floor(last.params.offset / last.params.limit) + 1,
         })
       }
@@ -88,6 +93,7 @@ export function CommentsPage() {
     ctx.on('list-failed', onFailed)
 
     ctx.updateConf({
+      pagination: { pageSize: pageSizeRef.current },
       noComment: `<div class="py-8 text-center text-[13px] text-muted">${t('noContent')}</div>`,
       listFetchParamsModifier: (params: any) => {
         const current = filter.current
@@ -114,6 +120,7 @@ export function CommentsPage() {
       ctx.off('list-fetched', onFetched)
       ctx.off('list-failed', onFailed)
       ctx.updateConf({
+        pagination: previous.pagination,
         listFetchParamsModifier: previous.listFetchParamsModifier,
         scrollRelativeTo: previous.scrollRelativeTo,
       })
@@ -140,6 +147,18 @@ export function CommentsPage() {
     getArtalk().reload()
   }, [site])
 
+  // Page size is a widget config value, so the list has to be refetched from
+  // the first page after it changes. The first run only records the stored
+  // preference: the mount effect above already applied it.
+  useEffect(() => {
+    if (pageSizeRef.current === pageSize) return
+    pageSizeRef.current = pageSize
+    if (!listRef.current?.hasChildNodes()) return
+    const ctx = getArtalk().ctx
+    ctx.updateConf({ pagination: { pageSize } })
+    ctx.fetch({ offset: 0 })
+  }, [pageSize])
+
   const runSearch = useRef(
     debounce((value: string) => {
       setSearch(value)
@@ -147,10 +166,32 @@ export function CommentsPage() {
     }, 400),
   ).current
 
+  const goTo = (next: number) => {
+    const ctx = getArtalk().ctx
+    ctx.editorResetState()
+    ctx.fetch({
+      offset: (next - 1) * pageSize,
+      onSuccess: () => ctx.listGotoFirst(),
+    })
+  }
+
+  // Same pager above and below the list: the reader never has to scroll back up
+  // after paging at the bottom, nor all the way down to continue at the top.
+  const pager = (
+    <Pager
+      page={paging.page}
+      pageSize={pageSize}
+      total={paging.total}
+      disabled={loading}
+      onChange={goTo}
+      onPageSizeChange={setPageSize}
+    />
+  )
+
   return (
-    <div className="space-y-3 md:mx-auto md:max-w-[780px] md:space-y-4">
+    <div className="space-y-3 md:space-y-4">
       <PageHeader
-        title={manage ? t('comments') : t('myComments')}
+        title={manage ? t('navComments') : t('navMyComments')}
         description={manage ? t('commentManageDesc') : t('myCommentsDesc')}
       />
 
@@ -177,7 +218,9 @@ export function CommentsPage() {
         />
       </div>
 
-      <div className="mx-auto w-full max-w-[760px] space-y-3">
+      <div className="space-y-3">
+        {pager}
+
         <div ref={wrapRef} className="relative min-h-40">
           {loading ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-2">
@@ -187,19 +230,7 @@ export function CommentsPage() {
           <div ref={listRef} className="atk-comments" />
         </div>
 
-        <Pager
-          page={paging.page}
-          pageSize={paging.pageSize}
-          total={paging.total}
-          disabled={loading}
-          onChange={(next) => {
-            getArtalk().ctx.editorResetState()
-            getArtalk().ctx.fetch({
-              offset: (next - 1) * paging.pageSize,
-              onSuccess: () => getArtalk().ctx.listGotoFirst(),
-            })
-          }}
-        />
+        {pager}
       </div>
     </div>
   )

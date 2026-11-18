@@ -10,9 +10,9 @@ import { useConfirm } from '@/components/ui/confirm'
 import { errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { kindLabel, securityApi } from '@/lib/security'
+import { usePageSize } from '@/lib/use-page-size'
 import { cn, formatDateTime } from '@/lib/utils'
 
-const PAGE_SIZE = 15
 const KINDS = ['rate_limit', 'captcha_failed', 'banned', 'auto_ban']
 
 export function EventLog() {
@@ -23,6 +23,11 @@ export function EventLog() {
   const [ipInput, setIPInput] = useState('')
   const [ip, setIP] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = usePageSize('security-events', 15)
+  const changePageSize = (next: number) => {
+    setPageSize(next)
+    setPage(1)
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -33,14 +38,14 @@ export function EventLog() {
   }, [ipInput])
 
   const eventsQuery = useQuery({
-    queryKey: ['security-events', kind, days, ip, page],
+    queryKey: ['security-events', kind, days, ip, page, pageSize],
     queryFn: () =>
       securityApi.getEvents({
         kind: kind || undefined,
         ip: ip || undefined,
         days: Number(days),
-        limit: PAGE_SIZE,
-        offset: (page - 1) * PAGE_SIZE,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
       }),
     placeholderData: keepPreviousData,
   })
@@ -221,9 +226,10 @@ export function EventLog() {
 
       <Pager
         page={page}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         total={total}
         onChange={setPage}
+        onPageSizeChange={changePageSize}
         disabled={eventsQuery.isFetching}
       />
     </Section>

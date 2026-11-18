@@ -83,13 +83,7 @@ function currentStreak(byDay: ActivityDay[]): number {
   return streak
 }
 
-const LEVELS = [
-  'bg-foreground/[0.07]',
-  'bg-accent/30',
-  'bg-accent/55',
-  'bg-accent/80',
-  'bg-accent',
-]
+const LEVELS = ['bg-foreground/[0.07]', 'bg-accent/30', 'bg-accent/55', 'bg-accent/80', 'bg-accent']
 
 function level(count: number): number {
   if (count <= 0) return 0
@@ -162,51 +156,60 @@ function Heatmap({ byDay }: { byDay: ActivityDay[] }) {
         </span>
       </header>
 
-      <div className="[--cell:10px] [--gap:3px] px-3.5 pb-3 md:[--cell:13px] xl:[--cell:17px] 2xl:[--cell:20px]">
-        <div className="flex gap-1.5">
-          <div className="flex shrink-0 flex-col gap-[var(--gap)] pt-[15px] text-[9px] leading-none text-muted">
-            {weekdayLabels.map((label, row) => (
-              <span key={row} className="flex h-[var(--cell)] w-2.5 items-center">
-                {label}
+      {/* The grid is fully fluid: every week is an equal fraction of the card,
+          so the squares stay square and the grid can never spill out of it,
+          whatever width the panel gets beside the recent-comments column. */}
+      <div className="px-3.5 pb-3">
+        <div className="max-w-[720px]">
+          <div
+            className="mb-1 grid gap-[3px]"
+            style={{ gridTemplateColumns: `12px repeat(${weeks.length}, minmax(0, 1fr))` }}
+          >
+            <span aria-hidden />
+            {months.map((month) => (
+              <span
+                key={`${month.index}-${month.label}`}
+                className="whitespace-nowrap text-[9px] leading-[11px] text-muted"
+                style={{ gridColumnStart: month.index + 2 }}
+              >
+                {month.label}
               </span>
             ))}
           </div>
 
-          <div className="min-w-0 flex-1">
-            {/* Month axis */}
-            <div className="relative mb-1 h-[11px]">
-              {months.map((month) => (
-                <span
-                  key={`${month.index}-${month.label}`}
-                  className="absolute top-0 whitespace-nowrap text-[9px] leading-none text-muted"
-                  style={{ insetInlineStart: `calc(${month.index} * (var(--cell) + var(--gap)))` }}
-                >
-                  {month.label}
-                </span>
-              ))}
-            </div>
+          <div
+            className="grid grid-flow-col gap-[3px]"
+            style={{
+              gridTemplateColumns: `12px repeat(${weeks.length}, minmax(0, 1fr))`,
+              gridTemplateRows: 'repeat(7, auto)',
+            }}
+          >
+            {weekdayLabels.map((label, row) => (
+              <span
+                key={`label-${row}`}
+                className="flex items-center text-[9px] leading-none text-muted"
+              >
+                {label}
+              </span>
+            ))}
 
-            <div className="flex gap-[var(--gap)]">
-              {weeks.map((week) => (
-                <div key={week[0].date} className="flex flex-col gap-[var(--gap)]">
-                  {week.map((cell) => (
-                    <span
-                      key={cell.date}
-                      title={
-                        cell.future
-                          ? undefined
-                          : `${cell.date} · ${t('activityComments', { count: cell.count })}`
-                      }
-                      className={cn(
-                        'size-[var(--cell)] rounded-[2px]',
-                        cell.future ? 'opacity-0' : LEVELS[level(cell.count)],
-                        cell.date === isoDay(startOfToday()) && 'ring-1 ring-inset ring-accent/60',
-                      )}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            {weeks.map((week) =>
+              week.map((cell) => (
+                <span
+                  key={cell.date}
+                  title={
+                    cell.future
+                      ? undefined
+                      : `${cell.date} · ${t('activityComments', { count: cell.count })}`
+                  }
+                  className={cn(
+                    'aspect-square w-full rounded-[2px]',
+                    cell.future ? 'opacity-0' : LEVELS[level(cell.count)],
+                    cell.date === isoDay(startOfToday()) && 'ring-1 ring-inset ring-accent/60',
+                  )}
+                />
+              )),
+            )}
           </div>
         </div>
 
@@ -365,7 +368,7 @@ export function ActivityPage() {
   return (
     <div className="space-y-3">
       <PageHeader
-        title={t('myActivity')}
+        title={t('navMyActivity')}
         description={t('myActivityDesc')}
         actions={
           <Button
@@ -409,7 +412,9 @@ export function ActivityPage() {
                 icon={MessageSquare}
                 label={t('activityTotal')}
                 value={formatNumber(data?.count)}
-                meta={data?.pending ? t('activityPendingCount', { count: data.pending }) : undefined}
+                meta={
+                  data?.pending ? t('activityPendingCount', { count: data.pending }) : undefined
+                }
               />
               <Stat
                 icon={CalendarDays}

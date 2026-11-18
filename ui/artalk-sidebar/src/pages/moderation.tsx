@@ -12,8 +12,7 @@ import { api, siteQuery, errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { getArtalk } from '@/lib/artalk'
 import { useSession } from '@/lib/session'
-
-const PAGE_SIZE = 20
+import { usePageSize } from '@/lib/use-page-size'
 
 type ModerationStatus = 'pass' | 'block' | 'error'
 export type ModerationTab = 'all' | 'block' | 'replace' | 'error'
@@ -62,6 +61,11 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
   const navigate = useNavigate()
   const [tab, setTab] = useState<ModerationTab>(initialStatus ?? 'all')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = usePageSize('moderation', 20)
+  const changePageSize = (next: number) => {
+    setPageSize(next)
+    setPage(1)
+  }
   const [busy, setBusy] = useState<string | null>(null)
 
   // The tab is addressable so the dashboard can deep-link into a status filter.
@@ -71,7 +75,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
     setPage(1)
   }, [initialStatus])
 
-  const queryKey = ['moderation', site, tab, page]
+  const queryKey = ['moderation', site, tab, page, pageSize]
   const { data, isPending, isFetching, refetch } = useQuery({
     queryKey,
     queryFn: () =>
@@ -79,8 +83,8 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
         query: {
           ...siteQuery(),
           status: tab === 'all' ? undefined : tab,
-          limit: PAGE_SIZE,
-          offset: (page - 1) * PAGE_SIZE,
+          limit: pageSize,
+          offset: (page - 1) * pageSize,
         },
       }),
   })
@@ -142,7 +146,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
   return (
     <div className="space-y-3 md:space-y-4">
       <PageHeader
-        title={t('moderation')}
+        title={t('navModeration')}
         description={t('moderationIntro')}
         actions={
           <>
@@ -209,7 +213,10 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
             const Icon = meta.icon
             const operable = item.comment_available && item.comment_id > 0
             return (
-              <article key={item.id} className="rounded-xl border border-border bg-surface p-3 md:p-4">
+              <article
+                key={item.id}
+                className="rounded-xl border border-border bg-surface p-3 md:p-4"
+              >
                 <div className="flex items-start gap-2">
                   <Icon className={`mt-0.5 size-4 shrink-0 ${meta.tone}`} aria-hidden />
                   <div className="min-w-0 flex-1">
@@ -302,10 +309,11 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
 
       <Pager
         page={page}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         total={total}
         disabled={isFetching}
         onChange={setPage}
+        onPageSizeChange={changePageSize}
       />
     </div>
   )

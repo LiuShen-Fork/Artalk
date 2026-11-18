@@ -1,5 +1,6 @@
 @import 'artalk/Artalk.css';
 @import './theme.css';
+@import './comments.css';
 
 /* The console is embedded in a 430px iframe, so the scroll container is the
  * panel itself rather than the window. Keep the document from bouncing. */
@@ -36,4 +37,3 @@
   font-size: 13px;
   color: var(--color-muted);
 }
-

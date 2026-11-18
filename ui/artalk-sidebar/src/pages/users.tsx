@@ -12,11 +12,11 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useConfirm } from '@/components/ui/confirm'
 import { errorMessage } from '@/lib/api'
 import { getArtalk } from '@/lib/artalk'
+import { usePageSize } from '@/lib/use-page-size'
 import { t } from '@/lib/i18n'
 import { useSession } from '@/lib/session'
 import { debounce, formatNumber } from '@/lib/utils'
 
-const PAGE_SIZE = 30
 type UserType = 'all' | 'admin'
 
 interface UsersResponse {
@@ -31,9 +31,14 @@ export function UsersPage() {
   const [type, setType] = useState<UserType>('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = usePageSize('users', 30)
+  const changePageSize = (next: number) => {
+    setPageSize(next)
+    setPage(1)
+  }
   const [editor, setEditor] = useState<{ open: boolean; user?: EditableUser }>({ open: false })
 
-  const queryKey = ['users', site, type, page, search]
+  const queryKey = ['users', site, type, page, pageSize, search]
   const { data, isPending, isFetching } = useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
@@ -41,7 +46,7 @@ export function UsersPage() {
         .ctx.getApi()
         .users.getUsers(
           type,
-          { offset: (page - 1) * PAGE_SIZE, limit: PAGE_SIZE, search },
+          { offset: (page - 1) * pageSize, limit: pageSize, search },
           { signal },
         )
       return (res.data ?? { count: 0, users: [] }) as UsersResponse
@@ -66,7 +71,7 @@ export function UsersPage() {
   return (
     <div className="space-y-3 md:space-y-4">
       <PageHeader
-        title={t('user')}
+        title={t('navUsers')}
         description={t('userManageDesc')}
         actions={
           <Button size="sm" variant="primary" onPress={() => setEditor({ open: true })}>
@@ -136,7 +141,10 @@ export function UsersPage() {
                       <Chip
                         size="sm"
                         variant="soft"
-                        style={{ color: user.badge_color, backgroundColor: `${user.badge_color}1f` }}
+                        style={{
+                          color: user.badge_color,
+                          backgroundColor: `${user.badge_color}1f`,
+                        }}
                       >
                         {user.badge_name}
                       </Chip>
@@ -155,7 +163,9 @@ export function UsersPage() {
                   <p className="truncate text-[11.5px] text-muted md:hidden">{user.email}</p>
                 </div>
               </div>
-              <span className="hidden min-w-0 truncate text-[12px] text-muted md:block">{user.email}</span>
+              <span className="hidden min-w-0 truncate text-[12px] text-muted md:block">
+                {user.email}
+              </span>
               <span
                 className="mr-1 text-[11px] tabular-nums text-muted md:mr-0 md:block md:text-right"
                 title={t('comments')}
@@ -204,10 +214,11 @@ export function UsersPage() {
 
       <Pager
         page={page}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         total={total}
         disabled={isFetching}
         onChange={setPage}
+        onPageSizeChange={changePageSize}
       />
 
       <UserEditorDialog
