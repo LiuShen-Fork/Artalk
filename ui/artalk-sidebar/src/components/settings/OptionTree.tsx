@@ -10,6 +10,7 @@ import settings, {
 import { isSensitiveConfigPath } from '@/lib/settings-sensitive'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 const SEPARATOR_SUGGESTIONS = ['\\n', '\\r\\n', '\\t', '|']
 
@@ -136,6 +137,7 @@ export function OptionItem({ node }: { node: OptionNode }) {
             <button
               type="button"
               aria-label={revealed ? t('hide') : t('show')}
+              title={revealed ? t('hide') : t('show')}
               onClick={() => setRevealed((prev) => !prev)}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:text-foreground"
             >
@@ -188,6 +190,7 @@ function OptionArray({ node, disabled }: { node: OptionNode; disabled: boolean }
               variant="ghost"
               isIconOnly
               aria-label={t('delete')}
+              {...hoverTitle(t('delete'))}
               onPress={() => save(items.filter((_, i) => i !== index))}
             >
               <Minus className="size-3.5" aria-hidden />

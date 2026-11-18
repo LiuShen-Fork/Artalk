@@ -73,6 +73,7 @@ function PasswordInput({
         type="button"
         onClick={() => setVisible((prev) => !prev)}
         aria-label={visible ? t('hide') : t('view')}
+        title={visible ? t('hide') : t('view')}
         className="absolute right-1.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
       >
         {visible ? (

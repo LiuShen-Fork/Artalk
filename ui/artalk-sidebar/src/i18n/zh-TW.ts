@@ -36,6 +36,7 @@ export const zhTW: MessageSchema = {
   updateTitle: '擷取標題',
   uploading: '上傳中',
   cancel: '取消',
+  close: '關閉',
   back: '返回',
   cacheClear: '清除快取',
   cacheWarm: '預熱快取',

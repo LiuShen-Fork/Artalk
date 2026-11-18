@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n'
 import { kindLabel, securityApi } from '@/lib/security'
 import { usePageSize } from '@/lib/use-page-size'
 import { cn, formatDateTime } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 const KINDS = ['rate_limit', 'captcha_failed', 'banned', 'auto_ban']
 
@@ -100,6 +101,7 @@ export function EventLog() {
           variant="ghost"
           isIconOnly
           aria-label={t('securityEventClear')}
+          {...hoverTitle(t('securityEventClear'))}
           isDisabled={!total}
           onPress={() => void clearEvents()}
         >
@@ -151,6 +153,7 @@ export function EventLog() {
             <button
               type="button"
               aria-label={t('reset')}
+              {...hoverTitle(t('reset'))}
               onClick={() => setIPInput('')}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:text-foreground"
             >
@@ -191,6 +194,7 @@ export function EventLog() {
                   variant="ghost"
                   isIconOnly
                   aria-label={t('delete')}
+                  {...hoverTitle(t('delete'))}
                   onPress={() => void removeEvent(event.id)}
                 >
                   <X className="size-3.5 text-muted" aria-hidden />

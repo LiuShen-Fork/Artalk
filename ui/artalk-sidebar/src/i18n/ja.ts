@@ -36,6 +36,7 @@ export const ja: MessageSchema = {
   updateTitle: 'タイトルを取得',
   uploading: 'アップロード中',
   cancel: 'キャンセル',
+  close: '閉じる',
   back: '戻る',
   cacheClear: 'キャッシュクリア',
   cacheWarm: 'キャッシュの事前生成',

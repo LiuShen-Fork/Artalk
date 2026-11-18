@@ -5,6 +5,7 @@ import { useConfirm } from '@/components/ui/confirm'
 import { errorMessage, type PageData } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { getArtalk } from '@/lib/artalk'
+import { hoverTitle } from '@/lib/hover-title'
 
 interface PageEditorDialogProps {
   page?: PageData
@@ -23,7 +24,7 @@ export function PageEditorDialog({ page, onClose, onSaved }: PageEditorDialogPro
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog className="gap-3">
-            <Modal.CloseTrigger />
+            <Modal.CloseTrigger aria-label={t('close')} {...hoverTitle(t('close'))} />
             <Modal.Header>
               <Modal.Heading>{t('editTitle')}</Modal.Heading>
             </Modal.Header>
@@ -152,6 +153,7 @@ function PageForm({
             isDisabled={!!busy}
             onPress={() => void sync()}
             aria-label={t('refresh')}
+            {...hoverTitle(t('refresh'))}
           >
             {busy === 'sync' ? (
               <Spinner size="sm" />
@@ -165,6 +167,7 @@ function PageForm({
             isDisabled={!!busy}
             onPress={() => void remove()}
             aria-label={t('delete')}
+            {...hoverTitle(t('delete'))}
           >
             {busy === 'delete' ? (
               <Spinner size="sm" />

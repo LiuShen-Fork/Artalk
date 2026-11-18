@@ -5,6 +5,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { avatarUrl } from '@/lib/artalk'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 interface AccountMenuProps {
   name: string
@@ -35,6 +36,7 @@ export function AccountMenu({
           showText ? 'min-w-0 xl:flex-1 xl:justify-start' : 'w-9',
         )}
         aria-label={t('account')}
+        {...hoverTitle(t('account'))}
       >
         {/* The trigger is a HeroUI button with wrap-friendly content; keeping
             everything in one nowrap flex row stops the caret from dropping

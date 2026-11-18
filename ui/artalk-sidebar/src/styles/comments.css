@@ -70,6 +70,37 @@
   line-height: 1.7;
 }
 
+/* "阅读更多": the widget sizes its button at 15px — larger than the comment
+ * text — and leaves it on a transparent background, so it sits on top of the
+ * cut-off line rather than over a fade. Keep the collapse inside the card. */
+.atk-comments .atk-height-limit::after {
+  height: 80px;
+}
+
+/* The widget suppresses the fade on openable cards (`background: none
+ * !important`) because clicking the card opens the reader, but the console
+ * keeps the inline collapse, so the cut-off line still needs the fade. */
+.atk-comments .atk-comment-wrap.atk-openable .atk-height-limit::after {
+  background: var(--at-color-gradient) !important;
+}
+
+.atk-comments .atk-height-limit-btn {
+  bottom: 6px;
+  padding: 2px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.atk-comments .atk-height-limit-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  color: var(--color-accent);
+}
+
 .atk-comments .atk-comment > .atk-main > .atk-body > .atk-pending {
   border: 0;
   border-left: 3px solid var(--color-warning);
@@ -81,11 +112,27 @@
 }
 
 .atk-comments .atk-comment > .atk-main > .atk-body > .atk-reply-to {
+  --at-color-gradient: linear-gradient(180deg, transparent, var(--color-surface-secondary) 65%);
   margin-top: 8px;
   padding: 8px 12px;
   border-left: 0;
   border-radius: var(--control-radius-inner);
   background: var(--color-surface-secondary);
+}
+
+/* The quoted comment inherits the widget's 15px meta and 16px body, which read
+ * larger than the comment that quotes them. Step both down to card scale. */
+.atk-comments .atk-comment > .atk-main > .atk-body > .atk-reply-to .atk-meta {
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+.atk-comments .atk-comment > .atk-main > .atk-body > .atk-reply-to .atk-content {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--color-muted);
 }
 
 .atk-comments .atk-comment > .atk-main > .atk-body > .atk-collapsed {

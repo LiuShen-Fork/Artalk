@@ -6,6 +6,7 @@ import { useConfirm } from '@/components/ui/confirm'
 import { errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { getArtalk } from '@/lib/artalk'
+import { hoverTitle } from '@/lib/hover-title'
 
 const parseURLs = (value: string) =>
   value
@@ -51,7 +52,7 @@ export function SiteCreateDialog({
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog className="gap-3">
-            <Modal.CloseTrigger />
+            <Modal.CloseTrigger aria-label={t('close')} {...hoverTitle(t('close'))} />
             <Modal.Header>
               <Modal.Heading>{t('createSite')}</Modal.Heading>
             </Modal.Header>
@@ -112,7 +113,7 @@ export function SiteEditorDialog({
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog className="gap-3">
-            <Modal.CloseTrigger />
+            <Modal.CloseTrigger aria-label={t('close')} {...hoverTitle(t('close'))} />
             <Modal.Header>
               <Modal.Heading>{site?.name}</Modal.Heading>
             </Modal.Header>
@@ -196,6 +197,7 @@ function SiteForm({
             variant="ghost"
             isDisabled={saving || !site.urls?.length}
             aria-label={t('view')}
+            {...hoverTitle(t('view'))}
             onPress={() => site.urls.length && window.open(site.urls[0])}
           >
             <ExternalLink className="size-3.5" aria-hidden />
@@ -205,6 +207,7 @@ function SiteForm({
             variant="ghost"
             isDisabled={saving}
             aria-label={t('delete')}
+            {...hoverTitle(t('delete'))}
             onPress={() => void remove()}
           >
             <Trash2 className="size-3.5" aria-hidden />

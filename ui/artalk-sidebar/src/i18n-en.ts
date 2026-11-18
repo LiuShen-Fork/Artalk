@@ -34,6 +34,7 @@ export const en = {
   updateTitle: 'Fetch Title',
   uploading: 'Uploading',
   cancel: 'Cancel',
+  close: 'Close',
   back: 'Back',
   cacheClear: 'Cache Clear',
   cacheWarm: 'Cache Warm',

@@ -5,6 +5,7 @@ import { navGroupsFor, labelKeyFor, type ViewMode } from '@/app/nav'
 import { AccountMenu } from '@/components/layout/AccountMenu'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { useBrandName } from '@/lib/console'
+import { hoverTitle } from '@/lib/hover-title'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
 import { theme, useDarkMode } from '@/lib/theme'
@@ -228,6 +229,7 @@ export function Sidebar({
             variant="ghost"
             className="text-muted"
             aria-label={dark ? t('lightTheme') : t('darkTheme')}
+            {...hoverTitle(dark ? t('lightTheme') : t('darkTheme'))}
             onPress={() => theme.toggle()}
           >
             {dark ? (

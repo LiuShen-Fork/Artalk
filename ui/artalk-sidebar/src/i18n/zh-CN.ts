@@ -36,6 +36,7 @@ export const zhCN: MessageSchema = {
   updateTitle: '更新标题',
   uploading: '上传中',
   cancel: '取消',
+  close: '关闭',
   back: '返回',
   cacheClear: '缓存清除',
   cacheWarm: '缓存预热',

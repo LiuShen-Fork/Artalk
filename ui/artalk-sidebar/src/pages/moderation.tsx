@@ -13,6 +13,7 @@ import { t } from '@/lib/i18n'
 import { getArtalk } from '@/lib/artalk'
 import { useSession } from '@/lib/session'
 import { usePageSize } from '@/lib/use-page-size'
+import { hoverTitle } from '@/lib/hover-title'
 
 type ModerationStatus = 'pass' | 'block' | 'error'
 export type ModerationTab = 'all' | 'block' | 'replace' | 'error'
@@ -155,6 +156,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
               variant="ghost"
               isIconOnly
               aria-label={t('refresh')}
+              {...hoverTitle(t('refresh'))}
               isDisabled={isFetching}
               onPress={() => void refetch()}
             >
@@ -165,6 +167,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
               variant="ghost"
               isIconOnly
               aria-label={t('moderationClear')}
+              {...hoverTitle(t('moderationClear'))}
               isDisabled={clearLogs.isPending || !total}
               onPress={async () => {
                 if (await confirm({ title: t('moderationClearConfirm'), danger: true })) {
@@ -293,6 +296,7 @@ export function ModerationPage({ initialStatus }: { initialStatus?: ModerationTa
                     variant="ghost"
                     isIconOnly
                     aria-label={t('delete')}
+                    {...hoverTitle(t('delete'))}
                     isDisabled={removeLog.isPending || !!busy}
                     onPress={() => void removeLog.mutate(item.id)}
                   >

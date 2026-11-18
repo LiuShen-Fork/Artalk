@@ -12,6 +12,7 @@ import { debounce, formatNumber } from '@/lib/utils'
 import { getArtalk } from '@/lib/artalk'
 import { useSession } from '@/lib/session'
 import { usePageSize } from '@/lib/use-page-size'
+import { hoverTitle } from '@/lib/hover-title'
 
 interface PagesResponse {
   count: number
@@ -153,6 +154,7 @@ export function PagesPage() {
             variant="ghost"
             isDisabled={task.running}
             aria-label={t('cacheClear')}
+            {...hoverTitle(t('cacheClear'))}
             onPress={() => void cacheAction('flush')}
           >
             <Trash2 className="size-3.5" aria-hidden />
@@ -162,6 +164,7 @@ export function PagesPage() {
             variant="ghost"
             isDisabled={task.running}
             aria-label={t('cacheWarm')}
+            {...hoverTitle(t('cacheWarm'))}
             onPress={() => void cacheAction('warm')}
           >
             <Flame className="size-3.5" aria-hidden />
@@ -206,6 +209,7 @@ export function PagesPage() {
                   onClick={(event) => event.stopPropagation()}
                   className="shrink-0 p-1 text-muted hover:text-accent"
                   aria-label={t('page')}
+                  title={t('page')}
                 >
                   <ExternalLink className="size-3.5" aria-hidden />
                 </a>

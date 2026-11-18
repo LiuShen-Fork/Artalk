@@ -4,6 +4,7 @@ import { SelectField } from '@/components/ui/SelectField'
 import { t } from '@/lib/i18n'
 import { PAGE_SIZE_OPTIONS, pageWindow } from '@/lib/pager'
 import { cn } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 interface PagerProps {
   page: number
@@ -64,6 +65,7 @@ export function Pager({
           className="hidden sm:inline-flex"
           isDisabled={disabled || page <= 1}
           aria-label={t('pagerFirst')}
+          {...hoverTitle(t('pagerFirst'))}
           onPress={() => go(1)}
         >
           <ChevronsLeft className="size-4" aria-hidden />
@@ -74,6 +76,7 @@ export function Pager({
           isIconOnly
           isDisabled={disabled || page <= 1}
           aria-label={t('back')}
+          {...hoverTitle(t('back'))}
           onPress={() => go(page - 1)}
         >
           <ChevronLeft className="size-4" aria-hidden />
@@ -111,6 +114,7 @@ export function Pager({
           isIconOnly
           isDisabled={disabled || page >= pages}
           aria-label={t('nextStep')}
+          {...hoverTitle(t('nextStep'))}
           onPress={() => go(page + 1)}
         >
           <ChevronRight className="size-4" aria-hidden />
@@ -122,6 +126,7 @@ export function Pager({
           className="hidden sm:inline-flex"
           isDisabled={disabled || page >= pages}
           aria-label={t('pagerLast')}
+          {...hoverTitle(t('pagerLast'))}
           onPress={() => go(pages)}
         >
           <ChevronsRight className="size-4" aria-hidden />

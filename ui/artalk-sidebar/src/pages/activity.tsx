@@ -12,6 +12,7 @@ import { buildWeeks, heatDayCount, isoDay, startOfToday } from '@/lib/heatmap'
 import { getLocale, t } from '@/lib/i18n'
 import { useSession } from '@/lib/session'
 import { cn, formatDate, formatNumber, timeAgo, truncate } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 /** Whole weeks only: 26 columns × 7 days keeps the grid a tidy rectangle. */
 const HEAT_WEEKS = 26
@@ -351,6 +352,7 @@ export function ActivityPage() {
             variant="ghost"
             isIconOnly
             aria-label={t('refresh')}
+            {...hoverTitle(t('refresh'))}
             isDisabled={isFetching}
             onPress={() => void refetch()}
           >

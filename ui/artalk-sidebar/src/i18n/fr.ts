@@ -37,6 +37,7 @@ export const fr: MessageSchema = {
   updateTitle: 'Mise à jour du titre',
   uploading: 'Téléchargement en cours',
   cancel: 'Annuler',
+  close: 'Fermer',
   back: 'Retour',
   cacheClear: 'Vider le cache',
   cacheWarm: 'Préchargement du cache',

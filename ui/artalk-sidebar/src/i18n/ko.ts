@@ -36,6 +36,7 @@ export const ko: MessageSchema = {
   updateTitle: '제목 업데이트',
   uploading: '업로드 중',
   cancel: '취소',
+  close: '닫기',
   back: '뒤로',
   cacheClear: '캐시 삭제',
   cacheWarm: '캐시 예열',

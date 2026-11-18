@@ -8,6 +8,7 @@ import { errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { kindLabel, securityApi } from '@/lib/security'
 import { cn, formatNumber } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 const RANGES = [1, 7, 30]
 
@@ -115,6 +116,7 @@ export function AttackReport() {
                       variant="ghost"
                       isIconOnly
                       aria-label={t('securityBan')}
+                      {...hoverTitle(t('securityBan'))}
                       onPress={() => void banIP(item.ip)}
                     >
                       <ShieldBan className="size-3.5 text-danger" aria-hidden />

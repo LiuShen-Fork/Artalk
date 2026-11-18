@@ -17,6 +17,7 @@ import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
 import { useConfirm } from '@/components/ui/confirm'
 import { isEmbedded } from '@/lib/boot'
+import { hoverTitle } from '@/lib/hover-title'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
 import { theme, useDarkMode } from '@/lib/theme'
@@ -210,6 +211,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               size="sm"
               variant="ghost"
               aria-label={dark ? t('lightTheme') : t('darkTheme')}
+              {...hoverTitle(dark ? t('lightTheme') : t('darkTheme'))}
               onPress={() => theme.toggle()}
             >
               {dark ? (

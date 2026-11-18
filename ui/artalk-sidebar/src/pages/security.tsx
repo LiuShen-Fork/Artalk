@@ -22,6 +22,7 @@ import {
   type SecurityRuntime,
 } from '@/lib/security'
 import { cn } from '@/lib/utils'
+import { hoverTitle } from '@/lib/hover-title'
 
 type TabId = 'basic' | 'limit' | 'captcha' | 'bans' | 'report' | 'events'
 
@@ -125,6 +126,7 @@ export function SecurityPage() {
               variant="ghost"
               isIconOnly
               aria-label={t('refresh')}
+              {...hoverTitle(t('refresh'))}
               isDisabled={configQuery.isFetching}
               onPress={() => void configQuery.refetch()}
             >

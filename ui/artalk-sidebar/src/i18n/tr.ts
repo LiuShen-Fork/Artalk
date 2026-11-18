@@ -37,6 +37,7 @@ export const tr: MessageSchema = {
   updateTitle: 'Başlığı Getir',
   uploading: 'Yükleniyor',
   cancel: 'İptal',
+  close: 'Kapat',
   back: 'Geri',
   cacheClear: 'Önbelleği Temizle',
   cacheWarm: 'Önbelleği Hazırla',

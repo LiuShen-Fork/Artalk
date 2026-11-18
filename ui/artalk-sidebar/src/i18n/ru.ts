@@ -37,6 +37,7 @@ export const ru: MessageSchema = {
   updateTitle: 'Обновление заголовка',
   uploading: 'Загрузка',
   cancel: 'Отмена',
+  close: 'Закрыть',
   back: 'Назад',
   cacheClear: 'Очистка кеша',
   cacheWarm: 'Разогрев кеша',

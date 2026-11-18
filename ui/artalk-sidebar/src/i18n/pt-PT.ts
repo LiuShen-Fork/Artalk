@@ -60,6 +60,7 @@ export const ptPT: MessageSchema = {
   updateTitle: 'Atualizar título',
   uploading: 'A enviar',
   cancel: 'Cancelar',
+  close: 'Fechar',
   back: 'Voltar',
   cacheClear: 'Limpar cache',
   cacheWarm: 'Pré-carregar cache',

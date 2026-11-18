@@ -20,6 +20,9 @@
   --at-color-border: var(--color-border);
   --at-color-bg: transparent;
   --at-color-bg-secondary: var(--color-surface-secondary);
+  /* The "阅读更多" collapse fades to this; the widget's own value is a white
+   * literal, so map it to the card surface for both themes. */
+  --at-color-gradient: linear-gradient(180deg, transparent, var(--color-surface) 65%);
   --at-font-size: 14px;
 }
 

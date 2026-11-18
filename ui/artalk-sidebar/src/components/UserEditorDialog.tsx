@@ -2,6 +2,7 @@ import { Button, Input, Label, Modal, Spinner, Switch, TextField, toast } from '
 import { useState } from 'react'
 import { Shuffle } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { hoverTitle } from '@/lib/hover-title'
 import { getArtalk } from '@/lib/artalk'
 import { errorMessage } from '@/lib/api'
 import { formatNumber } from '@/lib/utils'
@@ -40,7 +41,7 @@ export function UserEditorDialog({ isOpen, user, onClose, onSaved }: UserEditorD
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog className="gap-3">
-            <Modal.CloseTrigger />
+            <Modal.CloseTrigger aria-label={t('close')} {...hoverTitle(t('close'))} />
             <Modal.Header>
               <Modal.Heading>{user ? t('userEdit') : t('userCreate')}</Modal.Heading>
             </Modal.Header>
@@ -208,6 +209,7 @@ function UserForm({
               variant="ghost"
               isIconOnly
               aria-label={t('badgeColor')}
+              {...hoverTitle(t('badgeColor'))}
               onPress={() => set('badge_color', DEFAULT_BADGE_COLOR)}
             >
               <Shuffle className="size-3.5" aria-hidden />

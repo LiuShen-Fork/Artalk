@@ -9,6 +9,7 @@ import { api, siteQuery } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { formatNumber, cn } from '@/lib/utils'
 import { useSession } from '@/lib/session'
+import { hoverTitle } from '@/lib/hover-title'
 
 interface Metric {
   total: number
@@ -141,6 +142,7 @@ export function DashboardPage() {
             variant="ghost"
             isIconOnly
             aria-label={t('refresh')}
+            {...hoverTitle(t('refresh'))}
             isDisabled={isFetching}
             onPress={() => void refetch()}
           >
