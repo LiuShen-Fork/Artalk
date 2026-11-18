@@ -3,10 +3,17 @@ import { useNavigate } from '@tanstack/react-router'
 import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { defaultPathFor } from '@/app/nav'
+import { BrandMark } from '@/components/ui/BrandMark'
 import { VerifyCodeButton } from '@/components/VerifyCodeButton'
-import { accountApi, errorMessage, resolveServerPath, type AuthProviderInfo } from '@/lib/account-api'
+import {
+  accountApi,
+  errorMessage,
+  resolveServerPath,
+  type AuthProviderInfo,
+} from '@/lib/account-api'
 import { getArtalk } from '@/lib/artalk'
 import { t } from '@/lib/i18n'
+import { useConsoleSettings, useBrandName } from '@/lib/console'
 import { startOAuthLogin } from '@/lib/oauth-login'
 import { session } from '@/lib/session'
 import { cn } from '@/lib/utils'
@@ -68,7 +75,11 @@ function PasswordInput({
         aria-label={visible ? t('hide') : t('view')}
         className="absolute right-1.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
       >
-        {visible ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+        {visible ? (
+          <EyeOff className="size-4" aria-hidden />
+        ) : (
+          <Eye className="size-4" aria-hidden />
+        )}
       </button>
     </div>
   )
@@ -76,6 +87,8 @@ function PasswordInput({
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const brandName = useBrandName()
+  const brandDescription = useConsoleSettings().description.trim()
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -214,16 +227,16 @@ export function LoginPage() {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_20%_0%,color-mix(in_oklab,var(--accent)_22%,transparent),transparent_65%)]"
         />
         <div className="relative flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-accent text-[14px] font-bold text-accent-foreground">
-            A
-          </span>
-          <span className="text-[15px] font-semibold">Artalk</span>
+          <BrandMark size="md" />
+          <span className="text-[15px] font-semibold">{brandName}</span>
         </div>
         <div className="relative max-w-[320px] space-y-3">
           <h1 className="text-[26px] font-semibold leading-tight tracking-[-0.02em]">
             {t('ctrlCenter')}
           </h1>
-          <p className="text-[13.5px] leading-relaxed text-muted">{t('loginPanelDesc')}</p>
+          <p className="text-[13.5px] leading-relaxed text-muted">
+            {brandDescription || t('loginPanelDesc')}
+          </p>
         </div>
         <p className="relative text-[11px] text-muted">
           {version ? (
@@ -238,13 +251,11 @@ export function LoginPage() {
       <div className="flex min-w-0 flex-1 items-center justify-center px-5 py-8 lg:px-8">
         <div className="w-full max-w-[340px] lg:max-w-[360px]">
           <div className="mb-6 flex flex-col items-center gap-3 text-center lg:hidden">
-            <span className="grid size-12 place-items-center rounded-2xl bg-accent text-lg font-bold text-accent-foreground shadow-lg shadow-accent/25">
-              A
-            </span>
+            <BrandMark size="lg" className="shadow-lg shadow-accent/25" />
             <div>
-              <h1 className="text-[17px] font-semibold tracking-tight">Artalk</h1>
-              <p className="mt-0.5 text-[13px] text-muted">
-                {mode === 'login' ? t('ctrlCenter') : t(MODE_TITLE[mode])}
+              <h1 className="text-[17px] font-semibold tracking-tight">{brandName}</h1>
+              <p className="mt-0.5 max-w-[280px] text-[12.5px] leading-snug text-muted">
+                {brandDescription || (mode === 'login' ? t('ctrlCenter') : t(MODE_TITLE[mode]))}
               </p>
             </div>
           </div>
@@ -404,7 +415,12 @@ export function LoginPage() {
 
           <p className="mt-8 text-center text-[11px] text-muted lg:hidden">
             Powered by{' '}
-            <a href="https://artalk.js.org" target="_blank" rel="noreferrer" className="text-accent">
+            <a
+              href="https://artalk.js.org"
+              target="_blank"
+              rel="noreferrer"
+              className="text-accent"
+            >
               Artalk
             </a>
             {version ? (

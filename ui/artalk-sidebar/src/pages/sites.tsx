@@ -33,7 +33,7 @@ export function SitesPage() {
   return (
     <div className="space-y-3 md:space-y-4">
       <PageHeader
-        title={t('siteManage')}
+        title={t('navSites')}
         description={t('siteCount', { count: sites.length })}
         actions={
           <Button size="sm" variant="primary" onPress={() => setCreating(true)}>

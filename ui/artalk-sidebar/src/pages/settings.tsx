@@ -97,7 +97,7 @@ export function SettingsPage() {
   return (
     <div className="space-y-3 md:space-y-4 xl:max-w-[1120px]">
       <PageHeader
-        title={t('settings')}
+        title={t('navSettings')}
         description={t('settingNotice')}
         actions={
           <Button

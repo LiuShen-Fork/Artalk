@@ -31,10 +31,15 @@ describe('navigation by role and view', () => {
     const all = ids(navItemsFor(true, 'admin'))
     expect(all).toContain('dashboard')
     expect(all).toContain('security')
-    expect(all).toContain('customize')
+    expect(all).toContain('console')
     // The visitor's own overview belongs to the other view.
     expect(all).not.toContain('activity')
-    expect(ids(primaryItemsFor(true, 'admin'))).toEqual(['dashboard', 'comments', 'moderation', 'users'])
+    expect(ids(primaryItemsFor(true, 'admin'))).toEqual([
+      'dashboard',
+      'comments',
+      'moderation',
+      'users',
+    ])
     expect(ids(secondaryItemsFor(true, 'admin'))).not.toContain('dashboard')
   })
 
@@ -50,8 +55,8 @@ describe('navigation by role and view', () => {
   it('renames shared routes in visitor view', () => {
     const comments = findNavItem('comments')
     expect(comments).toBeDefined()
-    expect(labelKeyFor(comments!, 'user')).toBe('myComments')
-    expect(labelKeyFor(comments!, 'admin')).toBe('comments')
+    expect(labelKeyFor(comments!, 'user')).toBe('navMyComments')
+    expect(labelKeyFor(comments!, 'admin')).toBe('navComments')
   })
 })
 
@@ -64,7 +69,7 @@ describe('path guard', () => {
       '/users',
       '/sites',
       '/security',
-      '/customize',
+      '/console',
       '/settings',
       '/transfer',
     ]) {

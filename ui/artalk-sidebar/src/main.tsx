@@ -4,7 +4,7 @@ import './styles/index.css'
 import './lib/promise-polyfill'
 import { App } from './App'
 import { bootArtalk } from './lib/artalk'
-import { installCustomCode } from './lib/custom-code'
+import { installConsole } from './lib/console'
 import { setLocale } from './lib/i18n'
 import { session } from './lib/session'
 import { theme } from './lib/theme'
@@ -21,9 +21,9 @@ async function bootstrap() {
   session.setUser(artalk.ctx.getUser().getData())
   theme.syncArtalk()
 
-  // Styles and scripts the owner saved from the customize page. Public, tiny,
-  // and not worth blocking the first paint on.
-  void installCustomCode()
+  // Name, icon, styles and scripts the owner saved from the console settings
+  // page. Public, tiny, and not worth blocking the first paint on.
+  void installConsole()
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

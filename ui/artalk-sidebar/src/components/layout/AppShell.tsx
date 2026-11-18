@@ -12,6 +12,7 @@ import {
   type ViewMode,
 } from '@/app/nav'
 import { AccountMenu } from '@/components/layout/AccountMenu'
+import { BrandMark } from '@/components/ui/BrandMark'
 import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
 import { useConfirm } from '@/components/ui/confirm'
@@ -177,9 +178,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
           ) : (
             <span className="flex min-w-0 items-center gap-2 px-1 text-[13px] font-medium">
-              <span className="grid size-6 shrink-0 place-items-center rounded-md bg-accent text-[11px] font-bold text-accent-foreground">
-                A
-              </span>
+              <BrandMark size="sm" />
               <span className="truncate">
                 {currentItem ? t(labelKeyFor(currentItem, view)) : t('ctrlCenter')}
               </span>

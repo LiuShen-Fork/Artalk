@@ -131,7 +131,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-3">
       <PageHeader
-        title={t('dashboard')}
+        title={t('navDashboard')}
         description={t('dashDesc')}
         actions={
           <Button
@@ -184,111 +184,114 @@ export function DashboardPage() {
       <div className="space-y-3 md:grid md:grid-cols-[1.35fr_1fr] md:items-start md:gap-3 md:space-y-0">
         <Panel
           title={t('dashTrend')}
-        description={t('dashTrendDesc')}
-        action={<TrendingUp className="size-4 text-muted" aria-hidden />}
-      >
-        {weeks.length ? (
-          <>
-            <div className="flex h-28 items-end gap-1 md:h-36 md:gap-1.5">
-              {weeks.map((week) => (
-                <div
-                  key={week.range}
-                  title={`${week.range} · ${t('comment')} ${week.comments} · ${t('user')} ${week.users}`}
-                  className="flex h-full flex-1 items-end justify-center gap-0.5"
-                >
-                  <span
-                    className="w-1/3 rounded-t-[3px] bg-accent"
-                    style={{ height: bar(week.comments), opacity: week.comments ? 1 : 0.15 }}
-                  />
-                  <span
-                    className="w-1/3 rounded-t-[3px] bg-accent/30"
-                    style={{ height: bar(week.users), opacity: week.users ? 1 : 0.15 }}
-                  />
-                </div>
-              ))}
-            </div>
-            {/* First, middle and last week: a legible axis at 430px without
-                crowding the bars. */}
-            <div className="mt-1.5 flex justify-between text-[10px] text-muted">
-              {[weeks[0], weeks[Math.floor((weeks.length - 1) / 2)], weeks[weeks.length - 1]].map(
-                (week, index) => (
-                  <span key={`${week.range}-${index}`}>{week.label}</span>
-                ),
-              )}
-            </div>
-            <div className="mt-2 flex items-center gap-3 text-[11px] text-muted">
-              <span className="flex items-center gap-1">
-                <i className="size-2 rounded-sm bg-accent" /> {t('comment')}
-              </span>
-              <span className="flex items-center gap-1">
-                <i className="size-2 rounded-sm bg-accent/30" /> {t('user')}
-              </span>
-              <span className="ml-auto tabular-nums">{t('dashPeak', { value: peak })}</span>
-            </div>
-          </>
-        ) : (
-          <p className="py-6 text-center text-[12px] text-muted">{t('noContent')}</p>
-        )}
-      </Panel>
-
-      <Panel
-        title={t('moderation')}
-        description={t('moderationIntro')}
-        action={
-          <Button size="sm" variant="ghost" onPress={() => void navigate({ to: '/moderation' })}>
-            {t('all')}
-          </Button>
-        }
-      >
-        <div className="grid grid-cols-3 gap-2">
-          {(
-            [
-              ['pass', data?.moderation.pass, 'text-success', 'replace'],
-              ['block', data?.moderation.block, 'text-warning', 'block'],
-              ['error', data?.moderation.error, 'text-danger', 'error'],
-            ] as const
-          ).map(([id, value, color, status]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => void navigate({ to: '/moderation', search: { status } as never })}
-              className="rounded-lg border border-border bg-surface-secondary/60 px-2 py-2 text-center transition-colors hover:bg-surface-secondary"
-            >
-              <b className={`block text-base tabular-nums ${color}`}>{formatNumber(value)}</b>
-              <span className="text-[10.5px] text-muted">
-                {t(
-                  id === 'pass' ? 'moderationReplaced' : id === 'block' ? 'moderationBlocked' : 'opFailed',
-                )}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div className="mt-2.5 space-y-1.5">
-          {(data?.recent_reviews ?? []).slice(0, 4).map((item) => (
-            <div key={item.id} className="flex gap-2 rounded-lg px-1 py-1">
-              <span
-                className={`mt-1 size-1.5 shrink-0 rounded-full ${
-                  item.status === 'pass'
-                    ? 'bg-success'
-                    : item.status === 'block'
-                      ? 'bg-warning'
-                      : 'bg-danger'
-                }`}
-              />
-              <div className="min-w-0">
-                <p className="truncate text-[12px] font-medium">{item.checker}</p>
-                <p className="line-clamp-2 text-[11.5px] leading-snug text-muted">
-                  {item.message || item.comment_content || t('moreDetails')}
-                </p>
+          description={t('dashTrendDesc')}
+          action={<TrendingUp className="size-4 text-muted" aria-hidden />}
+        >
+          {weeks.length ? (
+            <>
+              <div className="flex h-28 items-end gap-1 md:h-36 md:gap-1.5">
+                {weeks.map((week) => (
+                  <div
+                    key={week.range}
+                    title={`${week.range} · ${t('comment')} ${week.comments} · ${t('user')} ${week.users}`}
+                    className="flex h-full flex-1 items-end justify-center gap-0.5"
+                  >
+                    <span
+                      className="w-1/3 rounded-t-[3px] bg-accent"
+                      style={{ height: bar(week.comments), opacity: week.comments ? 1 : 0.15 }}
+                    />
+                    <span
+                      className="w-1/3 rounded-t-[3px] bg-accent/30"
+                      style={{ height: bar(week.users), opacity: week.users ? 1 : 0.15 }}
+                    />
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
-          {!data?.recent_reviews?.length ? (
-            <p className="py-3 text-center text-[12px] text-muted">{t('noModerationLogs')}</p>
-          ) : null}
-        </div>
-      </Panel>
+              {/* First, middle and last week: a legible axis at 430px without
+                crowding the bars. */}
+              <div className="mt-1.5 flex justify-between text-[10px] text-muted">
+                {[weeks[0], weeks[Math.floor((weeks.length - 1) / 2)], weeks[weeks.length - 1]].map(
+                  (week, index) => (
+                    <span key={`${week.range}-${index}`}>{week.label}</span>
+                  ),
+                )}
+              </div>
+              <div className="mt-2 flex items-center gap-3 text-[11px] text-muted">
+                <span className="flex items-center gap-1">
+                  <i className="size-2 rounded-sm bg-accent" /> {t('comment')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <i className="size-2 rounded-sm bg-accent/30" /> {t('user')}
+                </span>
+                <span className="ml-auto tabular-nums">{t('dashPeak', { value: peak })}</span>
+              </div>
+            </>
+          ) : (
+            <p className="py-6 text-center text-[12px] text-muted">{t('noContent')}</p>
+          )}
+        </Panel>
 
+        <Panel
+          title={t('moderation')}
+          description={t('moderationIntro')}
+          action={
+            <Button size="sm" variant="ghost" onPress={() => void navigate({ to: '/moderation' })}>
+              {t('all')}
+            </Button>
+          }
+        >
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                ['pass', data?.moderation.pass, 'text-success', 'replace'],
+                ['block', data?.moderation.block, 'text-warning', 'block'],
+                ['error', data?.moderation.error, 'text-danger', 'error'],
+              ] as const
+            ).map(([id, value, color, status]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => void navigate({ to: '/moderation', search: { status } as never })}
+                className="rounded-lg border border-border bg-surface-secondary/60 px-2 py-2 text-center transition-colors hover:bg-surface-secondary"
+              >
+                <b className={`block text-base tabular-nums ${color}`}>{formatNumber(value)}</b>
+                <span className="text-[10.5px] text-muted">
+                  {t(
+                    id === 'pass'
+                      ? 'moderationReplaced'
+                      : id === 'block'
+                        ? 'moderationBlocked'
+                        : 'opFailed',
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-2.5 space-y-1.5">
+            {(data?.recent_reviews ?? []).slice(0, 4).map((item) => (
+              <div key={item.id} className="flex gap-2 rounded-lg px-1 py-1">
+                <span
+                  className={`mt-1 size-1.5 shrink-0 rounded-full ${
+                    item.status === 'pass'
+                      ? 'bg-success'
+                      : item.status === 'block'
+                        ? 'bg-warning'
+                        : 'bg-danger'
+                  }`}
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-medium">{item.checker}</p>
+                  <p className="line-clamp-2 text-[11.5px] leading-snug text-muted">
+                    {item.message || item.comment_content || t('moreDetails')}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {!data?.recent_reviews?.length ? (
+              <p className="py-3 text-center text-[12px] text-muted">{t('noModerationLogs')}</p>
+            ) : null}
+          </div>
+        </Panel>
       </div>
 
       <Panel title={t('dashTopPages')} description={t('dashTopPagesDesc')}>

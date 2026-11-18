@@ -26,7 +26,7 @@ const SitesPage = lazyRouteComponent(() => import('@/pages/sites'), 'SitesPage')
 const TransferPage = lazyRouteComponent(() => import('@/pages/transfer'), 'TransferPage')
 const SettingsPage = lazyRouteComponent(() => import('@/pages/settings'), 'SettingsPage')
 const SecurityPage = lazyRouteComponent(() => import('@/pages/security'), 'SecurityPage')
-const CustomizePage = lazyRouteComponent(() => import('@/pages/customize'), 'CustomizePage')
+const ConsolePage = lazyRouteComponent(() => import('@/pages/console'), 'ConsolePage')
 const ActivityPage = lazyRouteComponent(() => import('@/pages/activity'), 'ActivityPage')
 const AccountPage = lazyRouteComponent(() => import('@/pages/account'), 'AccountPage')
 
@@ -161,9 +161,9 @@ const routeTree = rootRoute.addChildren([
     }),
     createRoute({
       getParentRoute: () => shellRoute,
-      path: '/customize',
+      path: '/console',
       beforeLoad: requireAdmin,
-      component: CustomizePage,
+      component: ConsolePage,
     }),
     createRoute({
       getParentRoute: () => shellRoute,

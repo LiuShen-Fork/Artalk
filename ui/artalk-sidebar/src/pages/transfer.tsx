@@ -72,84 +72,84 @@ export function TransferPage() {
 
   return (
     <div className="space-y-3">
-      <PageHeader title={t('transfer')} description={t('transferDesc')} />
+      <PageHeader title={t('navTransfer')} description={t('transferDesc')} />
 
-<div className="space-y-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-3 md:space-y-0">
-      <section className="space-y-3 rounded-xl border border-border bg-surface p-3 md:p-5">
-        <div>
-          <h2 className="text-[13px] font-semibold">{t('import')}</h2>
-          <p className="mt-0.5 text-[11.5px] text-muted">{t('importDesc')}</p>
-        </div>
+      <div className="space-y-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-3 md:space-y-0">
+        <section className="space-y-3 rounded-xl border border-border bg-surface p-3 md:p-5">
+          <div>
+            <h2 className="text-[13px] font-semibold">{t('import')}</h2>
+            <p className="mt-0.5 text-[11.5px] text-muted">{t('importDesc')}</p>
+          </div>
 
-        <FileUploader
-          apiUrl={`${serverBase()}/transfer/upload`}
-          onDone={setFilename}
-          onError={(message) => toast.danger(message)}
-        />
-
-        <TextField className="w-full">
-          <Label className="text-[12px] text-muted">{t('targetSiteName')}</Label>
-          <Input
-            value={siteName}
-            onChange={(event) => setSiteName(event.target.value)}
-            placeholder={t('inputHint')}
-            autoComplete="off"
+          <FileUploader
+            apiUrl={`${serverBase()}/transfer/upload`}
+            onDone={setFilename}
+            onError={(message) => toast.danger(message)}
           />
-        </TextField>
-        <TextField className="w-full">
-          <Label className="text-[12px] text-muted">{t('targetSiteURL')}</Label>
-          <Input
-            value={siteURL}
-            onChange={(event) => setSiteURL(event.target.value)}
-            placeholder={t('inputHint')}
-            autoComplete="off"
-          />
-        </TextField>
-        <TextField className="w-full">
-          <Label className="text-[12px] text-muted">
-            {t('payload')} ({t('optional')})
-          </Label>
-          <TextArea
-            value={payload}
-            onChange={(event) => setPayload(event.target.value)}
-            rows={3}
-            placeholder="{}"
-            className="font-mono text-[12px]"
-          />
-        </TextField>
 
-        <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
-          <a
-            href="https://artalk.js.org/guide/transfer.html"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="flex items-center gap-1 text-[11.5px] text-accent hover:underline"
+          <TextField className="w-full">
+            <Label className="text-[12px] text-muted">{t('targetSiteName')}</Label>
+            <Input
+              value={siteName}
+              onChange={(event) => setSiteName(event.target.value)}
+              placeholder={t('inputHint')}
+              autoComplete="off"
+            />
+          </TextField>
+          <TextField className="w-full">
+            <Label className="text-[12px] text-muted">{t('targetSiteURL')}</Label>
+            <Input
+              value={siteURL}
+              onChange={(event) => setSiteURL(event.target.value)}
+              placeholder={t('inputHint')}
+              autoComplete="off"
+            />
+          </TextField>
+          <TextField className="w-full">
+            <Label className="text-[12px] text-muted">
+              {t('payload')} ({t('optional')})
+            </Label>
+            <TextArea
+              value={payload}
+              onChange={(event) => setPayload(event.target.value)}
+              rows={3}
+              placeholder="{}"
+              className="font-mono text-[12px]"
+            />
+          </TextField>
+
+          <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+            <a
+              href="https://artalk.js.org/guide/transfer.html"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="flex items-center gap-1 text-[11.5px] text-accent hover:underline"
+            >
+              {t('moreDetails')}
+              <ExternalLink className="size-3" aria-hidden />
+            </a>
+            <Button size="sm" variant="primary" onPress={startImport}>
+              {t('import')}
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Button>
+          </div>
+        </section>
+
+        <section className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3 md:flex-col md:items-start md:p-5">
+          <div className="min-w-0">
+            <h2 className="text-[13px] font-semibold">{t('export')}</h2>
+            <p className="mt-0.5 text-[11.5px] text-muted">{t('exportDesc')}</p>
+          </div>
+          <Button
+            size="sm"
+            variant="secondary"
+            isDisabled={exporting}
+            onPress={() => void exportData()}
           >
-            {t('moreDetails')}
-            <ExternalLink className="size-3" aria-hidden />
-          </a>
-          <Button size="sm" variant="primary" onPress={startImport}>
-            {t('import')}
-            <ArrowRight className="size-3.5" aria-hidden />
+            {exporting ? <Spinner size="sm" /> : <Download className="size-3.5" aria-hidden />}
+            {t('export')}
           </Button>
-        </div>
-      </section>
-
-      <section className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3 md:flex-col md:items-start md:p-5">
-        <div className="min-w-0">
-          <h2 className="text-[13px] font-semibold">{t('export')}</h2>
-          <p className="mt-0.5 text-[11.5px] text-muted">{t('exportDesc')}</p>
-        </div>
-        <Button
-          size="sm"
-          variant="secondary"
-          isDisabled={exporting}
-          onPress={() => void exportData()}
-        >
-          {exporting ? <Spinner size="sm" /> : <Download className="size-3.5" aria-hidden />}
-          {t('export')}
-        </Button>
-      </section>
+        </section>
       </div>
     </div>
   )

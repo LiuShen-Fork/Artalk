@@ -7,7 +7,7 @@ import {
   Flame,
   LayoutDashboard,
   MessagesSquare,
-  Paintbrush,
+  Palette,
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
@@ -25,7 +25,7 @@ export type PageId =
   | 'transfer'
   | 'settings'
   | 'security'
-  | 'customize'
+  | 'console'
   | 'activity'
   | 'account'
 
@@ -65,7 +65,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
     path: '/dashboard',
-    titleKey: 'dashboard',
+    titleKey: 'navDashboard',
     icon: LayoutDashboard,
     adminOnly: true,
     group: 'overview',
@@ -74,8 +74,8 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'comments',
     path: '/comments',
-    titleKey: 'comments',
-    userTitleKey: 'myComments',
+    titleKey: 'navComments',
+    userTitleKey: 'navMyComments',
     icon: MessagesSquare,
     group: 'content',
     primary: true,
@@ -83,7 +83,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'moderation',
     path: '/moderation',
-    titleKey: 'moderation',
+    titleKey: 'navModeration',
     icon: ShieldCheck,
     adminOnly: true,
     group: 'content',
@@ -92,7 +92,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'pages',
     path: '/pages',
-    titleKey: 'page',
+    titleKey: 'navPages',
     icon: FileText,
     adminOnly: true,
     group: 'content',
@@ -100,7 +100,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'users',
     path: '/users',
-    titleKey: 'user',
+    titleKey: 'navUsers',
     icon: Users,
     adminOnly: true,
     group: 'community',
@@ -109,7 +109,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'sites',
     path: '/sites',
-    titleKey: 'site',
+    titleKey: 'navSites',
     icon: Globe2,
     adminOnly: true,
     group: 'community',
@@ -117,7 +117,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'security',
     path: '/security',
-    titleKey: 'security',
+    titleKey: 'navSecurity',
     icon: ShieldAlert,
     adminOnly: true,
     group: 'system',
@@ -125,23 +125,23 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'settings',
     path: '/settings',
-    titleKey: 'settings',
+    titleKey: 'navSettings',
     icon: SlidersHorizontal,
     adminOnly: true,
     group: 'system',
   },
   {
-    id: 'customize',
-    path: '/customize',
-    titleKey: 'customize',
-    icon: Paintbrush,
+    id: 'console',
+    path: '/console',
+    titleKey: 'navConsole',
+    icon: Palette,
     adminOnly: true,
     group: 'system',
   },
   {
     id: 'transfer',
     path: '/transfer',
-    titleKey: 'transfer',
+    titleKey: 'navTransfer',
     icon: ArrowDownUp,
     adminOnly: true,
     group: 'system',
@@ -149,7 +149,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'activity',
     path: '/activity',
-    titleKey: 'myActivity',
+    titleKey: 'navMyActivity',
     icon: Flame,
     // The overview of a visitor's own footprint. It heads their list, so it
     // borrows the "overview" group: group titles are hidden in visitor view
@@ -161,7 +161,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     id: 'account',
     path: '/account',
-    titleKey: 'account',
+    titleKey: 'navAccount',
     icon: CircleUserRound,
     group: 'mine',
   },

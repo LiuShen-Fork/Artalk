@@ -214,7 +214,7 @@ export function AccountPage() {
 
   return (
     <div className="space-y-3 md:space-y-4">
-      <PageHeader title={t('account')} description={t('securityDesc')} />
+      <PageHeader title={t('navAccount')} description={t('securityDesc')} />
 
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-16 text-[12.5px] text-muted">
@@ -228,138 +228,138 @@ export function AccountPage() {
       ) : (
         <div className="space-y-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:items-start md:gap-3 md:space-y-0">
           <div className="space-y-3">
-          <Section title={t('profileSection')} description={t('emailChangeHint')}>
-            <div className="space-y-1.5">
-              <TextField className="w-full">
-                <Label className="text-[12px] text-muted">{t('username')}</Label>
-                <Input
-                  value={name}
-                  autoComplete="nickname"
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </TextField>
-              <TextField className="w-full">
-                <Label className="text-[12px] text-muted">{t('link')}</Label>
-                <Input
-                  value={link}
-                  placeholder="https://"
-                  autoComplete="url"
-                  onChange={(event) => setLink(event.target.value)}
-                />
-              </TextField>
-              <TextField className="w-full">
-                <Label className="text-[12px] text-muted">{t('email')}</Label>
-                <Input
-                  type="email"
-                  value={email}
-                  autoComplete="email"
-                  onChange={(event) => setEmail(event.target.value)}
-                />
-              </TextField>
-              {emailChanged ? (
-                <Row label={t('verificationCode')} hint={t('emailChangeHint')}>
-                  <div className="flex items-center gap-1.5">
-                    <Input
-                      value={emailCode}
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      maxLength={6}
-                      placeholder={t('verificationCode')}
-                      onChange={(event) => setEmailCode(event.target.value)}
-                    />
-                    <VerifyCodeButton email={email} onError={toast.danger} />
-                  </div>
-                </Row>
-              ) : null}
-              <Button
-                size="sm"
-                variant="primary"
-                className="w-full md:w-auto"
-                isDisabled={profileSaving}
-                onPress={() => void saveProfile()}
-              >
-                {profileSaving ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <UserRound className="size-3.5" aria-hidden />
-                )}
-                {t('save')}
-              </Button>
-            </div>
-          </Section>
-
-          <Section
-            title={t('password')}
-            description={hasPassword ? t('changePassword') : t('passwordUnset')}
-          >
-            <div className="space-y-1.5">
-              {hasPassword ? (
+            <Section title={t('profileSection')} description={t('emailChangeHint')}>
+              <div className="space-y-1.5">
                 <TextField className="w-full">
-                  <Label className="text-[12px] text-muted">{t('currentPassword')}</Label>
+                  <Label className="text-[12px] text-muted">{t('username')}</Label>
                   <Input
-                    type="password"
-                    value={currentPassword}
-                    autoComplete="current-password"
-                    placeholder={t('inputHint')}
-                    onChange={(event) => setCurrentPassword(event.target.value)}
-                  />
-                </TextField>
-              ) : (
-                <Row label={t('verificationCode')}>
-                  <div className="flex items-center gap-1.5">
-                    <Input
-                      value={passwordCode}
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      maxLength={6}
-                      placeholder={t('verificationCode')}
-                      onChange={(event) => setPasswordCode(event.target.value)}
-                    />
-                    <VerifyCodeButton email={email} onError={toast.danger} />
-                  </div>
-                </Row>
-              )}
-              <div className="grid grid-cols-2 gap-1.5">
-                <TextField className="w-full">
-                  <Label className="text-[12px] text-muted">{t('newPassword')}</Label>
-                  <Input
-                    type="password"
-                    value={newPassword}
-                    autoComplete="new-password"
-                    placeholder={t('inputHint')}
-                    onChange={(event) => setNewPassword(event.target.value)}
+                    value={name}
+                    autoComplete="nickname"
+                    onChange={(event) => setName(event.target.value)}
                   />
                 </TextField>
                 <TextField className="w-full">
-                  <Label className="text-[12px] text-muted">{t('confirmPassword')}</Label>
+                  <Label className="text-[12px] text-muted">{t('link')}</Label>
                   <Input
-                    type="password"
-                    value={confirmPassword}
-                    autoComplete="new-password"
-                    placeholder={t('inputHint')}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    value={link}
+                    placeholder="https://"
+                    autoComplete="url"
+                    onChange={(event) => setLink(event.target.value)}
                   />
                 </TextField>
+                <TextField className="w-full">
+                  <Label className="text-[12px] text-muted">{t('email')}</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    autoComplete="email"
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </TextField>
+                {emailChanged ? (
+                  <Row label={t('verificationCode')} hint={t('emailChangeHint')}>
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        value={emailCode}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        placeholder={t('verificationCode')}
+                        onChange={(event) => setEmailCode(event.target.value)}
+                      />
+                      <VerifyCodeButton email={email} onError={toast.danger} />
+                    </div>
+                  </Row>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="w-full md:w-auto"
+                  isDisabled={profileSaving}
+                  onPress={() => void saveProfile()}
+                >
+                  {profileSaving ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <UserRound className="size-3.5" aria-hidden />
+                  )}
+                  {t('save')}
+                </Button>
               </div>
-              {passwordMismatch ? (
-                <p className="text-[11.5px] text-danger">{t('passwordMismatch')}</p>
-              ) : null}
-              <Button
-                size="sm"
-                variant="primary"
-                className="w-full md:w-auto"
-                isDisabled={!canSubmitPassword || passwordSaving}
-                onPress={() => void changePassword()}
-              >
-                {passwordSaving ? (
-                  <Spinner size="sm" />
+            </Section>
+
+            <Section
+              title={t('password')}
+              description={hasPassword ? t('changePassword') : t('passwordUnset')}
+            >
+              <div className="space-y-1.5">
+                {hasPassword ? (
+                  <TextField className="w-full">
+                    <Label className="text-[12px] text-muted">{t('currentPassword')}</Label>
+                    <Input
+                      type="password"
+                      value={currentPassword}
+                      autoComplete="current-password"
+                      placeholder={t('inputHint')}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                    />
+                  </TextField>
                 ) : (
-                  <ShieldCheck className="size-3.5" aria-hidden />
+                  <Row label={t('verificationCode')}>
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        value={passwordCode}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        placeholder={t('verificationCode')}
+                        onChange={(event) => setPasswordCode(event.target.value)}
+                      />
+                      <VerifyCodeButton email={email} onError={toast.danger} />
+                    </div>
+                  </Row>
                 )}
-                {t('save')}
-              </Button>
-            </div>
-          </Section>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <TextField className="w-full">
+                    <Label className="text-[12px] text-muted">{t('newPassword')}</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      autoComplete="new-password"
+                      placeholder={t('inputHint')}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                    />
+                  </TextField>
+                  <TextField className="w-full">
+                    <Label className="text-[12px] text-muted">{t('confirmPassword')}</Label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      autoComplete="new-password"
+                      placeholder={t('inputHint')}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                    />
+                  </TextField>
+                </div>
+                {passwordMismatch ? (
+                  <p className="text-[11.5px] text-danger">{t('passwordMismatch')}</p>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="w-full md:w-auto"
+                  isDisabled={!canSubmitPassword || passwordSaving}
+                  onPress={() => void changePassword()}
+                >
+                  {passwordSaving ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <ShieldCheck className="size-3.5" aria-hidden />
+                  )}
+                  {t('save')}
+                </Button>
+              </div>
+            </Section>
           </div>
 
           <Section title={t('bindingsSection')} description={t('bindingsDesc')}>

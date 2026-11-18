@@ -3,6 +3,8 @@ import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { ChevronDown, Globe2, LayoutGrid, Moon, Sun, UserRound } from 'lucide-react'
 import { navGroupsFor, labelKeyFor, type ViewMode } from '@/app/nav'
 import { AccountMenu } from '@/components/layout/AccountMenu'
+import { BrandMark } from '@/components/ui/BrandMark'
+import { useBrandName } from '@/lib/console'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
 import { theme, useDarkMode } from '@/lib/theme'
@@ -135,10 +137,17 @@ function NavLink({
  * rail so a half-width browser window still leaves room for content; on the
  * rail every row is a centred square so nothing looks half-filled.
  */
-export function Sidebar({ onOpenSites, onLogout }: { onOpenSites: () => void; onLogout: () => void }) {
+export function Sidebar({
+  onOpenSites,
+  onLogout,
+}: {
+  onOpenSites: () => void
+  onLogout: () => void
+}) {
   const { user, site, view } = useSession()
   const isAdmin = !!user?.is_admin
   const dark = useDarkMode()
+  const brandName = useBrandName()
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
@@ -155,14 +164,9 @@ export function Sidebar({ onOpenSites, onLogout }: { onOpenSites: () => void; on
   return (
     <aside className="hidden shrink-0 flex-col border-r border-border bg-surface/50 md:flex md:w-[76px] xl:w-[244px]">
       <div className="flex h-14 shrink-0 items-center justify-center gap-2 px-3 xl:justify-start xl:px-4">
-        <span
-          title={t('ctrlCenter')}
-          className="grid size-8 shrink-0 place-items-center rounded-control bg-accent text-[13px] font-bold text-accent-foreground"
-        >
-          A
-        </span>
+        <BrandMark size="md" />
         <span className="hidden min-w-0 flex-1 truncate text-[13.5px] font-semibold xl:inline">
-          Artalk
+          {brandName}
           <span className="ml-1 font-normal text-muted">{t('ctrlCenter')}</span>
         </span>
       </div>
@@ -226,7 +230,11 @@ export function Sidebar({ onOpenSites, onLogout }: { onOpenSites: () => void; on
             aria-label={dark ? t('lightTheme') : t('darkTheme')}
             onPress={() => theme.toggle()}
           >
-            {dark ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
+            {dark ? (
+              <Sun className="size-4" aria-hidden />
+            ) : (
+              <Moon className="size-4" aria-hidden />
+            )}
           </Button>
           <AccountMenu
             name={user?.name ?? ''}
