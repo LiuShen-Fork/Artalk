@@ -138,6 +138,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     void navigate({ to: path })
   }
 
+  // The profile page belongs to the visitor's own pages, so an admin coming
+  // from the account menu switches view first instead of landing outside the
+  // menu they are looking at.
+  const openAccount = () => {
+    setMoreOpen(false)
+    if (isAdmin) session.setView('user')
+    void navigate({ to: '/account' })
+  }
+
   const switchView = (next: ViewMode) => {
     setMoreOpen(false)
     if (next === view) return
@@ -204,7 +213,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               email={user?.email ?? ''}
               view={isAdmin ? view : undefined}
               onSwitchView={switchView}
-              onAccount={() => go('/account')}
+              onAccount={openAccount}
               onLogout={logout}
             />
           </div>

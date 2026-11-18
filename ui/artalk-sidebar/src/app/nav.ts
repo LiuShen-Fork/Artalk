@@ -163,7 +163,10 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/account',
     titleKey: 'navAccount',
     icon: CircleUserRound,
+    // Editing your own profile is a personal page, not a management one; an
+    // admin reaches it from the account menu, which switches to "my pages".
     group: 'mine',
+    visitorOnly: true,
   },
 ]
 
