@@ -186,6 +186,18 @@ export const zhCN: MessageSchema = {
   securityCaptchaType: '服务商',
   securityCaptchaLimit: '免费操作次数',
   securityCaptchaReset: '计数重置（秒）',
+
+  securityExcludePaths: '不计入限频的路径（每行一个）',
+
+  securityExcludePathsDesc: '这些路径的请求不参与计数，例如 /captcha/verify。',
+
+  securityCaptchaSiteKey: '站点密钥 (Site key)',
+
+  securityCaptchaSecretKey: '密钥 (Secret key)',
+
+  securityCaptchaKeyID: 'Key ID',
+
+  securityCaptchaEndpoint: 'API 地址',
   securityBans: 'IP 封禁名单',
   securityBansDesc: '手动与自动封禁的 IP，配置文件黑名单中的条目为只读。',
   securityBanIP: 'IP 或 CIDR',

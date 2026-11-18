@@ -189,6 +189,18 @@ export const ko: MessageSchema = {
   securityCaptchaType: '제공자',
   securityCaptchaLimit: '무료 작업 횟수',
   securityCaptchaReset: '카운트 초기화(초)',
+
+  securityExcludePaths: '집계에서 제외할 경로 (한 줄에 하나)',
+
+  securityExcludePathsDesc: '이 경로의 요청은 집계되지 않습니다. 예: /captcha/verify',
+
+  securityCaptchaSiteKey: '사이트 키 (Site key)',
+
+  securityCaptchaSecretKey: '비밀 키 (Secret key)',
+
+  securityCaptchaKeyID: '키 ID',
+
+  securityCaptchaEndpoint: 'API 엔드포인트',
   securityBans: '차단된 IP',
   securityBansDesc: '수동 및 자동 차단 목록입니다. 설정 파일의 블랙리스트는 읽기 전용입니다.',
   securityBanIP: 'IP 또는 CIDR',

@@ -12,7 +12,9 @@ import settings, { type OptionNode } from '@/lib/settings'
 
 // Console branding has a page of its own (站点配置), so listing the same four
 // fields here would only make a second place to edit them.
-const HIDDEN_ROOT_NODES = new Set(['admin_users', 'console'])
+// `security` 与 `captcha` 由「安全防护」页面接管（含验证码服务商密钥），
+// `console` 有独立的「站点配置」页面，因此都不在系统设置里重复出现。
+const HIDDEN_ROOT_NODES = new Set(['admin_users', 'console', 'security', 'captcha'])
 
 /**
  * Root entries without children are flattened into one "general" section so the

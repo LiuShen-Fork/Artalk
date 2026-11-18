@@ -186,6 +186,18 @@ export const zhTW: MessageSchema = {
   securityCaptchaType: '服務商',
   securityCaptchaLimit: '免費操作次數',
   securityCaptchaReset: '計數重置（秒）',
+
+  securityExcludePaths: '不計入限流的路径（每行一個）',
+
+  securityExcludePathsDesc: '這些路徑的請求不參與計數，例如 /captcha/verify。',
+
+  securityCaptchaSiteKey: '站點金鑰 (Site key)',
+
+  securityCaptchaSecretKey: '金鑰 (Secret key)',
+
+  securityCaptchaKeyID: 'Key ID',
+
+  securityCaptchaEndpoint: 'API 位址',
   securityBans: 'IP 封鎖名單',
   securityBansDesc: '手動與自動封鎖的 IP，設定檔黑名單中的項目為唯讀。',
   securityBanIP: 'IP 或 CIDR',

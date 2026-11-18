@@ -195,6 +195,18 @@ export const tr: MessageSchema = {
   securityCaptchaType: 'Sağlayıcı',
   securityCaptchaLimit: 'Doğrulama öncesi ücretsiz işlem',
   securityCaptchaReset: 'Sayaç sıfırlama (saniye)',
+
+  securityExcludePaths: 'Muaf tutulan yollar (her satıra bir tane)',
+
+  securityExcludePathsDesc: 'Bu yollara yapılan istekler sayılmaz, ör. /captcha/verify.',
+
+  securityCaptchaSiteKey: 'Site anahtarı (site key)',
+
+  securityCaptchaSecretKey: 'Gizli anahtar (secret key)',
+
+  securityCaptchaKeyID: 'Anahtar kimliği',
+
+  securityCaptchaEndpoint: 'API adresi',
   securityBans: 'Engelli IP’ler',
   securityBansDesc:
     'Elle ve otomatik engellemeler. Yapılandırma kara listesindeki kayıtlar salt okunurdur.',

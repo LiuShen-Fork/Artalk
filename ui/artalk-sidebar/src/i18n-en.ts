@@ -193,6 +193,18 @@ export const en = {
   securityCaptchaType: 'Provider',
   securityCaptchaLimit: 'Free actions before a challenge',
   securityCaptchaReset: 'Counter reset (seconds)',
+
+  securityExcludePaths: 'Exempt paths (one per line)',
+
+  securityExcludePathsDesc: 'Requests to these paths are not counted, e.g. /captcha/verify.',
+
+  securityCaptchaSiteKey: 'Site key',
+
+  securityCaptchaSecretKey: 'Secret key',
+
+  securityCaptchaKeyID: 'Key ID',
+
+  securityCaptchaEndpoint: 'API endpoint',
   securityBans: 'Blocked IPs',
   securityBansDesc: 'Manual and automatic bans. Entries from the config blacklist are read-only.',
   securityBanIP: 'IP or CIDR',

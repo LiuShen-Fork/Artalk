@@ -199,6 +199,18 @@ export const fr: MessageSchema = {
   securityCaptchaType: 'Fournisseur',
   securityCaptchaLimit: 'Actions gratuites avant vérification',
   securityCaptchaReset: 'Réinitialisation du compteur (secondes)',
+
+  securityExcludePaths: 'Chemins exemptés (un par ligne)',
+
+  securityExcludePathsDesc: 'Les requêtes vers ces chemins ne sont pas comptées, par ex. /captcha/verify.',
+
+  securityCaptchaSiteKey: 'Clé du site (site key)',
+
+  securityCaptchaSecretKey: 'Clé secrète (secret key)',
+
+  securityCaptchaKeyID: 'ID de clé',
+
+  securityCaptchaEndpoint: "Point d'accès API",
   securityBans: 'IP bloquées',
   securityBansDesc:
     'Blocages manuels et automatiques. Les entrées de la liste noire du fichier de configuration sont en lecture seule.',

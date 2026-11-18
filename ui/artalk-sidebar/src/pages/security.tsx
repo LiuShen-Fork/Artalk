@@ -17,6 +17,7 @@ import {
   SECURITY_ACTIONS,
   securityApi,
   type CaptchaConfig,
+  type ProviderKeys,
   type SecurityConfig,
   type SecurityRuntime,
 } from '@/lib/security'
@@ -47,6 +48,7 @@ export function SecurityPage() {
   const [runtime, setRuntime] = useState<SecurityRuntime | null>(null)
   const [blacklistText, setBlacklistText] = useState('')
   const [whitelistText, setWhitelistText] = useState('')
+  const [excludePathsText, setExcludePathsText] = useState('')
   const [saving, setSaving] = useState(false)
 
   const configQuery = useQuery({ queryKey: ['security-config'], queryFn: securityApi.getConfig })
@@ -57,11 +59,16 @@ export function SecurityPage() {
     setDraft(data.security)
     setCaptcha({
       ...data.captcha,
+      turnstile: data.captcha.turnstile ?? { site_key: '', secret_key: '' },
+      recaptcha: data.captcha.recaptcha ?? { site_key: '', secret_key: '' },
+      hcaptcha: data.captcha.hcaptcha ?? { site_key: '', secret_key: '' },
       geetest: data.captcha.geetest ?? { captcha_id: '', captcha_key: '' },
+      capjs: data.captcha.capjs ?? { key_id: '', secret_key: '', api_endpoint: '' },
     })
     setRuntime(data.runtime)
     setBlacklistText((data.security.blacklist ?? []).join('\n'))
     setWhitelistText((data.security.whitelist ?? []).join('\n'))
+    setExcludePathsText((data.security.exclude_paths ?? []).join('\n'))
   }, [configQuery.data])
 
   const patch = (values: Partial<SecurityConfig>) =>
@@ -80,6 +87,7 @@ export function SecurityPage() {
         auto_ban: draft.auto_ban,
         blacklist: parseList(blacklistText),
         whitelist: parseList(whitelistText),
+        exclude_paths: parseList(excludePathsText),
         event_retention_days: draft.event_retention_days,
         captcha: {
           enabled: captcha.enabled,
@@ -87,7 +95,11 @@ export function SecurityPage() {
           captcha_type: captcha.captcha_type,
           action_reset: captcha.action_reset,
           action_limit: captcha.action_limit,
+          turnstile: captcha.turnstile,
+          recaptcha: captcha.recaptcha,
+          hcaptcha: captcha.hcaptcha,
           geetest: captcha.geetest,
+          capjs: captcha.capjs,
         },
       })
       queryClient.setQueryData(['security-config'], res)
@@ -198,6 +210,15 @@ export function SecurityPage() {
                       onChange={(event) =>
                         patch({ event_retention_days: Number(event.target.value) || 0 })
                       }
+                    />
+                  </Row>
+                  <Row label={t('securityExcludePaths')} hint={t('securityExcludePathsDesc')}>
+                    <TextArea
+                      value={excludePathsText}
+                      rows={2}
+                      placeholder="/captcha/verify"
+                      className="font-mono text-[12px]"
+                      onChange={(event) => setExcludePathsText(event.target.value)}
                     />
                   </Row>
                   <Row label={t('securityBlacklist')}>
@@ -366,35 +387,7 @@ export function SecurityPage() {
                       />
                     </Row>
                   </div>
-                  {captcha.captcha_type === 'geetest' ? (
-                    <div className="space-y-1.5 border-t border-border pt-2">
-                      <Row label="Geetest Captcha ID">
-                        <Input
-                          fullWidth
-                          value={captcha.geetest.captcha_id}
-                          autoComplete="off"
-                          onChange={(event) =>
-                            patchCaptcha({
-                              geetest: { ...captcha.geetest, captcha_id: event.target.value },
-                            })
-                          }
-                        />
-                      </Row>
-                      <Row label="Geetest Captcha Key">
-                        <Input
-                          fullWidth
-                          type="password"
-                          autoComplete="off"
-                          value={captcha.geetest.captcha_key}
-                          onChange={(event) =>
-                            patchCaptcha({
-                              geetest: { ...captcha.geetest, captcha_key: event.target.value },
-                            })
-                          }
-                        />
-                      </Row>
-                    </div>
-                  ) : null}
+                  <CaptchaCredentials captcha={captcha} onChange={patchCaptcha} />
                 </Section>
               ) : null}
 
@@ -407,6 +400,114 @@ export function SecurityPage() {
       ) : null}
     </div>
   )
+}
+
+/** 验证码服务商的密钥，随上方选择的服务商切换 */
+function CaptchaCredentials({
+  captcha,
+  onChange,
+}: {
+  captcha: CaptchaConfig
+  onChange: (values: Partial<CaptchaConfig>) => void
+}) {
+  const type = captcha.captcha_type
+
+  if (type === 'turnstile' || type === 'recaptcha' || type === 'hcaptcha') {
+    const keys = captcha[type]
+    const update = (patch: Partial<ProviderKeys>) =>
+      onChange({ [type]: { ...keys, ...patch } } as Partial<CaptchaConfig>)
+
+    return (
+      <div className="space-y-1.5 border-t border-border pt-2">
+        <Row label={t('securityCaptchaSiteKey')}>
+          <Input
+            fullWidth
+            autoComplete="off"
+            value={keys.site_key}
+            onChange={(event) => update({ site_key: event.target.value })}
+          />
+        </Row>
+        <Row label={t('securityCaptchaSecretKey')}>
+          <Input
+            fullWidth
+            type="password"
+            autoComplete="off"
+            value={keys.secret_key}
+            onChange={(event) => update({ secret_key: event.target.value })}
+          />
+        </Row>
+      </div>
+    )
+  }
+
+  if (type === 'geetest') {
+    return (
+      <div className="space-y-1.5 border-t border-border pt-2">
+        <Row label="Geetest Captcha ID">
+          <Input
+            fullWidth
+            autoComplete="off"
+            value={captcha.geetest.captcha_id}
+            onChange={(event) =>
+              onChange({ geetest: { ...captcha.geetest, captcha_id: event.target.value } })
+            }
+          />
+        </Row>
+        <Row label="Geetest Captcha Key">
+          <Input
+            fullWidth
+            type="password"
+            autoComplete="off"
+            value={captcha.geetest.captcha_key}
+            onChange={(event) =>
+              onChange({ geetest: { ...captcha.geetest, captcha_key: event.target.value } })
+            }
+          />
+        </Row>
+      </div>
+    )
+  }
+
+  if (type === 'capjs') {
+    return (
+      <div className="space-y-1.5 border-t border-border pt-2">
+        <Row label={t('securityCaptchaKeyID')}>
+          <Input
+            fullWidth
+            autoComplete="off"
+            value={captcha.capjs.key_id}
+            onChange={(event) =>
+              onChange({ capjs: { ...captcha.capjs, key_id: event.target.value } })
+            }
+          />
+        </Row>
+        <Row label={t('securityCaptchaSecretKey')}>
+          <Input
+            fullWidth
+            type="password"
+            autoComplete="off"
+            value={captcha.capjs.secret_key}
+            onChange={(event) =>
+              onChange({ capjs: { ...captcha.capjs, secret_key: event.target.value } })
+            }
+          />
+        </Row>
+        <Row label={t('securityCaptchaEndpoint')}>
+          <Input
+            fullWidth
+            autoComplete="off"
+            placeholder="https://cap.example.com"
+            value={captcha.capjs.api_endpoint}
+            onChange={(event) =>
+              onChange({ capjs: { ...captcha.capjs, api_endpoint: event.target.value } })
+            }
+          />
+        </Row>
+      </div>
+    )
+  }
+
+  return null
 }
 
 function Stat({ label, value, small }: { label: string; value: number | string; small?: boolean }) {

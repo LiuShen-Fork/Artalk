@@ -195,6 +195,18 @@ export const ptPT: MessageSchema = {
   securityCaptchaType: 'Fornecedor',
   securityCaptchaLimit: 'Ações gratuitas antes da verificação',
   securityCaptchaReset: 'Reinício do contador (segundos)',
+
+  securityExcludePaths: 'Caminhos isentos (um por linha)',
+
+  securityExcludePathsDesc: 'Os pedidos a estes caminhos não são contados, por exemplo /captcha/verify.',
+
+  securityCaptchaSiteKey: 'Chave do site (site key)',
+
+  securityCaptchaSecretKey: 'Chave secreta (secret key)',
+
+  securityCaptchaKeyID: 'ID da chave',
+
+  securityCaptchaEndpoint: 'Endpoint da API',
   securityBans: 'IPs bloqueados',
   securityBansDesc:
     'Bloqueios manuais e automáticos. As entradas da lista negra do ficheiro de configuração são só de leitura.',

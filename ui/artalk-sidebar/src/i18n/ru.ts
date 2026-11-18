@@ -195,6 +195,18 @@ export const ru: MessageSchema = {
   securityCaptchaType: 'Провайдер',
   securityCaptchaLimit: 'Бесплатных действий',
   securityCaptchaReset: 'Сброс счётчика (секунды)',
+
+  securityExcludePaths: 'Исключённые пути (по одному в строке)',
+
+  securityExcludePathsDesc: 'Запросы к этим путям не учитываются, например /captcha/verify.',
+
+  securityCaptchaSiteKey: 'Ключ сайта (site key)',
+
+  securityCaptchaSecretKey: 'Секретный ключ (secret key)',
+
+  securityCaptchaKeyID: 'ID ключа',
+
+  securityCaptchaEndpoint: 'Адрес API',
   securityBans: 'Заблокированные IP',
   securityBansDesc:
     'Ручные и автоматические блокировки. Записи из чёрного списка в конфиге доступны только для чтения.',

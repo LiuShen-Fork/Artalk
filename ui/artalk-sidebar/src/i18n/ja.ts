@@ -191,6 +191,18 @@ export const ja: MessageSchema = {
   securityCaptchaType: 'プロバイダー',
   securityCaptchaLimit: '無料操作回数',
   securityCaptchaReset: 'カウントリセット（秒）',
+
+  securityExcludePaths: 'カウント対象外のパス（1 行に 1 つ）',
+
+  securityExcludePathsDesc: 'これらのパスへのリクエストはカウントされません（例: /captcha/verify）。',
+
+  securityCaptchaSiteKey: 'サイトキー (Site key)',
+
+  securityCaptchaSecretKey: 'シークレットキー (Secret key)',
+
+  securityCaptchaKeyID: 'キー ID',
+
+  securityCaptchaEndpoint: 'API エンドポイント',
   securityBans: 'ブロック中の IP',
   securityBansDesc: '手動・自動のブロック一覧。設定ファイルのブラックリストは読み取り専用です。',
   securityBanIP: 'IP または CIDR',

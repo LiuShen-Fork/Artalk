@@ -18,13 +18,28 @@ export interface SecurityConfig {
   exclude_paths: string[]
 }
 
+export interface ProviderKeys {
+  site_key: string
+  secret_key: string
+}
+
+export interface CapJSKeys {
+  key_id: string
+  secret_key: string
+  api_endpoint: string
+}
+
 export interface CaptchaConfig {
   enabled: boolean
   always: boolean
   captcha_type: string
   action_reset: number
   action_limit: number
+  turnstile: ProviderKeys
+  recaptcha: ProviderKeys
+  hcaptcha: ProviderKeys
   geetest: { captcha_id: string; captcha_key: string }
+  capjs: CapJSKeys
 }
 
 export interface SecurityRuntime {
