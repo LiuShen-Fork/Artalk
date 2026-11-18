@@ -174,12 +174,10 @@ export const accountApi = {
   getProviders() {
     // The endpoint is only registered when social login is enabled, so a 404
     // means "no providers" rather than a failure worth surfacing.
-    return request<AuthProviderListResponse>('conf/auth/providers').catch(
-      (error: unknown) => {
-        if (error instanceof HttpError && error.status === 404) return { providers: [] }
-        throw error
-      },
-    )
+    return request<AuthProviderListResponse>('conf/auth/providers').catch((error: unknown) => {
+      if (error instanceof HttpError && error.status === 404) return { providers: [] }
+      throw error
+    })
   },
 }
 

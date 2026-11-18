@@ -58,7 +58,10 @@ export const session = {
     // A fresh login (or a boot without a signed-in user) has no view yet, so an
     // admin lands in the console they manage rather than in "my pages".
     const becameAdmin = next.is_admin && !state.user.is_admin
-    publish({ user: next, view: next.is_admin ? (becameAdmin ? readStoredView() : state.view) : 'user' })
+    publish({
+      user: next,
+      view: next.is_admin ? (becameAdmin ? readStoredView() : state.view) : 'user',
+    })
   },
   setSite(site: string) {
     publish({ site })

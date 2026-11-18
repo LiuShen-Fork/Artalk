@@ -15,20 +15,13 @@ interface PageHeaderProps {
  */
 export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
   return (
-    <div
-      className={cn(
-        'flex items-start justify-between gap-3 md:mb-1 md:items-end',
-        className,
-      )}
-    >
+    <div className={cn('flex items-start justify-between gap-3 md:mb-1 md:items-end', className)}>
       <div className="min-w-0">
         <h1 className="text-[19px] font-semibold leading-tight tracking-[-0.015em] md:text-[23px]">
           {title}
         </h1>
         {description ? (
-          <p className="mt-1 text-[13px] leading-snug text-muted md:text-[13.5px]">
-            {description}
-          </p>
+          <p className="mt-1 text-[13px] leading-snug text-muted md:text-[13.5px]">{description}</p>
         ) : null}
       </div>
       {actions ? (

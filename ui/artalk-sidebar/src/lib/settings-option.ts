@@ -44,8 +44,7 @@ const optionPresentation: Record<string, Pick<OptionNode, 'control' | 'placehold
   },
   'moderator.ai.prompt': {
     control: 'textarea',
-    placeholder:
-      '默认审核规则已内置；如需覆盖，只写敏感/非敏感判断规则，不需要写 JSON Schema。',
+    placeholder: '默认审核规则已内置；如需覆盖，只写敏感/非敏感判断规则，不需要写 JSON Schema。',
   },
   'ai_assistant.prompt': {
     control: 'textarea',
