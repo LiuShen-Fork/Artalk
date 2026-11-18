@@ -2,6 +2,7 @@ import { useRouterState } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { groupTitleKeyFor, navItemForPath } from '@/app/nav'
+import { isEmbedded } from '@/lib/boot'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -69,7 +70,16 @@ export function PageHeader({
         </div>
       </div>
       {actions ? (
-        <div className="flex shrink-0 items-center gap-1.5 md:gap-2">{actions}</div>
+        <div
+          className={cn(
+            'flex shrink-0 items-center gap-1.5 md:gap-2',
+            // Wide embeds only: the host floats a close button over the frame's
+            // top right corner, right where a page puts its primary action.
+            isEmbedded && 'md:pr-[52px]',
+          )}
+        >
+          {actions}
+        </div>
       ) : null}
     </div>
   )

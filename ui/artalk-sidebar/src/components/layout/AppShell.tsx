@@ -16,6 +16,7 @@ import { BrandMark } from '@/components/ui/BrandMark'
 import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
 import { useConfirm } from '@/components/ui/confirm'
+import { isEmbedded } from '@/lib/boot'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
 import { theme, useDarkMode } from '@/lib/theme'
@@ -171,7 +172,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Sidebar onOpenSites={() => setSiteOpen(true)} onLogout={logout} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-2 md:hidden">
+        <header
+          className={cn(
+            'flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-2 md:hidden',
+            // The host page floats its own close button over the iframe's top
+            // right corner; keep the theme toggle and the account menu clear.
+            isEmbedded && 'pr-[52px]',
+          )}
+        >
           {isAdmin && view === 'admin' ? (
             <Button
               variant="ghost"
