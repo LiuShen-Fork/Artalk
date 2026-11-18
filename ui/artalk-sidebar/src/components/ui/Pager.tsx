@@ -23,9 +23,10 @@ interface PagerProps {
  * and an optional page-size picker. HeroUI's Pagination renders one item per
  * page, which stops fitting as soon as a site has more than a handful.
  *
- * The row never wraps: the total takes the slack (and truncates first), the
- * controls and the picker keep their width, so everything sits on one line and
- * shares one vertical centre.
+ * The cluster is centred: the total, the controls and the picker read as one
+ * group under the list instead of being spread against the card edges. Each
+ * piece keeps its own width, so on a narrow screen the group wraps as whole
+ * items and stays centred on however many lines it needs.
  */
 export function Pager({
   page,
@@ -45,8 +46,13 @@ export function Pager({
   const go = (next: number) => onChange(Math.min(Math.max(next, 1), pages))
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <span className="min-w-0 flex-1 truncate text-xs leading-none tabular-nums text-muted">
+    <div
+      className={cn(
+        'flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2 sm:gap-x-3',
+        className,
+      )}
+    >
+      <span className="whitespace-nowrap text-xs leading-none tabular-nums text-muted">
         {t('pagerTotal', { total })}
       </span>
 
@@ -126,7 +132,7 @@ export function Pager({
         <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted">
           <span className="whitespace-nowrap">{t('perPage')}</span>
           <SelectField
-            className="h-9 w-[68px]"
+            className="h-9 w-16 sm:w-[68px]"
             ariaLabel={t('perPage')}
             value={String(pageSize)}
             options={(pageSizeOptions ?? PAGE_SIZE_OPTIONS).map((size) => ({
