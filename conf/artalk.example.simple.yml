@@ -123,7 +123,7 @@ security:
   event_retention_days: 90
   exclude_paths: []
 
-# Management console branding and customization
+# Console appearance
 console:
   name: ""
   icon: ""

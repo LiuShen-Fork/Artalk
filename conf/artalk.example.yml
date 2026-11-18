@@ -251,7 +251,7 @@ security:
   # Paths excluded from the guard (suffix match)
   exclude_paths: []
 
-# Management console branding and customization
+# Console appearance
 console:
   # Name shown in the console header and on the sign-in page (empty = Artalk)
   name: ""

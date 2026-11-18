@@ -81,7 +81,7 @@ func TestConsoleRoundTrip(t *testing.T) {
 	assert.Contains(t, string(raw), "console test js")
 	assert.Contains(t, string(raw), "console:")
 	assert.NotContains(t, string(raw), "custom:")
-	assert.Contains(t, string(raw), "# Management console branding", "YAML comments survive the patch")
+	assert.Contains(t, string(raw), "# Console appearance", "YAML comments survive the patch")
 
 	// Saving identical content is a no-op instead of a rewrite.
 	resp, err = securityRequest(router, http.MethodPut, "/sidebar/console", map[string]any{"css": payload["css"]}, adminToken, "203.0.113.10")

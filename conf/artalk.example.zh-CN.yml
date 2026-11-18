@@ -226,7 +226,7 @@ ip_region:
   # 显示精度 ["province", "city", "country"]
   precision: province
 
-# 安全防护 (IP 封禁、限频、验证码挑战、攻击报表)
+# 安全防护
 security:
   # 启用安全防护 (限频、IP 封禁、验证码挑战)
   enabled: false
@@ -263,7 +263,7 @@ security:
   # 从安全防护中排除的路径 (按后缀匹配)
   exclude_paths: []
 
-# 管理后台站点信息与自定义内容
+# 控制台外观
 console:
   # 控制台名称，显示在侧栏与登录页（留空为 Artalk）
   name: ""
