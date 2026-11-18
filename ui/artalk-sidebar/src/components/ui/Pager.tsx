@@ -22,6 +22,10 @@ interface PagerProps {
  * same everywhere: first/last jumps, a numbered window with gaps, a live total
  * and an optional page-size picker. HeroUI's Pagination renders one item per
  * page, which stops fitting as soon as a site has more than a handful.
+ *
+ * The row never wraps: the total takes the slack (and truncates first), the
+ * controls and the picker keep their width, so everything sits on one line and
+ * shares one vertical centre.
  */
 export function Pager({
   page,
@@ -34,13 +38,19 @@ export function Pager({
   className,
 }: PagerProps) {
   const pages = Math.max(1, Math.ceil(total / Math.max(pageSize, 1)))
+  // One page means nothing to page through: a lone "1" next to a "next" button
+  // that cannot move is noise, so the pager stays out of the way.
+  if (pages <= 1) return null
+
   const go = (next: number) => onChange(Math.min(Math.max(next, 1), pages))
 
   return (
-    <div className={cn('flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5', className)}>
-      <span className="text-xs tabular-nums text-muted">{t('pagerTotal', { total })}</span>
+    <div className={cn('flex items-center gap-3', className)}>
+      <span className="min-w-0 flex-1 truncate text-xs leading-none tabular-nums text-muted">
+        {t('pagerTotal', { total })}
+      </span>
 
-      <div className="flex items-center gap-0.5">
+      <div className="flex shrink-0 items-center gap-0.5">
         <Button
           size="sm"
           variant="ghost"
@@ -113,10 +123,10 @@ export function Pager({
       </div>
 
       {onPageSizeChange && (
-        <label className="flex items-center gap-1.5 text-xs text-muted">
+        <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted">
           <span className="whitespace-nowrap">{t('perPage')}</span>
           <SelectField
-            className="w-[74px]"
+            className="h-9 w-[68px]"
             ariaLabel={t('perPage')}
             value={String(pageSize)}
             options={(pageSizeOptions ?? PAGE_SIZE_OPTIONS).map((size) => ({
@@ -126,7 +136,7 @@ export function Pager({
             onChange={(next) => onPageSizeChange(Number(next))}
             isDisabled={disabled}
           />
-        </label>
+        </div>
       )}
     </div>
   )

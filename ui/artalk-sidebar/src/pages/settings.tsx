@@ -10,7 +10,9 @@ import { errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import settings, { type OptionNode } from '@/lib/settings'
 
-const HIDDEN_ROOT_NODES = new Set(['admin_users'])
+// Console branding has a page of its own (站点配置), so listing the same four
+// fields here would only make a second place to edit them.
+const HIDDEN_ROOT_NODES = new Set(['admin_users', 'console'])
 
 /**
  * Root entries without children are flattened into one "general" section so the
@@ -95,7 +97,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-3 md:space-y-4 xl:max-w-[1120px]">
+    <div className="space-y-5 md:space-y-7 xl:max-w-[1000px]">
       <PageHeader
         title={t('navSettings')}
         description={t('settingNotice')}
@@ -118,7 +120,7 @@ export function SettingsPage() {
           {t('refreshing')}
         </div>
       ) : (
-        <div className="md:flex md:items-start md:gap-6">
+        <div className="space-y-3 md:flex md:items-start md:gap-6 md:space-y-0">
           <SectionNav
             items={groups.map((group) => ({ id: group.path, label: group.title }))}
             value={active?.path ?? ''}
@@ -127,7 +129,7 @@ export function SettingsPage() {
 
           {/* Fields stay readable on a wide screen instead of stretching the
               full 1000px+ of the content column. */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 md:max-w-[760px]">
             {active ? (
               <div
                 key={active.path}

@@ -29,20 +29,28 @@ export function SelectField({
   className,
   ariaLabel,
 }: SelectFieldProps) {
+  // A value that is not among the options would leave the trigger showing the
+  // "select an item" placeholder — and the placeholder is long enough to wrap
+  // the control onto several lines. Keep the real value visible instead.
+  const current = String(value)
+  const list = options.some((option) => option.value === current)
+    ? options
+    : [{ value: current, label: current }, ...options]
+
   return (
     <HeroSelect
-      selectedKey={String(value)}
+      selectedKey={current}
       isDisabled={isDisabled}
       aria-label={ariaLabel}
       onSelectionChange={(key) => onChange(String(key))}
     >
-      <HeroSelect.Trigger className={cn('w-full', className)}>
+      <HeroSelect.Trigger className={cn('w-full whitespace-nowrap', className)}>
         <HeroSelect.Value />
         <HeroSelect.Indicator />
       </HeroSelect.Trigger>
       <HeroSelect.Popover>
         <ListBox>
-          {options.map((option) => (
+          {list.map((option) => (
             <ListBox.Item key={option.value} id={option.value} textValue={option.value}>
               {option.label}
             </ListBox.Item>

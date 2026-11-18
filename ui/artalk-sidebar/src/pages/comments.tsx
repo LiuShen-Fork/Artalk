@@ -175,8 +175,9 @@ export function CommentsPage() {
     })
   }
 
-  // Same pager above and below the list: the reader never has to scroll back up
-  // after paging at the bottom, nor all the way down to continue at the top.
+  // One pager, under the list, where a reader who just finished a page ends up.
+  // The widget's own pager is hidden in styles/index.css so the console only
+  // ever shows this one.
   const pager = (
     <Pager
       page={paging.page}
@@ -219,8 +220,6 @@ export function CommentsPage() {
       </div>
 
       <div className="space-y-3">
-        {pager}
-
         <div ref={wrapRef} className="relative min-h-40">
           {loading ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-2">

@@ -23,7 +23,7 @@ export function EventLog() {
   const [ipInput, setIPInput] = useState('')
   const [ip, setIP] = useState('')
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = usePageSize('security-events', 15)
+  const [pageSize, setPageSize] = usePageSize('security-events', 20)
   const changePageSize = (next: number) => {
     setPageSize(next)
     setPage(1)

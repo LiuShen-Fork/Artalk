@@ -62,7 +62,7 @@ export function ModeSwitch({
     <div
       role="tablist"
       aria-label={t('viewAdmin')}
-      className="mx-auto flex w-fit gap-0.5 rounded-control bg-segment-track p-0.5 xl:mx-0 xl:grid xl:w-full xl:grid-cols-2 xl:gap-1 xl:p-1"
+      className="mx-auto flex w-fit gap-1 rounded-control bg-segment-track p-0.5 xl:mx-0 xl:grid xl:w-full xl:grid-cols-2 xl:gap-1 xl:p-1"
     >
       {options.map(({ id, label, icon: Icon }) => {
         const active = view === id
@@ -77,7 +77,7 @@ export function ModeSwitch({
             className={cn(
               // Square on the rail, half of a segmented pair on the wide bar: a
               // 28px-tall button stretched across the rail reads as a pill.
-              'flex size-8 items-center justify-center rounded-[var(--control-radius-inner)] text-[12.5px] font-medium transition-colors xl:h-[26px] xl:w-full xl:px-1.5',
+              'flex size-8 items-center justify-center gap-2 rounded-[var(--control-radius-inner)] text-[12.5px] font-medium transition-colors xl:h-8 xl:w-full xl:justify-center xl:gap-2 xl:px-2',
               active
                 ? 'bg-segment-active text-foreground shadow-sm'
                 : 'text-muted hover:text-foreground',
@@ -183,7 +183,7 @@ export function Sidebar({
             type="button"
             onClick={onOpenSites}
             title={t('allSites')}
-            className="mx-auto flex size-8 items-center justify-center gap-1.5 rounded-control px-2 text-[12.5px] text-muted transition-colors hover:bg-surface-secondary hover:text-foreground xl:mx-0 xl:h-8 xl:w-full xl:justify-start"
+            className="mx-auto flex size-9 items-center justify-center gap-2 rounded-control px-2 text-[12.5px] text-muted transition-colors hover:bg-surface-secondary hover:text-foreground xl:mx-0 xl:h-9 xl:w-full xl:justify-start"
           >
             <Globe2 className="size-[15px] shrink-0" aria-hidden />
             <span className="hidden min-w-0 flex-1 truncate text-start xl:inline">
@@ -196,14 +196,14 @@ export function Sidebar({
 
       <nav
         aria-label={t('nav')}
-        className="scrollbar-thin min-h-0 flex-1 space-y-3 overflow-y-auto px-2.5 py-2 xl:px-3"
+        className="scrollbar-thin min-h-0 flex-1 space-y-4 overflow-y-auto px-2.5 py-3 xl:px-3"
       >
         {groups.map((group) => (
-          <div key={group.id} className="space-y-0.5">
+          <div key={group.id} className="space-y-1">
             {/* Visitors only have two destinations, so section titles would be
                 noise above them. */}
             {showGroupTitles ? (
-              <p className="hidden px-2 pb-0.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted/80 xl:block">
+              <p className="hidden px-2 pb-1.5 pt-0.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted/80 xl:block">
                 {t(group.titleKey)}
               </p>
             ) : null}
@@ -220,7 +220,7 @@ export function Sidebar({
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-border px-2.5 py-2 xl:px-3">
+      <div className="shrink-0 border-t border-border px-2.5 py-2.5 xl:px-3">
         <div className="flex flex-col items-center gap-1.5 xl:flex-row xl:gap-1">
           <Button
             isIconOnly
