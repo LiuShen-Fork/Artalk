@@ -49,6 +49,28 @@ security:
 `action: reject` 并输出一条警告日志，避免出现「要求验证码但发不出验证码」的情况。
 :::
 
+## 来源 IP 与可信代理
+
+限频、封禁、攻击记录都建立在「来源 IP」之上。当 Artalk 位于反向代理或 CDN 之后，真实 IP 只能从
+代理头读取（`http.proxy_header`，默认 `X-Forwarded-For`）；而这个头客户端可以自己构造——
+如果无条件放行，攻击者每次换一个假 IP 就能拿到新的计数桶，限频与封禁都形同虚设。
+
+```yaml
+http:
+  proxy_header: X-Forwarded-For # 代理头名，直连部署请留空
+  trusted_proxies: # 只有这些地址发来的代理头才作数（IP 或 CIDR）
+    - 127.0.0.1
+    - 10.0.0.0/8
+```
+
+- 留空（默认）：保持旧行为，任何来源的代理头都生效；
+- 填写后：连接地址不在列表中的请求按连接地址计数，伪造的 `X-Forwarded-For` 不再起作用。
+
+::: warning
+只有把代理所在网段写进 `trusted_proxies` 时，`proxy_header` 才有意义；直连部署（没有代理）
+请把 `proxy_header` 留空，此时来源 IP 取连接地址，无法伪造。
+:::
+
 ## 统计规则
 
 - 只统计**写操作**请求（`POST` / `PUT` / `PATCH` / `DELETE`），`GET` / `HEAD` / `OPTIONS` 不计数；

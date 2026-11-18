@@ -56,6 +56,9 @@ http:
   body_limit: 100
   # 代理标头名 (当使用 CDN 时填写 `X-Forwarded-For` 获取用户真实 IP)
   proxy_header: ""
+  # 可信代理 IP / CIDR（只有这些地址发来的代理标头才会被信任，
+  # 否则任何客户端都能伪造 IP，绕过封禁与限频）
+  trusted_proxies: []
 
 # 日志
 log:

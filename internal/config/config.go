@@ -53,6 +53,9 @@ type Config struct {
 type HTTPConf struct {
 	BodyLimit   int     `koanf:"body_limit" json:"body_limit"`     // 请求体大小限制 MB
 	ProxyHeader *string `koanf:"proxy_header" json:"proxy_header"` // 代理头
+
+	// 可信代理 IP / CIDR：只有来自这些地址的请求才会读取代理头
+	TrustedProxies []string `koanf:"trusted_proxies" json:"trusted_proxies"`
 }
 
 func (c *HTTPConf) GetProxyHeader() string {

@@ -43,6 +43,9 @@ db:
 http:
   body_limit: 100
   proxy_header: ""
+  # Addresses whose proxy header is trusted (IP or CIDR). Leave empty only if
+  # Artalk is reached directly, otherwise a client can fake its own IP.
+  trusted_proxies: []
 
 # Logging
 log:

@@ -46,7 +46,7 @@ import (
 func Serve(app *core.App) (*fiber.App, error) {
 	// create fiber app
 	// @see https://docs.gofiber.io/api/fiber#config
-	fb := fiber.New(fiber.Config{
+	fiberConf := fiber.Config{
 		// @see https://github.com/gofiber/fiber/issues/426
 		// @see https://github.com/gofiber/fiber/issues/185
 		Immutable: true,
@@ -57,7 +57,14 @@ func Serve(app *core.App) (*fiber.App, error) {
 		StreamRequestBody:  true,
 		EnableIPValidation: true,
 		Network:            fiber.NetworkTCP,
-	})
+	}
+
+	if proxies := app.Conf().HTTP.TrustedProxies; len(proxies) > 0 {
+		fiberConf.EnableTrustedProxyCheck = true
+		fiberConf.TrustedProxies = proxies
+	}
+
+	fb := fiber.New(fiberConf)
 
 	reqID(fb)
 	logger(fb, app.Conf().Debug)

@@ -216,6 +216,18 @@ func (conf *Config) normalPatch() {
 		*conf.HTTP.ProxyHeader = strings.TrimSpace(*conf.HTTP.ProxyHeader)
 	}
 
+	// 可信代理解析：去掉空白项，只有来自这些地址的请求才读取代理头
+	trustedProxies := make([]string, 0, len(conf.HTTP.TrustedProxies))
+	for _, item := range conf.HTTP.TrustedProxies {
+		if item = strings.TrimSpace(item); item != "" {
+			trustedProxies = append(trustedProxies, item)
+		}
+	}
+	conf.HTTP.TrustedProxies = trustedProxies
+	if len(trustedProxies) == 0 && conf.HTTP.GetProxyHeader() != "" {
+		log.Warn("config `http.trusted_proxies` is not set, the proxy header is accepted from any address. A caller can then fake its source IP and step around the IP bans and per-IP rate limit. If Artalk sits behind a proxy or CDN, list its addresses here (IP or CIDR).")
+	}
+
 	// 社交登录配置
 	if conf.Auth.Enabled && strings.TrimSpace(conf.Auth.Callback) == "" {
 		callbackURL := "http://localhost:23366/api/v2/auth/:provider/callback"

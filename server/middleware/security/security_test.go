@@ -181,3 +181,42 @@ func TestGuardExcludedPath(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 	}
 }
+
+// 代理头只在可信来源发来时作数：否则任何客户端都能给自己换一个源 IP，
+// 换个 X-Forwarded-For 就跳出限频桶、绕过封禁。
+func TestGuardOnlyTrustsProxyHeaderFromTrustedPeer(t *testing.T) {
+	env := newGuardEnv(t, func(conf *config.Config) {
+		conf.Security.RateLimit.IP = config.SecurityQuotaConf{Minute: 1}
+	})
+
+	newApp := func(trustedProxies []string) *fiber.App {
+		fb := fiber.New(fiber.Config{
+			ProxyHeader:             "X-Forwarded-For",
+			EnableTrustedProxyCheck: true,
+			TrustedProxies:          trustedProxies,
+		})
+		fb.Use(security.Guard(env.app.App))
+		fb.Post("/api/v2/comments", func(c *fiber.Ctx) error { return c.SendString("ok") })
+		return fb
+	}
+
+	post := func(fb *fiber.App, forwardedFor string) int {
+		req := httptest.NewRequest(http.MethodPost, "/api/v2/comments", strings.NewReader("{}"))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Forwarded-For", forwardedFor)
+		resp, err := fb.Test(req, -1)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		return resp.StatusCode
+	}
+
+	// 对端不是可信代理：伪造的 IP 一律不作数，两次请求落在同一个计数桶里
+	untrusted := newApp([]string{"10.9.9.9"})
+	assert.Equal(t, http.StatusOK, post(untrusted, "198.51.100.1"))
+	assert.Equal(t, http.StatusTooManyRequests, post(untrusted, "198.51.100.2"))
+
+	// 对端可信（测试连接的对端地址是 0.0.0.0）：代理头开始生效，两个 IP 各自分开计数
+	trusted := newApp([]string{"0.0.0.0"})
+	assert.Equal(t, http.StatusOK, post(trusted, "198.51.100.1"))
+	assert.Equal(t, http.StatusOK, post(trusted, "198.51.100.2"))
+}
