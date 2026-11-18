@@ -8,5 +8,6 @@ var (
 	errInvalidRetention      = errors.New("invalid event retention days")
 	errInvalidCaptchaType    = errors.New("invalid captcha type")
 	errInvalidCaptchaLimit   = errors.New("invalid captcha action limit or reset")
+	errInvalidExcludePath    = errors.New("invalid exclude path, must start with /")
 	errInvalidIPTarget       = errors.New("invalid ip or cidr target")
 )

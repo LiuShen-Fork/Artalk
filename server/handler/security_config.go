@@ -20,13 +20,29 @@ type SecurityGeetestConfig struct {
 	CaptchaKey string `json:"captcha_key"`
 }
 
+// SecurityProviderConfig 是 site_key / secret_key 形式的验证码服务商配置
+type SecurityProviderConfig struct {
+	SiteKey   string `json:"site_key"`
+	SecretKey string `json:"secret_key"`
+}
+
+type SecurityCapJSConfig struct {
+	KeyID       string `json:"key_id"`
+	SecretKey   string `json:"secret_key"`
+	APIEndpoint string `json:"api_endpoint"`
+}
+
 type SecurityCaptchaConfig struct {
-	Enabled     bool                  `json:"enabled"`
-	Always      bool                  `json:"always"`
-	CaptchaType string                `json:"captcha_type"`
-	ActionReset int                   `json:"action_reset"`
-	ActionLimit int                   `json:"action_limit"`
-	Geetest     SecurityGeetestConfig `json:"geetest"`
+	Enabled     bool                   `json:"enabled"`
+	Always      bool                   `json:"always"`
+	CaptchaType string                 `json:"captcha_type"`
+	ActionReset int                    `json:"action_reset"`
+	ActionLimit int                    `json:"action_limit"`
+	Turnstile   SecurityProviderConfig `json:"turnstile"`
+	ReCaptcha   SecurityProviderConfig `json:"recaptcha"`
+	HCaptcha    SecurityProviderConfig `json:"hcaptcha"`
+	Geetest     SecurityGeetestConfig  `json:"geetest"`
+	CapJS       SecurityCapJSConfig    `json:"capjs"`
 }
 
 type SecurityRateLimitConfig struct {
@@ -62,9 +78,9 @@ type SecurityRuntimeData struct {
 }
 
 type ResponseSecurityConfig struct {
-	Security SecurityConfigData  `json:"security"`
+	Security SecurityConfigData    `json:"security"`
 	Captcha  SecurityCaptchaConfig `json:"captcha"`
-	Runtime  SecurityRuntimeData `json:"runtime"`
+	Runtime  SecurityRuntimeData   `json:"runtime"`
 }
 
 type ParamsSecurityConfigSave struct {
@@ -75,16 +91,21 @@ type ParamsSecurityConfigSave struct {
 	Blacklist          *[]string                `json:"blacklist" validate:"optional"`
 	Whitelist          *[]string                `json:"whitelist" validate:"optional"`
 	EventRetentionDays *int                     `json:"event_retention_days" validate:"optional"`
+	ExcludePaths       *[]string                `json:"exclude_paths" validate:"optional"`
 	Captcha            *ParamsSecurityCaptcha   `json:"captcha" validate:"optional"`
 }
 
 type ParamsSecurityCaptcha struct {
-	Enabled     *bool                  `json:"enabled" validate:"optional"`
-	Always      *bool                  `json:"always" validate:"optional"`
-	CaptchaType *string                `json:"captcha_type" validate:"optional"`
-	ActionReset *int                   `json:"action_reset" validate:"optional"`
-	ActionLimit *int                   `json:"action_limit" validate:"optional"`
-	Geetest     *SecurityGeetestConfig `json:"geetest" validate:"optional"`
+	Enabled     *bool                   `json:"enabled" validate:"optional"`
+	Always      *bool                   `json:"always" validate:"optional"`
+	CaptchaType *string                 `json:"captcha_type" validate:"optional"`
+	ActionReset *int                    `json:"action_reset" validate:"optional"`
+	ActionLimit *int                    `json:"action_limit" validate:"optional"`
+	Turnstile   *SecurityProviderConfig `json:"turnstile" validate:"optional"`
+	ReCaptcha   *SecurityProviderConfig `json:"recaptcha" validate:"optional"`
+	HCaptcha    *SecurityProviderConfig `json:"hcaptcha" validate:"optional"`
+	Geetest     *SecurityGeetestConfig  `json:"geetest" validate:"optional"`
+	CapJS       *SecurityCapJSConfig    `json:"capjs" validate:"optional"`
 }
 
 var validCaptchaTypes = map[string]bool{
@@ -187,9 +208,26 @@ func buildSecurityConfigResponse(app *core.App) ResponseSecurityConfig {
 		CaptchaType: string(conf.Captcha.CaptchaType),
 		ActionReset: conf.Captcha.ActionReset,
 		ActionLimit: conf.Captcha.ActionLimit,
+		Turnstile: SecurityProviderConfig{
+			SiteKey:   conf.Captcha.Turnstile.SiteKey,
+			SecretKey: conf.Captcha.Turnstile.SecretKey,
+		},
+		ReCaptcha: SecurityProviderConfig{
+			SiteKey:   conf.Captcha.ReCaptcha.SiteKey,
+			SecretKey: conf.Captcha.ReCaptcha.SecretKey,
+		},
+		HCaptcha: SecurityProviderConfig{
+			SiteKey:   conf.Captcha.HCaptcha.SiteKey,
+			SecretKey: conf.Captcha.HCaptcha.SecretKey,
+		},
 		Geetest: SecurityGeetestConfig{
 			CaptchaID:  conf.Captcha.Geetest.CaptchaID,
 			CaptchaKey: conf.Captcha.Geetest.CaptchaKey,
+		},
+		CapJS: SecurityCapJSConfig{
+			KeyID:       conf.Captcha.CapJS.KeyID,
+			SecretKey:   conf.Captcha.CapJS.SecretKey,
+			APIEndpoint: conf.Captcha.CapJS.APIEndpoint,
 		},
 	}
 
@@ -256,6 +294,13 @@ func securityConfigUpdates(p *ParamsSecurityConfigSave) (map[string]any, error) 
 		}
 		updates["security.event_retention_days"] = *p.EventRetentionDays
 	}
+	if p.ExcludePaths != nil {
+		paths, err := normalizePathList(*p.ExcludePaths)
+		if err != nil {
+			return nil, err
+		}
+		updates["security.exclude_paths"] = paths
+	}
 
 	if p.Captcha != nil {
 		if p.Captcha.Enabled != nil {
@@ -287,9 +332,48 @@ func securityConfigUpdates(p *ParamsSecurityConfigSave) (map[string]any, error) 
 			updates["captcha.geetest.captcha_id"] = strings.TrimSpace(p.Captcha.Geetest.CaptchaID)
 			updates["captcha.geetest.captcha_key"] = strings.TrimSpace(p.Captcha.Geetest.CaptchaKey)
 		}
+		if p.Captcha.Turnstile != nil {
+			providerUpdates(updates, "captcha.turnstile", p.Captcha.Turnstile.SiteKey, p.Captcha.Turnstile.SecretKey)
+		}
+		if p.Captcha.ReCaptcha != nil {
+			providerUpdates(updates, "captcha.recaptcha", p.Captcha.ReCaptcha.SiteKey, p.Captcha.ReCaptcha.SecretKey)
+		}
+		if p.Captcha.HCaptcha != nil {
+			providerUpdates(updates, "captcha.hcaptcha", p.Captcha.HCaptcha.SiteKey, p.Captcha.HCaptcha.SecretKey)
+		}
+		if p.Captcha.CapJS != nil {
+			updates["captcha.capjs.key_id"] = strings.TrimSpace(p.Captcha.CapJS.KeyID)
+			updates["captcha.capjs.secret_key"] = strings.TrimSpace(p.Captcha.CapJS.SecretKey)
+			updates["captcha.capjs.api_endpoint"] = strings.TrimSpace(p.Captcha.CapJS.APIEndpoint)
+		}
 	}
 
 	return updates, nil
+}
+
+func providerUpdates(updates map[string]any, prefix, siteKey, secretKey string) {
+	updates[prefix+".site_key"] = strings.TrimSpace(siteKey)
+	updates[prefix+".secret_key"] = strings.TrimSpace(secretKey)
+}
+
+// normalizePathList 校验并规整限频豁免路径，必须以 / 开头
+func normalizePathList(list []string) ([]string, error) {
+	out := make([]string, 0, len(list))
+	for _, item := range list {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+		if !strings.HasPrefix(item, "/") {
+			return nil, errInvalidExcludePath
+		}
+		// 去掉尾部多余的 /，避免与 middleware 的边界匹配语义不一致
+		if len(item) > 1 {
+			item = strings.TrimRight(item, "/")
+		}
+		out = append(out, item)
+	}
+	return out, nil
 }
 
 func quotaUpdates(updates map[string]any, prefix string, quota config.SecurityQuotaConf) {
