@@ -1,6 +1,17 @@
 import { ApiOptions } from './options'
 import { FetchError } from '@/types'
 
+/**
+ * Paths that may carry the guest capability (the commenter's anonymous
+ * identity) when the request has no account token. Everything else — PV,
+ * statistics, assets, authentication — must never see it.
+ */
+const GUEST_PATHS = /^(\/comments(?:\/\d+)?|\/notifies(?:\/read)?|\/user|\/user\/activity)$/
+
+export function allowsGuestToken(path: string) {
+  return GUEST_PATHS.test(path)
+}
+
 export const Fetch = async (
   opts: ApiOptions,
   input: string | URL | Request,
@@ -26,7 +37,7 @@ export const Fetch = async (
     !headers.has('Authorization') &&
     url.origin === base.origin &&
     url.pathname.startsWith(`${base.pathname.replace(/\/$/, '')}/`) &&
-    /^(\/comments(?:\/\d+)?|\/notifies(?:\/read)?|\/user)$/.test(path)
+    allowsGuestToken(path)
   ) {
     const create = path === '/comments' && init?.method?.toUpperCase() === 'POST'
     const guest = opts.getGuestToken?.(create)
