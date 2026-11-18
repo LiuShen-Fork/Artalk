@@ -119,7 +119,7 @@ export function PagesPage() {
   }, 350)
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader title={t('navPages')} description={t('pageManageDesc')} />
 
       <div className="flex flex-col gap-2 md:flex-row md:items-center">

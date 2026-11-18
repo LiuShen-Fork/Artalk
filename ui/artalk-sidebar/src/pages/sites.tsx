@@ -31,7 +31,7 @@ export function SitesPage() {
   }
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navSites')}
         description={t('siteCount', { count: sites.length })}

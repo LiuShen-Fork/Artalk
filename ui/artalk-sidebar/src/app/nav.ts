@@ -217,6 +217,17 @@ export function findNavItem(id: string): NavItem | undefined {
   return NAV_ITEMS.find((item) => item.id === id)
 }
 
+export function navItemForPath(path: string): NavItem | undefined {
+  return NAV_ITEMS.find((item) => item.path === path)
+}
+
+/** The section a route sits in, for the small label above a page title. */
+export function groupTitleKeyFor(path: string): MessageKey | undefined {
+  const item = navItemForPath(path)
+  if (!item) return undefined
+  return NAV_GROUPS.find((group) => group.id === item.group)?.titleKey
+}
+
 export function defaultPathFor(
   isAdmin: boolean,
   view: ViewMode = isAdmin ? 'admin' : 'user',

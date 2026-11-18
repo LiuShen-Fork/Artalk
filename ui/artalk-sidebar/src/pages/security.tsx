@@ -102,7 +102,7 @@ export function SecurityPage() {
   const loading = configQuery.isLoading && !draft
 
   return (
-    <div className="space-y-3 md:space-y-4 xl:max-w-[1120px]">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navSecurity')}
         description={t('securityAdminDesc')}

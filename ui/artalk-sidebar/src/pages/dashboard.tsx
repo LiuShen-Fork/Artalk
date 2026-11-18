@@ -129,7 +129,7 @@ export function DashboardPage() {
   const bar = (value: number) => (value > 0 ? `${Math.max(4, (value / peak) * 100)}%` : '2px')
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navDashboard')}
         description={t('dashDesc')}

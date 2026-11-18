@@ -327,7 +327,9 @@ export function ActivityPage() {
   const { data, isPending, isFetching, refetch } = useQuery({
     queryKey: ['activity', user?.email],
     queryFn: () =>
-      api<ActivityResponse>('/user/activity', { query: { days: HEAT_QUERY_DAYS, limit: RECENT_LIMIT } }),
+      api<ActivityResponse>('/user/activity', {
+        query: { days: HEAT_QUERY_DAYS, limit: RECENT_LIMIT },
+      }),
   })
 
   const byDay = data?.by_day ?? []
@@ -339,7 +341,7 @@ export function ActivityPage() {
   const streak = currentStreak(byDay)
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navMyActivity')}
         description={t('myActivityDesc')}

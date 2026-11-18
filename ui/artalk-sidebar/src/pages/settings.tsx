@@ -97,7 +97,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-5 md:space-y-7 xl:max-w-[1000px]">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navSettings')}
         description={t('settingNotice')}
@@ -129,7 +129,7 @@ export function SettingsPage() {
 
           {/* Fields stay readable on a wide screen instead of stretching the
               full 1000px+ of the content column. */}
-          <div className="min-w-0 flex-1 md:max-w-[760px]">
+          <div className="min-w-0 flex-1">
             {active ? (
               <div
                 key={active.path}

@@ -69,7 +69,7 @@ export function UsersPage() {
   }, 350)
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navUsers')}
         description={t('userManageDesc')}

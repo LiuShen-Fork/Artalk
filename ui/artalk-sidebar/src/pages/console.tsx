@@ -53,7 +53,7 @@ export function ConsolePage() {
   })
 
   return (
-    <div className="space-y-3 xl:max-w-[820px]">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader
         title={t('navConsole')}
         description={t('consoleDesc')}

@@ -71,7 +71,7 @@ export function TransferPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader title={t('navTransfer')} description={t('transferDesc')} />
 
       <div className="space-y-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-3 md:space-y-0">
