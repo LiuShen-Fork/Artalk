@@ -8,12 +8,15 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { api } from '@/lib/api'
 import { avatarUrl } from '@/lib/artalk'
+import { buildWeeks, heatDayCount, isoDay, startOfToday } from '@/lib/heatmap'
 import { getLocale, t } from '@/lib/i18n'
 import { useSession } from '@/lib/session'
 import { cn, formatDate, formatNumber, timeAgo, truncate } from '@/lib/utils'
 
-/** Half a year of squares: 26 columns fit the 430px console without scrolling. */
-const HEAT_DAYS = 182
+/** Whole weeks only: 26 columns × 7 days keeps the grid a tidy rectangle. */
+const HEAT_WEEKS = 26
+/** The grid starts on a Sunday, which can be up to six days before day 182. */
+const HEAT_QUERY_DAYS = heatDayCount(HEAT_WEEKS) + 6
 const RECENT_LIMIT = 6
 
 interface ActivityDay {
@@ -28,46 +31,6 @@ interface ActivityResponse {
   first_date: string
   by_day: ActivityDay[]
   recent: ArtalkType.CommentData[]
-}
-
-function isoDay(date: Date): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-function startOfToday(): Date {
-  const date = new Date()
-  date.setHours(0, 0, 0, 0)
-  return date
-}
-
-interface HeatCell {
-  date: string
-  count: number
-  future: boolean
-}
-
-/** Columns of seven days, aligned so every row is the same weekday. */
-function buildWeeks(byDay: ActivityDay[], days: number): HeatCell[][] {
-  const counts = new Map(byDay.map((item) => [item.date, item.count]))
-  const today = startOfToday()
-  const first = new Date(today)
-  first.setDate(first.getDate() - (days - 1))
-  first.setDate(first.getDate() - first.getDay())
-
-  const weeks: HeatCell[][] = []
-  const cursor = new Date(first)
-  while (cursor <= today) {
-    const week: HeatCell[] = []
-    for (let index = 0; index < 7; index += 1) {
-      const date = isoDay(cursor)
-      week.push({ date, count: counts.get(date) ?? 0, future: cursor > today })
-      cursor.setDate(cursor.getDate() + 1)
-    }
-    weeks.push(week)
-  }
-  return weeks
 }
 
 function currentStreak(byDay: ActivityDay[]): number {
@@ -119,7 +82,7 @@ function Stat({
 }
 
 function Heatmap({ byDay }: { byDay: ActivityDay[] }) {
-  const weeks = buildWeeks(byDay, HEAT_DAYS)
+  const weeks = buildWeeks(byDay, HEAT_WEEKS)
   const weekdayFormat = new Intl.DateTimeFormat(getLocale(), { weekday: 'narrow' })
   const monthFormat = new Intl.DateTimeFormat(getLocale(), { month: 'short' })
 
@@ -157,10 +120,10 @@ function Heatmap({ byDay }: { byDay: ActivityDay[] }) {
       </header>
 
       {/* The grid is fully fluid: every week is an equal fraction of the card,
-          so the squares stay square and the grid can never spill out of it,
-          whatever width the panel gets beside the recent-comments column. */}
+          so the squares stay square, the columns stretch to whatever width the
+          card has, and the grid can never spill out of it. */}
       <div className="px-3.5 pb-3">
-        <div className="max-w-[720px]">
+        <div>
           <div
             className="mb-1 grid gap-[3px]"
             style={{ gridTemplateColumns: `12px repeat(${weeks.length}, minmax(0, 1fr))` }}
@@ -169,7 +132,12 @@ function Heatmap({ byDay }: { byDay: ActivityDay[] }) {
             {months.map((month) => (
               <span
                 key={`${month.index}-${month.label}`}
-                className="whitespace-nowrap text-[9px] leading-[11px] text-muted"
+                className={cn(
+                  'whitespace-nowrap text-[9px] leading-[11px] text-muted',
+                  // The last label grows leftwards from the edge instead of
+                  // running past the card.
+                  month.index > weeks.length - 3 && 'justify-self-end',
+                )}
                 style={{ gridColumnStart: month.index + 2 }}
               >
                 {month.label}
@@ -204,7 +172,12 @@ function Heatmap({ byDay }: { byDay: ActivityDay[] }) {
                   }
                   className={cn(
                     'aspect-square w-full rounded-[2px]',
-                    cell.future ? 'opacity-0' : LEVELS[level(cell.count)],
+                    cell.future
+                      ? // Days that have not happened yet keep the rectangle
+                        // whole: a dashed outline reads as "not yet", a blank
+                        // hole would make the last column look broken.
+                        'border border-dashed border-border/70'
+                      : LEVELS[level(cell.count)],
                     cell.date === isoDay(startOfToday()) && 'ring-1 ring-inset ring-accent/60',
                   )}
                 />
@@ -227,7 +200,7 @@ function Heatmap({ byDay }: { byDay: ActivityDay[] }) {
         </div>
 
         <p className="mt-1.5 text-[10.5px] text-muted">
-          {t('activityRangeTotal', { count: total, days: HEAT_DAYS })}
+          {t('activityRangeTotal', { count: total, days: heatDayCount(HEAT_WEEKS) })}
         </p>
       </div>
     </section>
@@ -354,7 +327,7 @@ export function ActivityPage() {
   const { data, isPending, isFetching, refetch } = useQuery({
     queryKey: ['activity', user?.email],
     queryFn: () =>
-      api<ActivityResponse>('/user/activity', { query: { days: HEAT_DAYS, limit: RECENT_LIMIT } }),
+      api<ActivityResponse>('/user/activity', { query: { days: HEAT_QUERY_DAYS, limit: RECENT_LIMIT } }),
   })
 
   const byDay = data?.by_day ?? []
