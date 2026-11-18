@@ -123,7 +123,7 @@ http:
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | `GET` | `/api/v2/security/config` | 读取 `security`、`captcha` 配置与运行时状态 |
-| `PUT` | `/api/v2/security/config` | 部分更新配置，仅改动 `security` 与 `captcha` 两段，立即生效 |
+| `PUT` | `/api/v2/security/config` | 部分更新配置，仅改动 `security` 与 `captcha` 两段，立即生效（见下方字段） |
 | `GET` | `/api/v2/security/stats` | 运行时统计（追踪 IP 数、生效封禁数、全站计数），可带 `ip` 参数查询单个 IP |
 | `GET` | `/api/v2/security/events` | 攻击记录列表，支持 `ip`、`kind`、`scope`、`days`、`limit`、`offset` |
 | `DELETE` | `/api/v2/security/events/:id` | 删除单条记录 |
@@ -132,6 +132,23 @@ http:
 | `GET` | `/api/v2/security/bans` | 黑名单列表，支持 `ip`、`active`、`limit`、`offset` |
 | `POST` | `/api/v2/security/bans` | 手动封禁，`duration` 单位秒，`<= 0` 表示永久 |
 | `DELETE` | `/api/v2/security/bans/:id` | 解封（配置黑名单条目返回 400） |
+
+`PUT /api/v2/security/config` 的请求体全部是可选字段，只提交要改的部分：
+
+| 字段 | 说明 |
+| --- | --- |
+| `enabled` / `action` / `event_retention_days` | 总开关、超限处理方式、记录保留天数 |
+| `rate_limit.ip` / `rate_limit.global` | 各窗口配额，`0` 表示不限 |
+| `auto_ban` | 自动封禁的开关、阈值、窗口与时长 |
+| `blacklist` / `whitelist` | 支持单个 IP 与 CIDR 网段 |
+| `exclude_paths` | 不计入限频的路径，须以 `/` 开头，尾斜杠会被去掉，默认 `/captcha/verify` |
+| `captcha.enabled` / `captcha.always` / `captcha.captcha_type` | 验证码开关与类型 |
+| `captcha.action_reset` / `captcha.action_limit` | 原有的操作间隔与限频阈值 |
+| `captcha.turnstile` / `captcha.recaptcha` / `captcha.hcaptcha` | `{site_key, secret_key}` |
+| `captcha.geetest` | `{captcha_id, captcha_key}` |
+| `captcha.capjs` | `{key_id, secret_key, api_endpoint}` |
+
+写入时使用 YAML 节点补丁，保留配置文件里的注释、键顺序与缩进；接口未接管的环境变量在此之后仍然优先。
 
 ## 与原有验证码配置的关系
 

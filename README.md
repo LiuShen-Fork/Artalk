@@ -74,7 +74,7 @@ An opt-in `security` block (off by default) adds rate limiting, banning and atta
 - IPs that keep tripping inside a configured window are auto-banned; manual and CIDR bans live in `ip_bans`, config-file bans are read-only in the console.
 - Blocked requests are stored in `security_events` (IP region, path, UA, site, account, counts), pruned after a retention period, and aggregated into a report by kind, day, top IPs and top paths.
 - Admins and whitelisted IPs are not counted; only write methods are; the legacy `LimiterGuard` yields when security is enabled so nothing is counted or challenged twice.
-- The administration console gains a security page that edits the config in place (patching only the `security` and `captcha` YAML blocks, preserving comments and avoiding a restart), manages bans, and shows the report and individual records.
+- The console's 安全防护 page owns both the `security` and `captcha` blocks — limits, exempt paths, whitelist and blacklist, the captcha type and every provider's keys, bans, report and records — and edits them in place (a YAML patch that preserves comments, applied without a restart). 系统设置 no longer lists those two blocks.
 
 ### Administration console
 

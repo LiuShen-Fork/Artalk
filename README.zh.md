@@ -124,7 +124,7 @@ https://你的 Artalk 地址/api/v2/auth/generic/callback
 - 黑/白名单支持单个 IP 与 CIDR 网段；配置文件中的黑名单同步到内存后只读，手动与自动封禁的条目存入 `ip_bans` 表。
 - 被拦截的请求写入 `security_events` 表（含 IP 属地、路径、UA、站点、账号、计数），按保留天数自动清理，并提供按类型、日期、高频 IP 与高频路径汇总的攻击报表。
 - 管理员与白名单 IP 不计数；只统计写操作请求；启用后原有的 `LimiterGuard` 自动让位，避免重复计数和重复挑战。
-- 管理端新增「安全」页面，可在线上修改配置（只补丁 `security` 与 `captcha` 两段，保留注释与其他配置，不重启服务）、管理黑名单、查看报表与逐条攻击记录。
+- 管理端「安全防护」页面接管了 `security` 与 `captcha` 两段配置——限频与不计入限频的路径、黑白名单、验证码类型与各服务商密钥、封禁名单、报表与逐条记录——可在线上修改（只补丁这两段 YAML，保留注释，不重启服务）；「系统设置」里不再重复列出这两段。
 
 详见 [docs/docs/zh/guide/backend/security.md](docs/docs/zh/guide/backend/security.md)。
 

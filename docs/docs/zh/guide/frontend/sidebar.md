@@ -82,3 +82,14 @@ console:
 - 单段上限 256 KB，只作用于本控制台，不影响前台评论组件；
 - 也可以直接编辑配置文件，或使用环境变量 `ATK_CONSOLE_NAME` / `ATK_CONSOLE_ICON` / `ATK_CONSOLE_DESCRIPTION` / `ATK_CONSOLE_CSS` / `ATK_CONSOLE_JS`（由环境变量接管时代码只读）；
 - 接口：`GET /api/v2/sidebar/console`（公开，前端启动时读取），`PUT /api/v2/sidebar/console`（仅管理员）。
+
+## 安全防护：限频、封禁与验证码（本仓库新增）
+
+「安全防护」页面接管了配置文件里的 `security` 与 `captcha` 两段，分成六个页签：
+
+- **基础防护**：总开关、超限处理方式（要求验证码 / 直接拒绝 / 封禁 IP）、攻击记录保留天数、不计入限频的路径、黑名单与白名单；
+- **频率限制**：按单 IP 与全站分别设置每分钟、每小时、每天的配额，`0` 表示不限；
+- **验证码**：启用开关、类型，以及各服务商的密钥（`turnstile` / `recaptcha` / `hcaptcha` 填 Site key + Secret key，`geetest` 填 Captcha ID + Key，`capjs` 填 Key ID / Secret / Endpoint）；
+- **IP 封禁名单**、**攻击报表**、**攻击记录**：查看、手动封禁与解封、按类型与日期统计、逐条清理。
+
+这两段配置只在这个页面出现，「系统设置」里不再重复列出，避免同一份配置在两处各改一半。保存时通过 `PUT /api/v2/security/config` 写回配置文件（保留注释与缩进）并立即生效，字段含义见 [安全防护](/guide/backend/security)。
