@@ -17,8 +17,11 @@ async function bootstrap() {
   await setLocale(String(artalk.ctx.getConf().locale || 'en'))
 
   const { syncArtalkUser } = await import('./lib/artalk')
-  await syncArtalkUser(() => session.logout())
-  session.setUser(artalk.ctx.getUser().getData())
+  const verifiedAdmin = await syncArtalkUser(() => session.logout())
+  // The URL is written by the host page: only keep its admin claim when the
+  // server agrees.
+  const data = artalk.ctx.getUser().getData()
+  session.setUser(verifiedAdmin === undefined ? data : { ...data, is_admin: verifiedAdmin })
   theme.syncArtalk()
 
   // Name, icon, styles and scripts the owner saved from the console settings

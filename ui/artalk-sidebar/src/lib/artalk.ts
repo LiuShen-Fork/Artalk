@@ -69,8 +69,14 @@ export function getArtalkOrNull(): Artalk | null {
 /**
  * Reconcile the credential handed over by the host page with the one stored in
  * this browser, then verify it against the server.
+ *
+ * Returns the admin flag the server reports. The page URL is written by the
+ * host page, not by the server, so a crafted link can claim `is_admin` and the
+ * console would draw its management half for someone who is not one. Returns
+ * `undefined` when the check could not run: the boot value is kept and every
+ * admin request still meets the server's own guard.
  */
-export async function syncArtalkUser(onLogout: () => void) {
+export async function syncArtalkUser(onLogout: () => void): Promise<boolean | undefined> {
   const ctx = getArtalk().ctx
   await restoreGuestCredential(ctx, bootParams.guestToken)
 
@@ -80,7 +86,7 @@ export async function syncArtalkUser(onLogout: () => void) {
     session.setUser(ctx.getUser().getData())
   } else {
     session.logout()
-    return
+    return undefined
   }
 
   ctx.getApiHandlers().remove('need_login')
@@ -94,7 +100,7 @@ export async function syncArtalkUser(onLogout: () => void) {
     const res = await ctx.getApi().user.getUserStatus({ email, name })
     if (res.data.is_admin && !res.data.is_login) {
       onLogout()
-      return
+      return false
     }
     if (ctx.getUser().getData().token || ctx.getUser().getGuestToken?.(ctx.getConf().server)) {
       ctx
@@ -102,8 +108,20 @@ export async function syncArtalkUser(onLogout: () => void) {
         .notifies.markAllNotifyRead({ email, name })
         .catch(() => undefined)
     }
+    // Who may manage the site is decided by the token, not by the profile the
+    // host page put in the URL: `/user/status` only matches a name and an
+    // email against the database and says nothing about who is calling.
+    if (!ctx.getUser().getData().token) return false
+    const profile = await ctx.getApi().request<{ user: { is_admin?: boolean } | null }>({
+      path: '/user',
+      method: 'GET',
+      secure: true,
+      format: 'json',
+    })
+    return profile.data?.user?.is_admin === true
   } catch {
     // The session stays usable offline; individual requests surface errors.
+    return undefined
   }
 }
 
