@@ -95,7 +95,9 @@ func isExcludedPath(excluded []string, path string) bool {
 		if item == "" {
 			continue
 		}
-		if strings.HasSuffix(path, item) || strings.HasPrefix(path, item) {
+		// 后缀匹配便于忽略 `/api/v2` 前缀；前缀匹配必须落在路径边界上，
+		// 否则 `/captcha/verify` 会连带放过 `/captcha/verify-anything`。
+		if strings.HasSuffix(path, item) || strings.HasPrefix(path, item+"/") {
 			return true
 		}
 	}
