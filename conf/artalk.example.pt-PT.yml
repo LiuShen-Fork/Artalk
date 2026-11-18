@@ -188,8 +188,14 @@ security:
   # Caminhos excluídos da proteção (correspondência por sufixo)
   exclude_paths: []
 
-# Personalização do painel de administração
-custom:
+# Identidade visual e personalização do painel de gestão
+console:
+  # Nome mostrado no painel e na página de acesso (vazio = Artalk)
+  name: ""
+  # URL do logótipo do painel (vazio = letra predefinida)
+  icon: ""
+  # Descrição curta mostrada na página de acesso
+  description: ""
   # Folha de estilos extra aplicada ao painel
   css: ""
   # Script extra executado no painel (use apenas código da sua confiança)

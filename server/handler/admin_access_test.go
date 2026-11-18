@@ -35,7 +35,7 @@ func adminOnlyRoutes(app *core.App, router fiber.Router) {
 	handler.AIAssistantLogClear(app, router)
 	handler.CacheFlush(app, router)
 	handler.TransferExport(app, router)
-	handler.CustomCodeSave(app, router)
+	handler.ConsoleSave(app, router)
 	handler.SecurityConfigGet(app, router)
 	handler.SecurityConfigSave(app, router)
 	handler.SecurityStatsGet(app, router)
@@ -79,7 +79,7 @@ func TestAdminEndpointsRejectNonAdmin(t *testing.T) {
 		{"DELETE", "/ai-assistant/logs"},
 		{"POST", "/cache/flush"},
 		{"GET", "/transfer/export"},
-		{"PUT", "/sidebar/custom"},
+		{"PUT", "/sidebar/console"},
 		{"GET", "/security/config"},
 		{"PUT", "/security/config"},
 		{"GET", "/security/stats"},

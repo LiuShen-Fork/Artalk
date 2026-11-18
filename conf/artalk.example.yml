@@ -251,8 +251,14 @@ security:
   # Paths excluded from the guard (suffix match)
   exclude_paths: []
 
-# Management console customization
-custom:
+# Management console branding and customization
+console:
+  # Name shown in the console header and on the sign-in page (empty = Artalk)
+  name: ""
+  # Logo URL for the console (empty = the built-in letter badge)
+  icon: ""
+  # Short description shown on the sign-in page
+  description: ""
   # Extra stylesheet appended to the console
   css: ""
   # Extra script executed inside the console (trust only your own code)

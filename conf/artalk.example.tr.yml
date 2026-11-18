@@ -245,8 +245,14 @@ security:
   # Korumadan hariç tutulan yollar (son ek eşleşmesi)
   exclude_paths: []
 
-# Yönetim konsolu özelleştirmesi
-custom:
+# Yönetim konsolu kimliği ve özelleştirme
+console:
+  # Konsolda ve giriş sayfasında görünen ad (boş = Artalk)
+  name: ""
+  # Konsol logosu URL'si (boş = harf rozeti)
+  icon: ""
+  # Giriş sayfasında görünen kısa açıklama
+  description: ""
   # Konsola eklenen ek stil dosyası
   css: ""
   # Konsolda çalıştırılan ek betik (yalnızca kendi kodunuzu kullanın)
