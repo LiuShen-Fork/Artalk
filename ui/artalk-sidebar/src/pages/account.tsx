@@ -124,6 +124,18 @@ export function AccountPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAccount])
 
+  const logout = async () => {
+    const ok = await confirm({
+      title: t('logout'),
+      description: t('logoutConfirm'),
+      confirmText: t('logout'),
+      danger: true,
+    })
+    if (!ok) return
+    session.logout()
+    void navigate({ to: '/login', replace: true })
+  }
+
   const saveProfile = async () => {
     if (profileSaving) return
 
@@ -442,6 +454,21 @@ export function AccountPage() {
           </Section>
         </div>
       )}
+
+      {/* Signing out lives here, with the rest of the account actions, so the
+          avatar in the header is only a shortcut and never a second menu. */}
+      {hasAccount ? (
+        <Section title={t('logout')} description={t('logoutConfirm')}>
+          <Button
+            size="sm"
+            variant="danger-soft"
+            className="w-full md:w-auto"
+            onPress={() => void logout()}
+          >
+            {t('logout')}
+          </Button>
+        </Section>
+      ) : null}
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { Button } from '@heroui/react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { ChevronDown, Globe2, LayoutGrid, Moon, Sun, UserRound } from 'lucide-react'
 import { navGroupsFor, labelKeyFor, type ViewMode } from '@/app/nav'
-import { AccountMenu } from '@/components/layout/AccountMenu'
+import { AccountButton } from '@/components/layout/AccountButton'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { useBrandName } from '@/lib/console'
 import { t } from '@/lib/i18n'
@@ -139,10 +139,10 @@ function NavLink({
  */
 export function Sidebar({
   onOpenSites,
-  onLogout,
+  onAccount,
 }: {
   onOpenSites: () => void
-  onLogout: () => void
+  onAccount: () => void
 }) {
   const { user, site, view } = useSession()
   const isAdmin = !!user?.is_admin
@@ -236,14 +236,11 @@ export function Sidebar({
               <Moon className="size-4" aria-hidden />
             )}
           </Button>
-          <AccountMenu
+          <AccountButton
             name={user?.name ?? ''}
             email={user?.email ?? ''}
             showText
-            view={isAdmin ? view : undefined}
-            onSwitchView={switchView}
-            onAccount={() => void navigate({ to: '/account' })}
-            onLogout={onLogout}
+            onPress={onAccount}
           />
         </div>
       </div>

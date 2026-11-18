@@ -11,11 +11,10 @@ import {
   type NavItem,
   type ViewMode,
 } from '@/app/nav'
-import { AccountMenu } from '@/components/layout/AccountMenu'
+import { AccountButton } from '@/components/layout/AccountButton'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
-import { useConfirm } from '@/components/ui/confirm'
 import { isEmbedded } from '@/lib/boot'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
@@ -123,7 +122,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isAdmin = !!user?.is_admin
   const dark = useDarkMode()
   const navigate = useNavigate()
-  const confirm = useConfirm()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const [siteOpen, setSiteOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -155,29 +153,19 @@ export function AppShell({ children }: { children: ReactNode }) {
     void navigate({ to: next === 'admin' ? '/dashboard' : '/activity' })
   }
 
-  const logout = async () => {
-    const ok = await confirm({
-      title: t('logout'),
-      description: t('logoutConfirm'),
-      confirmText: t('logout'),
-      danger: true,
-    })
-    if (!ok) return
-    session.logout()
-    void navigate({ to: '/login' })
-  }
-
   return (
     <div className="flex h-full min-h-0 bg-background text-foreground">
-      <Sidebar onOpenSites={() => setSiteOpen(true)} onLogout={logout} />
+      <Sidebar onOpenSites={() => setSiteOpen(true)} onAccount={openAccount} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header
           className={cn(
             'flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-2 md:hidden',
             // The host page floats its own close button over the iframe's top
-            // right corner; keep the theme toggle and the account menu clear.
-            isEmbedded && 'pr-[52px]',
+            // right corner. The avatar is only a shortcut to the account page
+            // (the page holds every account action), so it may sit under that
+            // button; the theme toggle just has to stay clear of it.
+            isEmbedded && 'pr-3.5',
           )}
         >
           {isAdmin && view === 'admin' ? (
@@ -216,13 +204,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Moon className="size-4" aria-hidden />
               )}
             </Button>
-            <AccountMenu
+            <AccountButton
               name={user?.name ?? ''}
               email={user?.email ?? ''}
-              view={isAdmin ? view : undefined}
-              onSwitchView={switchView}
-              onAccount={openAccount}
-              onLogout={logout}
+              onPress={openAccount}
             />
           </div>
         </header>
