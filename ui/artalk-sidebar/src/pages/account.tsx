@@ -17,7 +17,7 @@ import {
 } from '@/lib/account-api'
 import { startOAuthBind } from '@/lib/oauth-bind'
 import { t } from '@/lib/i18n'
-import { session } from '@/lib/session'
+import { session, useSession } from '@/lib/session'
 
 /**
  * Account self-service: profile, password and linked social identities. This is
@@ -26,8 +26,12 @@ import { session } from '@/lib/session'
 export function AccountPage() {
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const { user: currentUser } = useSession()
+  // A guest commenter has a guest token, not an account, so there is nothing to
+  // load here — asking the server would only produce a 401.
+  const hasAccount = !!currentUser.token
 
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(hasAccount)
   const [loadError, setLoadError] = useState('')
 
   const [name, setName] = useState('')
@@ -76,6 +80,11 @@ export function AccountPage() {
   useEffect(() => {
     let alive = true
 
+    if (!hasAccount) {
+      setLoading(false)
+      return
+    }
+
     const load = async () => {
       setLoading(true)
       setLoadError('')
@@ -113,7 +122,7 @@ export function AccountPage() {
       alive = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hasAccount])
 
   const saveProfile = async () => {
     if (profileSaving) return
@@ -221,6 +230,16 @@ export function AccountPage() {
           <Spinner size="sm" />
           {t('refreshing')}
         </div>
+      ) : !hasAccount ? (
+        <Section title={t('guestAccountTitle')} description={t('guestAccountDesc')}>
+          <Button
+            size="sm"
+            className="w-full md:w-auto"
+            onPress={() => void navigate({ to: '/login' })}
+          >
+            {t('login')}
+          </Button>
+        </Section>
       ) : loadError ? (
         <Section title={t('account')}>
           <p className="text-[12.5px] text-danger">{loadError}</p>

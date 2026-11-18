@@ -202,7 +202,8 @@ export const fr: MessageSchema = {
 
   securityExcludePaths: 'Chemins exemptés (un par ligne)',
 
-  securityExcludePathsDesc: 'Les requêtes vers ces chemins ne sont pas comptées, par ex. /captcha/verify.',
+  securityExcludePathsDesc:
+    'Les requêtes vers ces chemins ne sont pas comptées, par ex. /captcha/verify.',
 
   securityCaptchaSiteKey: 'Clé du site (site key)',
 
@@ -333,6 +334,9 @@ export const fr: MessageSchema = {
   navConsole: 'Config. du site',
   navTransfer: 'Transfert',
   navAccount: 'Mon compte',
+  guestAccountTitle: 'Identité de visiteur',
+  guestAccountDesc:
+    'Vous commentez en tant que visiteur. Connectez-vous pour gérer votre profil, votre mot de passe et vos comptes liés, et retrouver vos commentaires sur tous vos appareils.',
   navMyActivity: 'Mon activité',
   consoleBrand: 'Identité du site',
   consoleBrandDesc:

@@ -316,6 +316,9 @@ export const zhCN: MessageSchema = {
   navConsole: '站点配置',
   navTransfer: '数据迁移',
   navAccount: '我的账户',
+  guestAccountTitle: '访客身份',
+  guestAccountDesc:
+    '你正以访客身份浏览：登录后即可管理个人资料、密码与第三方绑定，换台设备也能找回自己的评论。',
   navMyActivity: '我的概览',
   consoleBrand: '站点信息',
   consoleBrandDesc: '控制台的名称、图标与一句话介绍，会显示在登录页',

@@ -198,7 +198,8 @@ export const ptPT: MessageSchema = {
 
   securityExcludePaths: 'Caminhos isentos (um por linha)',
 
-  securityExcludePathsDesc: 'Os pedidos a estes caminhos não são contados, por exemplo /captcha/verify.',
+  securityExcludePathsDesc:
+    'Os pedidos a estes caminhos não são contados, por exemplo /captcha/verify.',
 
   securityCaptchaSiteKey: 'Chave do site (site key)',
 
@@ -328,6 +329,9 @@ export const ptPT: MessageSchema = {
   navConsole: 'Config. do site',
   navTransfer: 'Transferência',
   navAccount: 'A minha conta',
+  guestAccountTitle: 'Identidade de visitante',
+  guestAccountDesc:
+    'Está a comentar como visitante. Inicie sessão para gerir o seu perfil, palavra-passe e contas associadas, e manter os seus comentários entre dispositivos.',
   navMyActivity: 'A minha atividade',
   consoleBrand: 'Identidade do site',
   consoleBrandDesc: 'Nome, ícone e apresentação mostrados na consola e na página de entrada',

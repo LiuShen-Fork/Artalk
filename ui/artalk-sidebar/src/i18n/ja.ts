@@ -194,7 +194,8 @@ export const ja: MessageSchema = {
 
   securityExcludePaths: 'カウント対象外のパス（1 行に 1 つ）',
 
-  securityExcludePathsDesc: 'これらのパスへのリクエストはカウントされません（例: /captcha/verify）。',
+  securityExcludePathsDesc:
+    'これらのパスへのリクエストはカウントされません（例: /captcha/verify）。',
 
   securityCaptchaSiteKey: 'サイトキー (Site key)',
 
@@ -323,6 +324,9 @@ export const ja: MessageSchema = {
   navConsole: 'サイト設定',
   navTransfer: 'データ移行',
   navAccount: 'マイアカウント',
+  guestAccountTitle: 'ゲストの身元',
+  guestAccountDesc:
+    'ゲストとして利用中です。ログインすると、プロフィール・パスワード・外部アカウント連携を管理でき、別の端末でも自分のコメントを確認できます。',
   navMyActivity: 'マイアクティビティ',
   consoleBrand: 'サイト情報',
   consoleBrandDesc: 'コンソールとログインページに表示する名前・アイコン・紹介文',

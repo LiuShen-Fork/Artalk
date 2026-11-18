@@ -320,6 +320,9 @@ export const ko: MessageSchema = {
   navConsole: '사이트 설정',
   navTransfer: '데이터 이전',
   navAccount: '내 계정',
+  guestAccountTitle: '방문자 신분',
+  guestAccountDesc:
+    '방문자로 이용 중입니다. 로그인하면 프로필, 비밀번호, 외부 계정 연결을 관리하고 다른 기기에서도 내 댓글을 확인할 수 있습니다.',
   navMyActivity: '내 활동',
   consoleBrand: '사이트 정보',
   consoleBrandDesc: '콘솔과 로그인 페이지에 표시할 이름, 아이콘, 소개 문구',

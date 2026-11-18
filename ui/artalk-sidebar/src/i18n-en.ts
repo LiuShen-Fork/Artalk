@@ -325,6 +325,9 @@ export const en = {
   navConsole: 'Site config',
   navTransfer: 'Transfer',
   navAccount: 'My account',
+  guestAccountTitle: 'Visitor identity',
+  guestAccountDesc:
+    'You are commenting as a visitor. Sign in to manage your profile, password and linked accounts, and to keep your comments across devices.',
   navMyActivity: 'My activity',
   consoleBrand: 'Site identity',
   consoleBrandDesc: 'Name, icon and one-liner that brand this console and its sign-in page',

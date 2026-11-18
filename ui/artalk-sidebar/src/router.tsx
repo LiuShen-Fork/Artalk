@@ -37,6 +37,11 @@ function requireLogin() {
   if (!user?.email) throw redirect({ to: '/login' })
 }
 
+/** A guest commenter carries an email but no account token, so it can sign in. */
+function hasAccount() {
+  return !!session.get().user?.token
+}
+
 function requireAdmin() {
   requireLogin()
   const { user, view } = session.get()
@@ -61,7 +66,7 @@ const loginRoute = createRoute({
   path: '/login',
   component: LoginPage,
   beforeLoad: () => {
-    if (session.get().user?.email) {
+    if (hasAccount()) {
       throw redirect({
         to: defaultPathFor(!!session.get().user.is_admin, session.get().view),
         replace: true,

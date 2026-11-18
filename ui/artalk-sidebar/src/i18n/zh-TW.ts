@@ -316,6 +316,9 @@ export const zhTW: MessageSchema = {
   navConsole: '站點設定',
   navTransfer: '資料遷移',
   navAccount: '我的帳戶',
+  guestAccountTitle: '訪客身分',
+  guestAccountDesc:
+    '你正以訪客身分瀏覽：登入後即可管理個人資料、密碼與第三方綁定，換裝置也能找回自己的留言。',
   navMyActivity: '我的概覽',
   consoleBrand: '站點資訊',
   consoleBrandDesc: '控制台的名稱、圖示與一句話介紹，會顯示在登入頁',

@@ -329,6 +329,9 @@ export const tr: MessageSchema = {
   navConsole: 'Site yapılandırması',
   navTransfer: 'Veri aktarımı',
   navAccount: 'Hesabım',
+  guestAccountTitle: 'Ziyaretçi kimliği',
+  guestAccountDesc:
+    'Ziyaretçi olarak yorum yapıyorsunuz. Profilinizi, şifrenizi ve bağlı hesaplarınızı yönetmek ve yorumlarınızı diğer cihazlarda da görmek için giriş yapın.',
   navMyActivity: 'Etkinliğim',
   consoleBrand: 'Site kimliği',
   consoleBrandDesc: 'Konsolda ve giriş sayfasında görünen ad, simge ve kısa tanıtım',
