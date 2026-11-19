@@ -14,7 +14,7 @@ import (
 // @Security     ApiKeyAuth
 // @Produce      json
 // @Param        ip  query  string  false  "附加查询某个 IP 的状态"
-// @Success      200  {object}  core.SecurityStats
+// @Success      200  {object}  common.JSONResult
 // @Router       /security/stats [get]
 func SecurityStatsGet(app *core.App, router fiber.Router) {
 	router.Get("/security/stats", common.AdminGuard(app, func(c *fiber.Ctx) error {

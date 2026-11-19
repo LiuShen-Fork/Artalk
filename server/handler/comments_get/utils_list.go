@@ -8,8 +8,8 @@ import (
 )
 
 // Find all nested children (for nested mode)
-func findNestedChildren(dao *dao.Dao, comments []entity.CookedComment, commonScopes []func(*gorm.DB) *gorm.DB, extraRootIDs []uint) []entity.CookedComment {
-	allRootIDs := lo.Map(comments, func(c entity.CookedComment, _ int) uint { return c.ID })
+func findNestedChildren(dao *dao.Dao, comments []entity.CommentDTO, commonScopes []func(*gorm.DB) *gorm.DB, extraRootIDs []uint) []entity.CommentDTO {
+	allRootIDs := lo.Map(comments, func(c entity.CommentDTO, _ int) uint { return c.ID })
 	allRootIDs = append(allRootIDs, extraRootIDs...)
 	if len(allRootIDs) == 0 {
 		return comments
@@ -22,20 +22,20 @@ func findNestedChildren(dao *dao.Dao, comments []entity.CookedComment, commonSco
 		Scopes(commonScopes...).
 		Where("root_id IN ? AND rid != 0", allRootIDs).
 		Find(&children)
-	comments = append(comments, dao.CookAllComments(children)...)
+	comments = append(comments, dao.BuildCommentDTOs(children)...)
 	return comments
 }
 
 // Find all linked comments (for flat mode)
-func findFlatLinkedComments(dao *dao.Dao, comments []entity.CookedComment, commonScopes []func(*gorm.DB) *gorm.DB) []entity.CookedComment {
+func findFlatLinkedComments(dao *dao.Dao, comments []entity.CommentDTO, commonScopes []func(*gorm.DB) *gorm.DB) []entity.CommentDTO {
 	allCommentIDs := map[uint]bool{}
 	for _, c := range comments {
 		allCommentIDs[c.ID] = true
 	}
 
-	missCommentIDs := lo.Map(lo.Filter(comments, func(c entity.CookedComment, i int) bool {
+	missCommentIDs := lo.Map(lo.Filter(comments, func(c entity.CommentDTO, i int) bool {
 		return c.Rid != 0 && !allCommentIDs[c.Rid]
-	}), func(c entity.CookedComment, i int) uint {
+	}), func(c entity.CommentDTO, i int) uint {
 		return c.Rid
 	})
 
@@ -49,9 +49,9 @@ func findFlatLinkedComments(dao *dao.Dao, comments []entity.CookedComment, commo
 
 	// Linked comments could be invisible but included in the list
 	for _, c := range linkedComments {
-		rCooked := dao.CookComment(&c)
-		rCooked.Visible = false // Set invisible
-		comments = append(comments, rCooked)
+		replyCommentDTO := dao.BuildCommentDTO(&c)
+		replyCommentDTO.Visible = false // Set invisible
+		comments = append(comments, replyCommentDTO)
 	}
 
 	return comments

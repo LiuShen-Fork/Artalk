@@ -8,18 +8,22 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/artalkjs/artalk/v2/internal/cache"
 	"github.com/artalkjs/artalk/v2/internal/config"
 	"github.com/artalkjs/artalk/v2/internal/core"
 	"github.com/artalkjs/artalk/v2/internal/dao"
 	"github.com/artalkjs/artalk/v2/internal/db"
 	"github.com/artalkjs/artalk/v2/internal/entity"
+	"github.com/artalkjs/artalk/v2/internal/i18n"
 	"github.com/artalkjs/artalk/v2/server/common"
 	"github.com/artalkjs/artalk/v2/server/handler"
+	"github.com/artalkjs/artalk/v2/server/middleware/limiter"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -33,8 +37,10 @@ type compatibilitySQLLogger struct {
 	failures atomic.Int32
 }
 
+var errCompatibilityNotify = errors.New("simulated notification failure")
+
 func (l *compatibilitySQLLogger) Trace(ctx context.Context, begin time.Time, query func() (string, int64), err error) {
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !errors.Is(err, errCompatibilityNotify) {
 		l.failures.Add(1)
 	}
 	l.Interface.Trace(ctx, begin, query, err)
@@ -91,6 +97,7 @@ func TestDatabaseCompatibility(t *testing.T) {
 	router := fiber.New()
 	handler.CommentGet(app, router)
 	handler.CommentList(app, router)
+	handler.CommentUpdate(app, router)
 	handler.NotifyList(app, router)
 	handler.NotifyReadAll(app, router)
 	handler.PageList(app, router)
@@ -145,6 +152,26 @@ func TestDatabaseCompatibility(t *testing.T) {
 	require.NoError(t, database.Create(&owned).Error)
 	require.NoError(t, database.Create(&adminCopy).Error)
 
+	t.Run("reply site matching follows database collation", func(t *testing.T) {
+		name := strings.ToLower(site.Name)
+		if d.FindSite(name).ID != site.ID {
+			t.Skip("database treats site names as case-sensitive")
+		}
+		r := fiber.New()
+		r.Use(limiter.ActionLimitMiddleware(app, limiter.ActionLimitConf{}))
+		handler.CommentCreate(app, r)
+		for _, pair := range [][2]string{{site.Name, name}, {name, site.Name}} {
+			require.NoError(t, database.Model(&parentA).Update("site_name", pair[0]).Error)
+			response := flowRequest(t, r, http.MethodPost, "/comments", handler.ParamsCommentCreate{
+				Name: "Reader", Email: "reader@example.org", Content: "Reply", PageKey: page.Key, SiteName: pair[1], Rid: parentA.ID,
+			}, "", http.StatusBadRequest)
+			var failure map[string]any
+			require.NoError(t, json.Unmarshal(response, &failure))
+			require.Equal(t, i18n.T("Cannot reply to this comment"), failure["msg"])
+		}
+		require.NoError(t, database.Model(&parentA).Update("site_name", site.Name).Error)
+	})
+
 	t.Run("guest ownership and notification updates", func(t *testing.T) {
 		path := fmt.Sprintf("/comments/%d", parentA.ID)
 		require.Equal(t, 200, guestRequest(t, router, "GET", path, guestA, "", nil).StatusCode)
@@ -173,6 +200,31 @@ func TestDatabaseCompatibility(t *testing.T) {
 		require.NoError(t, database.First(&adminCopy, adminCopy.ID).Error)
 		require.True(t, owned.IsRead)
 		require.False(t, adminCopy.IsRead)
+	})
+
+	t.Run("approval updates comment and notification", func(t *testing.T) {
+		require.NoError(t, database.Model(&reply).Update("is_pending", true).Error)
+		path := fmt.Sprintf("/comments/%d", reply.ID)
+		update := handler.ParamsCommentUpdate{
+			Content: reply.Content, PageKey: reply.PageKey, SiteName: reply.SiteName, Rid: reply.Rid,
+		}
+		require.NoError(t, database.Callback().Update().Before("gorm:update").Register("test:notify_failure", func(tx *gorm.DB) {
+			if tx.Statement.Table == prefix+"notifies" {
+				tx.AddError(errCompatibilityNotify)
+			}
+		}))
+		t.Cleanup(func() { database.Callback().Update().Remove("test:notify_failure") })
+		flowRequest(t, router, http.MethodPut, path, update, adminToken, http.StatusInternalServerError)
+		require.NoError(t, database.First(&reply, reply.ID).Error)
+		require.NoError(t, database.First(&owned, owned.ID).Error)
+		require.True(t, reply.IsPending)
+		require.True(t, owned.IsRead)
+		require.NoError(t, database.Callback().Update().Remove("test:notify_failure"))
+		flowRequest(t, router, http.MethodPut, path, update, adminToken, http.StatusOK)
+		require.NoError(t, database.First(&reply, reply.ID).Error)
+		require.NoError(t, database.First(&owned, owned.ID).Error)
+		require.False(t, reply.IsPending)
+		require.False(t, owned.IsRead)
 	})
 
 	t.Run("page filtering and atomic PV", func(t *testing.T) {
@@ -268,5 +320,24 @@ func TestDatabaseCompatibility(t *testing.T) {
 		var deleted entity.Page
 		require.NoError(t, database.Unscoped().First(&deleted, page.ID).Error)
 		require.True(t, deleted.DeletedAt.Valid)
+	})
+
+	t.Run("account merge updates cached comment ownership", func(t *testing.T) {
+		cached, err := cache.New(config.CacheConf{Type: config.CacheTypeBuiltin})
+		require.NoError(t, err)
+		d.SetCache(dao.NewCacheAdaptor(cached))
+		t.Cleanup(func() { d.SetCache(nil); cached.Close() })
+		handler.AuthMergeApply(app, router)
+		source, err := d.NewUser("Old profile", "merge@example.org", "")
+		require.NoError(t, err)
+		target, err := d.NewUser("New profile", source.Email, "")
+		require.NoError(t, err)
+		comment := entity.Comment{Content: "Moved comment", UserID: source.ID, SiteName: site.Name, PageKey: page.Key}
+		require.NoError(t, d.CreateComment(&comment))
+		require.Equal(t, source.ID, d.FindComment(comment.ID).UserID)
+		token, err := common.LoginGetUserToken(source, app.Conf().AppKey, 60)
+		require.NoError(t, err)
+		flowRequest(t, router, http.MethodPost, "/auth/merge", handler.RequestAuthDataMergeApply{UserName: target.Name}, token, http.StatusOK)
+		require.Equal(t, target.ID, d.FindComment(comment.ID).UserID)
 	})
 }

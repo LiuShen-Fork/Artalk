@@ -34,7 +34,7 @@ type ResponseUserActivity struct {
 	Votes     int64                  `json:"votes"`      // 收到的赞同总数
 	FirstDate string                 `json:"first_date"` // 首次发言日期
 	ByDay     []UserActivityDay      `json:"by_day"`     // 每日发言数（近 N 天，仅含有发言的日期）
-	Recent    []entity.CookedComment `json:"recent"`     // 最近发言
+	Recent    []entity.CommentDTO `json:"recent"`     // 最近发言
 }
 
 // UserActivity 当前用户的发言统计
@@ -63,7 +63,7 @@ func UserActivity(app *core.App, router fiber.Router) {
 
 		result := ResponseUserActivity{
 			ByDay:  []UserActivityDay{},
-			Recent: []entity.CookedComment{},
+			Recent: []entity.CommentDTO{},
 		}
 
 		scope, hasScope := userActivityScope(app, c)
@@ -103,7 +103,7 @@ func UserActivity(app *core.App, router fiber.Router) {
 		// 最近发言
 		var comments []*entity.Comment
 		base().Order("created_at DESC").Limit(limit).Find(&comments)
-		result.Recent = app.Dao().CookAllComments(comments)
+		result.Recent = app.Dao().BuildCommentDTOs(comments)
 
 		return common.RespData(c, result)
 	})

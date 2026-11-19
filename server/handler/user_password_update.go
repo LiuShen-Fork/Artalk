@@ -19,7 +19,7 @@ type RequestUserPasswordUpdate struct {
 
 type ResponseUserPasswordUpdate struct {
 	Token string            `json:"token"`
-	User  entity.CookedUser `json:"user"`
+	User  entity.UserDTO `json:"user"`
 }
 
 // @Id           UpdatePassword
@@ -87,7 +87,7 @@ func UserPasswordUpdate(app *core.App, router fiber.Router) {
 
 		return common.RespData(c, ResponseUserPasswordUpdate{
 			Token: token,
-			User:  app.Dao().CookUser(&user),
+			User:  app.Dao().BuildUserDTO(&user),
 		})
 	}))
 }

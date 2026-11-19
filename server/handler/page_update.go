@@ -18,7 +18,7 @@ type ParamsPageUpdate struct {
 }
 
 type ResponsePageUpdate struct {
-	entity.CookedPage
+	entity.PageDTO
 }
 
 // @Id           UpdatePage
@@ -72,7 +72,7 @@ func PageUpdate(app *core.App, router fiber.Router) {
 		if modifyKey {
 			// 相关性数据修改
 			var comments []entity.Comment
-			app.Dao().DB().Where("page_key = ?", page.Key).Find(&comments)
+			app.Dao().DB().Where("page_key = ? AND site_name = ?", page.Key, page.SiteName).Find(&comments)
 
 			for _, comment := range comments {
 				comment.PageKey = p.Key
@@ -87,7 +87,7 @@ func PageUpdate(app *core.App, router fiber.Router) {
 		}
 
 		return common.RespData(c, ResponsePageUpdate{
-			CookedPage: app.Dao().CookPage(&page),
+			PageDTO: app.Dao().BuildPageDTO(&page),
 		})
 	}))
 }

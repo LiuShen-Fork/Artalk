@@ -37,7 +37,33 @@ export interface CommonJSONResult {
 
 export type CommonMap = Record<string, any>
 
-export interface EntityCookedComment {
+export interface ConfigSecurityQuotaConf {
+  /** 每天允许次数 */
+  day: number
+  /** 每小时允许次数 */
+  hour: number
+  /** 每分钟允许次数 */
+  minute: number
+}
+
+export interface EntityAdminUserDTO {
+  badge_color: string
+  badge_name: string
+  comment_count: number
+  email: string
+  has_password: boolean
+  id: number
+  is_admin: boolean
+  is_ai_assistant?: boolean
+  is_in_conf: boolean
+  last_ip: string
+  last_ua: string
+  link: string
+  name: string
+  receive_email: boolean
+}
+
+export interface EntityCommentDTO {
   badge_color: string
   badge_name: string
   content: string
@@ -46,12 +72,12 @@ export interface EntityCookedComment {
   email_encrypted: string
   id: number
   ip_region?: string
+  is_ai_assistant?: boolean
   is_allow_reply: boolean
   is_collapsed: boolean
   is_pending: boolean
   is_pinned: boolean
   is_verified: boolean
-  is_ai_assistant?: boolean
   link: string
   nick: string
   page_key: string
@@ -65,7 +91,42 @@ export interface EntityCookedComment {
   vote_up: number
 }
 
-export interface EntityCookedNotify {
+export interface EntityCookedIPBan {
+  active: boolean
+  created_at: string
+  created_by: number
+  expire_at: string
+  hit_count: number
+  id: number
+  ip: string
+  ip_region: string
+  is_cidr: boolean
+  last_hit_at: string
+  note: string
+  reason: string
+  source: string
+}
+
+export interface EntityCookedSecurityEvent {
+  action: string
+  blocked: boolean
+  date: string
+  detail: string
+  id: number
+  ip: string
+  ip_region: string
+  kind: string
+  method: string
+  path: string
+  scope: string
+  site_name: string
+  ua: string
+  user_id: number
+  user_name: string
+  window: string
+}
+
+export interface EntityNotifyDTO {
   comment_id: number
   id: number
   is_emailed: boolean
@@ -74,7 +135,7 @@ export interface EntityCookedNotify {
   user_id: number
 }
 
-export interface EntityCookedPage {
+export interface EntityPageDTO {
   admin_only: boolean
   date: string
   id: number
@@ -87,7 +148,7 @@ export interface EntityCookedPage {
   vote_up: number
 }
 
-export interface EntityCookedSite {
+export interface EntitySiteDTO {
   first_url: string
   id: number
   name: string
@@ -95,10 +156,11 @@ export interface EntityCookedSite {
   urls_raw: string
 }
 
-export interface EntityCookedUser {
+export interface EntityUserDTO {
   badge_color: string
   badge_name: string
   email: string
+  has_password: boolean
   id: number
   is_admin: boolean
   is_ai_assistant?: boolean
@@ -107,19 +169,11 @@ export interface EntityCookedUser {
   receive_email: boolean
 }
 
-export interface EntityCookedUserForAdmin {
-  badge_color: string
-  badge_name: string
-  comment_count: number
-  email: string
+export interface HandlerCookedUserIdentity {
+  confirmed_at: string
+  created_at: string
   id: number
-  is_admin: boolean
-  is_in_conf: boolean
-  last_ip: string
-  last_ua: string
-  link: string
-  name: string
-  receive_email: boolean
+  provider: string
 }
 
 export type HandlerMap = Record<string, any>
@@ -182,6 +236,14 @@ export interface HandlerParamsCommentUpdate {
   ua?: string
 }
 
+export interface HandlerParamsConsoleSave {
+  css?: string
+  description?: string
+  icon?: string
+  js?: string
+  name?: string
+}
+
 export interface HandlerParamsEmailSend {
   /** The body of email */
   body: string
@@ -221,6 +283,39 @@ export interface HandlerParamsPageUpdate {
   site_name: string
   /** Updated page title */
   title: string
+}
+
+export interface HandlerParamsSecurityBanCreate {
+  /** 秒；<= 0 表示永久 */
+  duration?: number
+  ip: string
+  note?: string
+  reason?: string
+}
+
+export interface HandlerParamsSecurityCaptcha {
+  action_limit?: number
+  action_reset?: number
+  always?: boolean
+  capjs?: HandlerSecurityCapJSConfig
+  captcha_type?: string
+  enabled?: boolean
+  geetest?: HandlerSecurityGeetestConfig
+  hcaptcha?: HandlerSecurityProviderConfig
+  recaptcha?: HandlerSecurityProviderConfig
+  turnstile?: HandlerSecurityProviderConfig
+}
+
+export interface HandlerParamsSecurityConfigSave {
+  action?: string
+  auto_ban?: HandlerSecurityAutoBanConfig
+  blacklist?: string[]
+  captcha?: HandlerParamsSecurityCaptcha
+  enabled?: boolean
+  event_retention_days?: number
+  exclude_paths?: string[]
+  rate_limit?: HandlerSecurityRateLimitConfig
+  whitelist?: string[]
 }
 
 export interface HandlerParamsSettingApply {
@@ -342,9 +437,15 @@ export interface HandlerRequestUserInfoUpdate {
   name: string
 }
 
+export interface HandlerRequestUserPasswordUpdate {
+  code?: string
+  current_password?: string
+  new_password: string
+}
+
 export interface HandlerResponseAdminUserList {
   count: number
-  users: EntityCookedUserForAdmin[]
+  users: EntityAdminUserDTO[]
 }
 
 export interface HandlerResponseAuthDataMergeApply {
@@ -378,6 +479,7 @@ export interface HandlerResponseCommentCreate {
   email_encrypted: string
   id: number
   ip_region?: string
+  is_ai_assistant?: boolean
   is_allow_reply: boolean
   is_collapsed: boolean
   is_pending: boolean
@@ -398,16 +500,16 @@ export interface HandlerResponseCommentCreate {
 
 export interface HandlerResponseCommentGet {
   /** The comment detail */
-  comment: EntityCookedComment
+  comment: EntityCommentDTO
   /** The reply comment if exists (like reply) */
-  reply_comment: EntityCookedComment
+  reply_comment: EntityCommentDTO
 }
 
 export interface HandlerResponseCommentList {
-  ai_comments?: EntityCookedComment[]
-  comments: EntityCookedComment[]
+  ai_comments?: EntityCommentDTO[]
+  comments: EntityCommentDTO[]
   count: number
-  page?: EntityCookedPage
+  page?: EntityPageDTO
   roots_count: number
 }
 
@@ -420,6 +522,7 @@ export interface HandlerResponseCommentUpdate {
   email_encrypted: string
   id: number
   ip_region?: string
+  is_ai_assistant?: boolean
   is_allow_reply: boolean
   is_collapsed: boolean
   is_pending: boolean
@@ -451,9 +554,17 @@ export interface HandlerResponseConfDomain {
   origin: string
 }
 
+export interface HandlerResponseConsole {
+  css: string
+  description: string
+  icon: string
+  js: string
+  name: string
+}
+
 export interface HandlerResponseNotifyList {
   count: number
-  notifies: EntityCookedNotify[]
+  notifies: EntityNotifyDTO[]
 }
 
 export interface HandlerResponsePageFetch {
@@ -482,7 +593,7 @@ export interface HandlerResponsePageFetchStatus {
 
 export interface HandlerResponsePageList {
   count: number
-  pages: EntityCookedPage[]
+  pages: EntityPageDTO[]
 }
 
 export interface HandlerResponsePagePV {
@@ -500,6 +611,33 @@ export interface HandlerResponsePageUpdate {
   url: string
   vote_down: number
   vote_up: number
+}
+
+export interface HandlerResponseSecurityBanList {
+  bans: EntityCookedIPBan[]
+  count: number
+}
+
+export interface HandlerResponseSecurityConfig {
+  captcha: HandlerSecurityCaptchaConfig
+  runtime: HandlerSecurityRuntimeData
+  security: HandlerSecurityConfigData
+}
+
+export interface HandlerResponseSecurityEventList {
+  count: number
+  events: EntityCookedSecurityEvent[]
+}
+
+export interface HandlerResponseSecurityReport {
+  blocked: number
+  by_action: HandlerSecurityActionCount[]
+  by_day: HandlerSecurityDayCount[]
+  by_kind: HandlerSecurityKindCount[]
+  range_days: number
+  top_ips: HandlerSecurityIPCount[]
+  top_paths: HandlerSecurityPathCount[]
+  total: number
 }
 
 export interface HandlerResponseSettingGet {
@@ -521,7 +659,7 @@ export interface HandlerResponseSiteCreate {
 
 export interface HandlerResponseSiteList {
   count: number
-  sites: EntityCookedSite[]
+  sites: EntitySiteDTO[]
 }
 
 export interface HandlerResponseSiteUpdate {
@@ -548,13 +686,30 @@ export interface HandlerResponseUpload {
   public_url: string
 }
 
+export interface HandlerResponseUserActivity {
+  /** 每日发言数（近 N 天，仅含有发言的日期） */
+  by_day: HandlerUserActivityDay[]
+  /** 评论总数 */
+  count: number
+  /** 首次发言日期 */
+  first_date: string
+  /** 待审核数量 */
+  pending: number
+  /** 最近发言 */
+  recent: EntityCommentDTO[]
+  /** 收到的赞同总数 */
+  votes: number
+}
+
 export interface HandlerResponseUserCreate {
   badge_color: string
   badge_name: string
   comment_count: number
   email: string
+  has_password: boolean
   id: number
   is_admin: boolean
+  is_ai_assistant?: boolean
   is_in_conf: boolean
   last_ip: string
   last_ua: string
@@ -563,20 +718,33 @@ export interface HandlerResponseUserCreate {
   receive_email: boolean
 }
 
+export interface HandlerResponseUserIdentities {
+  identities: HandlerCookedUserIdentity[]
+}
+
+export interface HandlerResponseUserIdentityBindURL {
+  path: string
+}
+
 export interface HandlerResponseUserInfo {
   is_login: boolean
-  notifies: EntityCookedNotify[]
+  notifies: EntityNotifyDTO[]
   notifies_count: number
-  user: EntityCookedUser
+  user: EntityUserDTO
 }
 
 export interface HandlerResponseUserInfoUpdate {
-  user: EntityCookedUser
+  user: EntityUserDTO
 }
 
 export interface HandlerResponseUserLogin {
   token: string
-  user: EntityCookedUser
+  user: EntityUserDTO
+}
+
+export interface HandlerResponseUserPasswordUpdate {
+  token: string
+  user: EntityUserDTO
 }
 
 export interface HandlerResponseUserStatus {
@@ -589,8 +757,10 @@ export interface HandlerResponseUserUpdate {
   badge_name: string
   comment_count: number
   email: string
+  has_password: boolean
   id: number
   is_admin: boolean
+  is_ai_assistant?: boolean
   is_in_conf: boolean
   last_ip: string
   last_ua: string
@@ -604,6 +774,107 @@ export interface HandlerResponseVote {
   is_down: boolean
   is_up: boolean
   up: number
+}
+
+export interface HandlerSecurityActionCount {
+  action: string
+  count: number
+}
+
+export interface HandlerSecurityAutoBanConfig {
+  duration: number
+  enabled: boolean
+  threshold: number
+  window: number
+}
+
+export interface HandlerSecurityCapJSConfig {
+  api_endpoint: string
+  key_id: string
+  secret_key: string
+}
+
+export interface HandlerSecurityCaptchaConfig {
+  action_limit: number
+  action_reset: number
+  always: boolean
+  capjs: HandlerSecurityCapJSConfig
+  captcha_type: string
+  enabled: boolean
+  geetest: HandlerSecurityGeetestConfig
+  hcaptcha: HandlerSecurityProviderConfig
+  recaptcha: HandlerSecurityProviderConfig
+  turnstile: HandlerSecurityProviderConfig
+}
+
+export interface HandlerSecurityConfigData {
+  action: string
+  auto_ban: HandlerSecurityAutoBanConfig
+  blacklist: string[]
+  enabled: boolean
+  event_retention_days: number
+  exclude_paths: string[]
+  rate_limit: HandlerSecurityRateLimitConfig
+  whitelist: string[]
+}
+
+export interface HandlerSecurityDayCount {
+  count: number
+  date: string
+}
+
+export interface HandlerSecurityGeetestConfig {
+  captcha_id: string
+  captcha_key: string
+}
+
+export interface HandlerSecurityIPCount {
+  count: number
+  ip: string
+  ip_region: string
+}
+
+export interface HandlerSecurityKindCount {
+  count: number
+  kind: string
+}
+
+export interface HandlerSecurityPathCount {
+  count: number
+  path: string
+}
+
+export interface HandlerSecurityProviderConfig {
+  secret_key: string
+  site_key: string
+}
+
+export interface HandlerSecurityRateLimitConfig {
+  global: ConfigSecurityQuotaConf
+  ip: ConfigSecurityQuotaConf
+}
+
+export interface HandlerSecurityRuntimeData {
+  action_groups: string[]
+  active_bans: number
+  /** 验证码动作是否可用（依赖 captcha 启用） */
+  captcha_ready: boolean
+  global: SecuritySnapshot
+  tracked_ips: number
+  tracked_violators: number
+}
+
+export interface HandlerUserActivityDay {
+  /** 当天发表数 */
+  count: number
+  /** YYYY-MM-DD */
+  date: string
+}
+
+export interface SecuritySnapshot {
+  day: number
+  hour: number
+  minute: number
 }
 
 export type QueryParamsType = Record<string | number, any>
@@ -1197,12 +1468,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         scope?: 'page' | 'user' | 'site'
         /** Search keywords */
         search?: string
-        /** Return AI assistant comments separately */
-        split_ai?: boolean
         /** The site name of your content scope */
         site_name?: string
         /** Sort by condition */
         sort_by?: 'date_asc' | 'date_desc' | 'vote'
+        /** Return AI assistant comments separately */
+        split_ai?: boolean
         /** Message center show type */
         type?: 'all' | 'mentions' | 'mine' | 'pending' | 'ai'
         /** Only show comments by admin */
@@ -1779,6 +2050,215 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   }
+  security = {
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityBanList
+     * @summary 获取 IP 封禁列表
+     * @request GET:/security/bans
+     * @secure
+     * @response `200` `HandlerResponseSecurityBanList` OK
+     */
+    securityBanList: (params: RequestParams = {}) =>
+      this.request<HandlerResponseSecurityBanList, any>({
+        path: `/security/bans`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityBanCreate
+     * @summary 封禁 IP 或网段
+     * @request POST:/security/bans
+     * @secure
+     * @response `200` `EntityCookedIPBan` OK
+     */
+    securityBanCreate: (data: HandlerParamsSecurityBanCreate, params: RequestParams = {}) =>
+      this.request<EntityCookedIPBan, any>({
+        path: `/security/bans`,
+        method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityBanDelete
+     * @summary 解除 IP 封禁
+     * @request DELETE:/security/bans/{id}
+     * @secure
+     * @response `200` `CommonJSONResult` OK
+     */
+    securityBanDelete: (id: string, params: RequestParams = {}) =>
+      this.request<CommonJSONResult, any>({
+        path: `/security/bans/${id}`,
+        method: 'DELETE',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityConfigGet
+     * @summary 获取安全防护配置
+     * @request GET:/security/config
+     * @secure
+     * @response `200` `HandlerResponseSecurityConfig` OK
+     */
+    securityConfigGet: (params: RequestParams = {}) =>
+      this.request<HandlerResponseSecurityConfig, any>({
+        path: `/security/config`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityConfigSave
+     * @summary 保存安全防护配置
+     * @request PUT:/security/config
+     * @secure
+     * @response `200` `HandlerResponseSecurityConfig` OK
+     */
+    securityConfigSave: (data: HandlerParamsSecurityConfigSave, params: RequestParams = {}) =>
+      this.request<HandlerResponseSecurityConfig, any>({
+        path: `/security/config`,
+        method: 'PUT',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityEventList
+     * @summary 获取安全事件记录
+     * @request GET:/security/events
+     * @secure
+     * @response `200` `HandlerResponseSecurityEventList` OK
+     */
+    securityEventList: (params: RequestParams = {}) =>
+      this.request<HandlerResponseSecurityEventList, any>({
+        path: `/security/events`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityEventClear
+     * @summary 清空安全事件记录
+     * @request DELETE:/security/events
+     * @secure
+     * @response `200` `CommonJSONResult` OK
+     */
+    securityEventClear: (params: RequestParams = {}) =>
+      this.request<CommonJSONResult, any>({
+        path: `/security/events`,
+        method: 'DELETE',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityEventDelete
+     * @summary 删除安全事件记录
+     * @request DELETE:/security/events/{id}
+     * @secure
+     * @response `200` `CommonJSONResult` OK
+     */
+    securityEventDelete: (id: string, params: RequestParams = {}) =>
+      this.request<CommonJSONResult, any>({
+        path: `/security/events/${id}`,
+        method: 'DELETE',
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityReport
+     * @summary 获取安全事件统计报表
+     * @request GET:/security/report
+     * @secure
+     * @response `200` `HandlerResponseSecurityReport` OK
+     */
+    securityReport: (
+      query?: {
+        /** 统计最近 N 天 (默认 7) */
+        days?: number
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<HandlerResponseSecurityReport, any>({
+        path: `/security/report`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Security
+     * @name SecurityStatsGet
+     * @summary 获取实时安全统计
+     * @request GET:/security/stats
+     * @secure
+     * @response `200` `CommonJSONResult` OK
+     */
+    securityStatsGet: (
+      query?: {
+        /** 附加查询某个 IP 的状态 */
+        ip?: string
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CommonJSONResult, any>({
+        path: `/security/stats`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+  }
   sendEmail = {
     /**
  * @description Send an email to test the email sender
@@ -1894,6 +2374,45 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/settings/template/${locale}`,
         method: 'GET',
         secure: true,
+        format: 'json',
+        ...params,
+      }),
+  }
+  sidebar = {
+    /**
+     * No description
+     *
+     * @tags Console
+     * @name ConsoleGet
+     * @summary 获取控制台站点信息与自定义样式脚本
+     * @request GET:/sidebar/console
+     * @response `200` `HandlerResponseConsole` OK
+     */
+    consoleGet: (params: RequestParams = {}) =>
+      this.request<HandlerResponseConsole, any>({
+        path: `/sidebar/console`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Console
+     * @name ConsoleSave
+     * @summary 保存控制台站点信息与自定义样式脚本
+     * @request PUT:/sidebar/console
+     * @secure
+     * @response `200` `HandlerResponseConsole` OK
+     */
+    consoleSave: (data: HandlerParamsConsoleSave, params: RequestParams = {}) =>
+      this.request<HandlerResponseConsole, any>({
+        path: `/sidebar/console`,
+        method: 'PUT',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -2380,6 +2899,165 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         body: user,
         type: ContentType.Json,
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name UserActivity
+     * @summary 获取当前用户的发言统计与最近发言
+     * @request GET:/user/activity
+     * @secure
+     * @response `200` `HandlerResponseUserActivity` OK
+     */
+    userActivity: (
+      query?: {
+        /** 活跃度统计的天数 */
+        days?: number
+        /** 最近发言的条数 */
+        limit?: number
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<HandlerResponseUserActivity, any>({
+        path: `/user/activity`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+ * @description List the OAuth identities linked to the current account
+ *
+ * @tags User
+ * @name GetUserIdentities
+ * @summary List linked login identities
+ * @request GET:/user/identities
+ * @secure
+ * @response `200` `HandlerResponseUserIdentities` OK
+ * @response `401` `(HandlerMap & {
+    msg?: string,
+
+})` Unauthorized
+ */
+    getUserIdentities: (params: RequestParams = {}) =>
+      this.request<
+        HandlerResponseUserIdentities,
+        HandlerMap & {
+          msg?: string
+        }
+      >({
+        path: `/user/identities`,
+        method: 'GET',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+ * @description Returns a short-lived OAuth URL that links the provider account to the current user
+ *
+ * @tags User
+ * @name BeginUserIdentityBind
+ * @summary Start an OAuth identity binding
+ * @request POST:/user/identities/:provider/bind
+ * @secure
+ * @response `200` `HandlerResponseUserIdentityBindURL` OK
+ * @response `400` `(HandlerMap & {
+    msg?: string,
+
+})` Bad Request
+ * @response `401` `(HandlerMap & {
+    msg?: string,
+
+})` Unauthorized
+ */
+    beginUserIdentityBind: (provider: string, params: RequestParams = {}) =>
+      this.request<
+        HandlerResponseUserIdentityBindURL,
+        HandlerMap & {
+          msg?: string
+        }
+      >({
+        path: `/user/identities/${provider}/bind`,
+        method: 'POST',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+ * @description Unlink one OAuth identity from the current account. The last
+ *
+ * @tags User
+ * @name RemoveUserIdentity
+ * @summary Unlink a login identity
+ * @request DELETE:/user/identities/{id}
+ * @secure
+ * @response `200` `(HandlerMap & {
+    msg?: string,
+
+})` OK
+ * @response `400` `(HandlerMap & {
+    msg?: string,
+
+})` Bad Request
+ * @response `401` `(HandlerMap & {
+    msg?: string,
+
+})` Unauthorized
+ * @response `404` `(HandlerMap & {
+    msg?: string,
+
+})` Not Found
+ */
+    removeUserIdentity: (id: number, params: RequestParams = {}) =>
+      this.request<
+        HandlerMap & {
+          msg?: string
+        },
+        HandlerMap & {
+          msg?: string
+        }
+      >({
+        path: `/user/identities/${id}`,
+        method: 'DELETE',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+ * @description Requires the current password, or an email verification code
+ *
+ * @tags Auth
+ * @name UpdatePassword
+ * @summary Change the current user's password
+ * @request POST:/user/password
+ * @secure
+ * @response `200` `HandlerResponseUserPasswordUpdate` OK
+ * @response `400` `(HandlerMap & {
+    msg?: string,
+
+})` Bad Request
+ * @response `401` `(HandlerMap & {
+    msg?: string,
+
+})` Unauthorized
+ */
+    updatePassword: (data: HandlerRequestUserPasswordUpdate, params: RequestParams = {}) =>
+      this.request<
+        HandlerResponseUserPasswordUpdate,
+        HandlerMap & {
+          msg?: string
+        }
+      >({
+        path: `/user/password`,
+        method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 

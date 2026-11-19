@@ -117,7 +117,7 @@ func AuthSSOExchange(app *core.App, router fiber.Router) {
 
 		return common.RespData(c, ResponseUserLogin{
 			Token: jwtToken,
-			User:  app.Dao().CookUser(&user),
+			User:  app.Dao().BuildUserDTO(&user),
 		})
 	}))
 }

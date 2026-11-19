@@ -32,11 +32,11 @@ type ParamsCommentList struct {
 }
 
 type ResponseCommentList struct {
-	Comments   []entity.CookedComment `json:"comments"`
-	AIComments []entity.CookedComment `json:"ai_comments,omitempty"`
-	Count      int64                  `json:"count"`
-	RootsCount int64                  `json:"roots_count"`
-	Page       *entity.CookedPage     `json:"page,omitempty"`
+	Comments   []entity.CommentDTO `json:"comments"`
+	AIComments []entity.CommentDTO `json:"ai_comments,omitempty"`
+	Count      int64               `json:"count"`
+	RootsCount int64               `json:"roots_count"`
+	Page       *entity.PageDTO     `json:"page,omitempty"`
 }
 
 // @Id           GetComments
@@ -116,7 +116,7 @@ func CommentList(app *core.App, router fiber.Router) {
 
 		// Get IP region
 		comments = findIPRegionForComments(app, comments)
-		aiComments := []entity.CookedComment{}
+		aiComments := []entity.CommentDTO{}
 		if scope == cog.ScopePage && p.SplitAIAssistant {
 			aiComments = findAIComments(app, p.PageKey, p.SiteName)
 			aiComments = findIPRegionForComments(app, aiComments)
@@ -142,22 +142,22 @@ func CommentList(app *core.App, router fiber.Router) {
 // findAIComments returns the assistant's comments for the current page. They are
 // kept separate from the paginated user discussion so the UI can render them in
 // a dedicated diagnostic section without relying on the assistant's email.
-func findAIComments(app *core.App, pageKey, siteName string) []entity.CookedComment {
+func findAIComments(app *core.App, pageKey, siteName string) []entity.CommentDTO {
 	var assistantIDs []uint
 	app.Dao().DB().Model(&entity.User{}).
 		Where("is_ai_assistant = ?", true).
 		Pluck("id", &assistantIDs)
 	if len(assistantIDs) == 0 {
-		return []entity.CookedComment{}
+		return []entity.CommentDTO{}
 	}
 
 	var comments []*entity.Comment
 	app.Dao().DB().Where("page_key = ? AND site_name = ? AND user_id IN ?", pageKey, siteName, assistantIDs).
 		Order("created_at DESC").Find(&comments)
-	return app.Dao().CookAllComments(comments)
+	return app.Dao().BuildCommentDTOs(comments)
 }
 
-func findPageData(dao *dao.Dao, pageKey string, siteName string) *entity.CookedPage {
+func findPageData(dao *dao.Dao, pageKey string, siteName string) *entity.PageDTO {
 	page := dao.FindPage(pageKey, siteName)
 	if page.IsEmpty() {
 		// If page not found, create a new one but not save it
@@ -166,12 +166,12 @@ func findPageData(dao *dao.Dao, pageKey string, siteName string) *entity.CookedP
 			SiteName: siteName,
 		}
 	}
-	cooked := dao.CookPage(&page)
-	return &cooked
+	pageDTO := dao.BuildPageDTO(&page)
+	return &pageDTO
 }
 
 // Find the IP region of each comment
-func findIPRegionForComments(app *core.App, comments []entity.CookedComment) []entity.CookedComment {
+func findIPRegionForComments(app *core.App, comments []entity.CommentDTO) []entity.CommentDTO {
 	if !app.Conf().IPRegion.Enabled {
 		return comments
 	}

@@ -14,34 +14,37 @@ func (dao *Dao) UpdateComment(comment *entity.Comment) error {
 	err := dao.DB().Save(comment).Error
 	if err != nil {
 		log.Error("Update Comment error: ", err)
+		return err
 	}
 	// 更新缓存
 	dao.CacheAction(func(cache *DaoCache) {
 		cache.CommentCacheSave(comment)
 	})
-	return err
+	return nil
 }
 
 func (dao *Dao) UpdateSite(site *entity.Site) error {
 	err := dao.DB().Save(site).Error
 	if err != nil {
 		log.Error("Update Site error: ", err)
+		return err
 	}
 	dao.CacheAction(func(cache *DaoCache) {
 		cache.SiteCacheSave(site)
 	})
-	return err
+	return nil
 }
 
 func (dao *Dao) UpdateUser(user *entity.User) error {
 	err := dao.DB().Save(user).Error
 	if err != nil {
 		log.Error("Update User error: ", err)
+		return err
 	}
 	dao.CacheAction(func(cache *DaoCache) {
 		cache.UserCacheSave(user)
 	})
-	return err
+	return nil
 }
 
 // UpdateUserLastSeen writes only the recent IP / UA columns. A full row Save
@@ -67,11 +70,12 @@ func (dao *Dao) UpdatePage(page *entity.Page) error {
 	err := dao.DB().Save(page).Error
 	if err != nil {
 		log.Error("Update Page error: ", err)
+		return err
 	}
 	dao.CacheAction(func(cache *DaoCache) {
 		cache.PageCacheSave(page)
 	})
-	return err
+	return nil
 }
 
 // IncrementPagePV does not write a potentially stale page snapshot back to the
@@ -96,12 +100,10 @@ func (dao *Dao) UserNotifyMarkAllAsRead(userID uint) error {
 
 	nowTime := time.Now()
 
-	dao.DB().Model(&entity.Notify{}).Where("user_id = ?", userID).Updates(&entity.Notify{
+	return dao.DB().Model(&entity.Notify{}).Where("user_id = ?", userID).Updates(&entity.Notify{
 		IsRead: true,
 		ReadAt: &nowTime,
-	})
-
-	return nil
+	}).Error
 }
 
 func (dao *Dao) UpdateAuthIdentity(authIdentity *entity.AuthIdentity) error {

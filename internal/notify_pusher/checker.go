@@ -52,7 +52,7 @@ func (pusher *NotifyPusher) checkNeedSendEmailToAdmin(comment *entity.Comment, p
 
 	// 用户回复对象是该管理员，不提醒
 	// (避免当 NoiseModeOn = true 时，重复发送)
-	if parentComment.UserID == admin.ID {
+	if parentComment != nil && parentComment.UserID == admin.ID {
 		return false
 	}
 
@@ -63,7 +63,7 @@ func (pusher *NotifyPusher) checkNeedSendEmailToAdmin(comment *entity.Comment, p
 
 	// 只发送给对应站点管理员
 	// TODO admin.SiteNames had removed, so temporarily disabled
-	// if admin.SiteNames != "" && !slices.Contains(pusher.dao.CookUser(admin).SiteNames, comment.SiteName) {
+	// if admin.SiteNames != "" && !slices.Contains(pusher.dao.BuildUserDTO(admin).SiteNames, comment.SiteName) {
 	// 	return false
 	// }
 

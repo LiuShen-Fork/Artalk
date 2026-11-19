@@ -717,12 +717,6 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "boolean",
-                        "description": "Return AI assistant comments separately",
-                        "name": "split_ai",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
                         "description": "The site name of your content scope",
                         "name": "site_name",
@@ -737,6 +731,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Sort by condition",
                         "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Return AI assistant comments separately",
+                        "name": "split_ai",
                         "in": "query"
                     },
                     {
@@ -1985,6 +1985,294 @@ const docTemplate = `{
                 }
             }
         },
+        "/security/bans": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "获取 IP 封禁列表",
+                "operationId": "SecurityBanList",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseSecurityBanList"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "封禁 IP 或网段",
+                "operationId": "SecurityBanCreate",
+                "parameters": [
+                    {
+                        "description": "封禁信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsSecurityBanCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.CookedIPBan"
+                        }
+                    }
+                }
+            }
+        },
+        "/security/bans/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "解除 IP 封禁",
+                "operationId": "SecurityBanDelete",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/security/config": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "获取安全防护配置",
+                "operationId": "SecurityConfigGet",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseSecurityConfig"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "保存安全防护配置",
+                "operationId": "SecurityConfigSave",
+                "parameters": [
+                    {
+                        "description": "配置",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsSecurityConfigSave"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseSecurityConfig"
+                        }
+                    }
+                }
+            }
+        },
+        "/security/events": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "获取安全事件记录",
+                "operationId": "SecurityEventList",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseSecurityEventList"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "清空安全事件记录",
+                "operationId": "SecurityEventClear",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/security/events/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "删除安全事件记录",
+                "operationId": "SecurityEventDelete",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/security/report": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "获取安全事件统计报表",
+                "operationId": "SecurityReport",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "统计最近 N 天 (默认 7)",
+                        "name": "days",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseSecurityReport"
+                        }
+                    }
+                }
+            }
+        },
+        "/security/stats": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Security"
+                ],
+                "summary": "获取实时安全统计",
+                "operationId": "SecurityStatsGet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "附加查询某个 IP 的状态",
+                        "name": "ip",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
         "/send_email": {
             "post": {
                 "security": [
@@ -2215,6 +2503,63 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handler.ResponseSettingTemplate"
+                        }
+                    }
+                }
+            }
+        },
+        "/sidebar/console": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Console"
+                ],
+                "summary": "获取控制台站点信息与自定义样式脚本",
+                "operationId": "ConsoleGet",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseConsole"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Console"
+                ],
+                "summary": "保存控制台站点信息与自定义样式脚本",
+                "operationId": "ConsoleSave",
+                "parameters": [
+                    {
+                        "description": "站点信息与自定义代码",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsConsoleSave"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseConsole"
                         }
                     }
                 }
@@ -3226,6 +3571,313 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/activity": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "获取当前用户的发言统计与最近发言",
+                "operationId": "UserActivity",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "活跃度统计的天数",
+                        "name": "days",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "最近发言的条数",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUserActivity"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/identities": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List the OAuth identities linked to the current account",
+                "tags": [
+                    "User"
+                ],
+                "summary": "List linked login identities",
+                "operationId": "GetUserIdentities",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUserIdentities"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/identities/:provider/bind": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns a short-lived OAuth URL that links the provider account to the current user",
+                "tags": [
+                    "User"
+                ],
+                "summary": "Start an OAuth identity binding",
+                "operationId": "BeginUserIdentityBind",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUserIdentityBindURL"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/identities/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Unlink one OAuth identity from the current account. The last",
+                "tags": [
+                    "User"
+                ],
+                "summary": "Unlink a login identity",
+                "operationId": "RemoveUserIdentity",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The identity ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/password": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Requires the current password, or an email verification code",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Change the current user's password",
+                "operationId": "UpdatePassword",
+                "parameters": [
+                    {
+                        "description": "The password data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.RequestUserPasswordUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUserPasswordUpdate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/user/status": {
             "get": {
                 "security": [
@@ -4017,7 +4669,91 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": true
         },
-        "entity.CookedComment": {
+        "config.SecurityQuotaConf": {
+            "type": "object",
+            "required": [
+                "day",
+                "hour",
+                "minute"
+            ],
+            "properties": {
+                "day": {
+                    "description": "每天允许次数",
+                    "type": "integer"
+                },
+                "hour": {
+                    "description": "每小时允许次数",
+                    "type": "integer"
+                },
+                "minute": {
+                    "description": "每分钟允许次数",
+                    "type": "integer"
+                }
+            }
+        },
+        "entity.AdminUserDTO": {
+            "type": "object",
+            "required": [
+                "badge_color",
+                "badge_name",
+                "comment_count",
+                "email",
+                "has_password",
+                "id",
+                "is_admin",
+                "is_in_conf",
+                "last_ip",
+                "last_ua",
+                "link",
+                "name",
+                "receive_email"
+            ],
+            "properties": {
+                "badge_color": {
+                    "type": "string"
+                },
+                "badge_name": {
+                    "type": "string"
+                },
+                "comment_count": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "has_password": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "is_ai_assistant": {
+                    "type": "boolean"
+                },
+                "is_in_conf": {
+                    "type": "boolean"
+                },
+                "last_ip": {
+                    "type": "string"
+                },
+                "last_ua": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receive_email": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "entity.CommentDTO": {
             "type": "object",
             "required": [
                 "badge_color",
@@ -4122,7 +4858,137 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.CookedNotify": {
+        "entity.CookedIPBan": {
+            "type": "object",
+            "required": [
+                "active",
+                "created_at",
+                "created_by",
+                "expire_at",
+                "hit_count",
+                "id",
+                "ip",
+                "ip_region",
+                "is_cidr",
+                "last_hit_at",
+                "note",
+                "reason",
+                "source"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "expire_at": {
+                    "type": "string"
+                },
+                "hit_count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "ip_region": {
+                    "type": "string"
+                },
+                "is_cidr": {
+                    "type": "boolean"
+                },
+                "last_hit_at": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CookedSecurityEvent": {
+            "type": "object",
+            "required": [
+                "action",
+                "blocked",
+                "date",
+                "detail",
+                "id",
+                "ip",
+                "ip_region",
+                "kind",
+                "method",
+                "path",
+                "scope",
+                "site_name",
+                "ua",
+                "user_id",
+                "user_name",
+                "window"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "blocked": {
+                    "type": "boolean"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "ip_region": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "scope": {
+                    "type": "string"
+                },
+                "site_name": {
+                    "type": "string"
+                },
+                "ua": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
+                },
+                "window": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.NotifyDTO": {
             "type": "object",
             "required": [
                 "comment_id",
@@ -4153,7 +5019,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.CookedPage": {
+        "entity.PageDTO": {
             "type": "object",
             "required": [
                 "admin_only",
@@ -4200,7 +5066,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.CookedSite": {
+        "entity.SiteDTO": {
             "type": "object",
             "required": [
                 "first_url",
@@ -4230,12 +5096,13 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.CookedUser": {
+        "entity.UserDTO": {
             "type": "object",
             "required": [
                 "badge_color",
                 "badge_name",
                 "email",
+                "has_password",
                 "id",
                 "is_admin",
                 "link",
@@ -4251,6 +5118,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "has_password": {
+                    "type": "boolean"
                 },
                 "id": {
                     "type": "integer"
@@ -4272,58 +5142,26 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.CookedUserForAdmin": {
+        "handler.CookedUserIdentity": {
             "type": "object",
             "required": [
-                "badge_color",
-                "badge_name",
-                "comment_count",
-                "email",
+                "confirmed_at",
+                "created_at",
                 "id",
-                "is_admin",
-                "is_in_conf",
-                "last_ip",
-                "last_ua",
-                "link",
-                "name",
-                "receive_email"
+                "provider"
             ],
             "properties": {
-                "badge_color": {
+                "confirmed_at": {
                     "type": "string"
                 },
-                "badge_name": {
-                    "type": "string"
-                },
-                "comment_count": {
-                    "type": "integer"
-                },
-                "email": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "is_admin": {
-                    "type": "boolean"
-                },
-                "is_in_conf": {
-                    "type": "boolean"
-                },
-                "last_ip": {
+                "provider": {
                     "type": "string"
-                },
-                "last_ua": {
-                    "type": "string"
-                },
-                "link": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "receive_email": {
-                    "type": "boolean"
                 }
             }
         },
@@ -4465,6 +5303,26 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ParamsConsoleSave": {
+            "type": "object",
+            "properties": {
+                "css": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "js": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.ParamsEmailSend": {
             "type": "object",
             "required": [
@@ -4557,6 +5415,103 @@ const docTemplate = `{
                 "title": {
                     "description": "Updated page title",
                     "type": "string"
+                }
+            }
+        },
+        "handler.ParamsSecurityBanCreate": {
+            "type": "object",
+            "required": [
+                "ip"
+            ],
+            "properties": {
+                "duration": {
+                    "description": "秒；\u003c= 0 表示永久",
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ParamsSecurityCaptcha": {
+            "type": "object",
+            "properties": {
+                "action_limit": {
+                    "type": "integer"
+                },
+                "action_reset": {
+                    "type": "integer"
+                },
+                "always": {
+                    "type": "boolean"
+                },
+                "capjs": {
+                    "$ref": "#/definitions/handler.SecurityCapJSConfig"
+                },
+                "captcha_type": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "geetest": {
+                    "$ref": "#/definitions/handler.SecurityGeetestConfig"
+                },
+                "hcaptcha": {
+                    "$ref": "#/definitions/handler.SecurityProviderConfig"
+                },
+                "recaptcha": {
+                    "$ref": "#/definitions/handler.SecurityProviderConfig"
+                },
+                "turnstile": {
+                    "$ref": "#/definitions/handler.SecurityProviderConfig"
+                }
+            }
+        },
+        "handler.ParamsSecurityConfigSave": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "auto_ban": {
+                    "$ref": "#/definitions/handler.SecurityAutoBanConfig"
+                },
+                "blacklist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "captcha": {
+                    "$ref": "#/definitions/handler.ParamsSecurityCaptcha"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "event_retention_days": {
+                    "type": "integer"
+                },
+                "exclude_paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rate_limit": {
+                    "$ref": "#/definitions/handler.SecurityRateLimitConfig"
+                },
+                "whitelist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -4850,6 +5805,23 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.RequestUserPasswordUpdate": {
+            "type": "object",
+            "required": [
+                "new_password"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current_password": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.ResponseAdminUserList": {
             "type": "object",
             "required": [
@@ -4863,7 +5835,7 @@ const docTemplate = `{
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CookedUserForAdmin"
+                        "$ref": "#/definitions/entity.AdminUserDTO"
                     }
                 }
             }
@@ -4988,6 +5960,9 @@ const docTemplate = `{
                 "ip_region": {
                     "type": "string"
                 },
+                "is_ai_assistant": {
+                    "type": "boolean"
+                },
                 "is_allow_reply": {
                     "type": "boolean"
                 },
@@ -5049,7 +6024,7 @@ const docTemplate = `{
                     "description": "The comment detail",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/entity.CookedComment"
+                            "$ref": "#/definitions/entity.CommentDTO"
                         }
                     ]
                 },
@@ -5057,7 +6032,7 @@ const docTemplate = `{
                     "description": "The reply comment if exists (like reply)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/entity.CookedComment"
+                            "$ref": "#/definitions/entity.CommentDTO"
                         }
                     ]
                 }
@@ -5071,23 +6046,23 @@ const docTemplate = `{
                 "roots_count"
             ],
             "properties": {
-                "comments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.CookedComment"
-                    }
-                },
                 "ai_comments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CookedComment"
+                        "$ref": "#/definitions/entity.CommentDTO"
+                    }
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CommentDTO"
                     }
                 },
                 "count": {
                     "type": "integer"
                 },
                 "page": {
-                    "$ref": "#/definitions/entity.CookedPage"
+                    "$ref": "#/definitions/entity.PageDTO"
                 },
                 "roots_count": {
                     "type": "integer"
@@ -5145,6 +6120,9 @@ const docTemplate = `{
                 },
                 "ip_region": {
                     "type": "string"
+                },
+                "is_ai_assistant": {
+                    "type": "boolean"
                 },
                 "is_allow_reply": {
                     "type": "boolean"
@@ -5234,6 +6212,33 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseConsole": {
+            "type": "object",
+            "required": [
+                "css",
+                "description",
+                "icon",
+                "js",
+                "name"
+            ],
+            "properties": {
+                "css": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "js": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.ResponseNotifyList": {
             "type": "object",
             "required": [
@@ -5247,7 +6252,7 @@ const docTemplate = `{
                 "notifies": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CookedNotify"
+                        "$ref": "#/definitions/entity.NotifyDTO"
                     }
                 }
             }
@@ -5339,7 +6344,7 @@ const docTemplate = `{
                 "pages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CookedPage"
+                        "$ref": "#/definitions/entity.PageDTO"
                     }
                 }
             }
@@ -5398,6 +6403,115 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "vote_up": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ResponseSecurityBanList": {
+            "type": "object",
+            "required": [
+                "bans",
+                "count"
+            ],
+            "properties": {
+                "bans": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CookedIPBan"
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ResponseSecurityConfig": {
+            "type": "object",
+            "required": [
+                "captcha",
+                "runtime",
+                "security"
+            ],
+            "properties": {
+                "captcha": {
+                    "$ref": "#/definitions/handler.SecurityCaptchaConfig"
+                },
+                "runtime": {
+                    "$ref": "#/definitions/handler.SecurityRuntimeData"
+                },
+                "security": {
+                    "$ref": "#/definitions/handler.SecurityConfigData"
+                }
+            }
+        },
+        "handler.ResponseSecurityEventList": {
+            "type": "object",
+            "required": [
+                "count",
+                "events"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CookedSecurityEvent"
+                    }
+                }
+            }
+        },
+        "handler.ResponseSecurityReport": {
+            "type": "object",
+            "required": [
+                "blocked",
+                "by_action",
+                "by_day",
+                "by_kind",
+                "range_days",
+                "top_ips",
+                "top_paths",
+                "total"
+            ],
+            "properties": {
+                "blocked": {
+                    "type": "integer"
+                },
+                "by_action": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.SecurityActionCount"
+                    }
+                },
+                "by_day": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.SecurityDayCount"
+                    }
+                },
+                "by_kind": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.SecurityKindCount"
+                    }
+                },
+                "range_days": {
+                    "type": "integer"
+                },
+                "top_ips": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.SecurityIPCount"
+                    }
+                },
+                "top_paths": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.SecurityPathCount"
+                    }
+                },
+                "total": {
                     "type": "integer"
                 }
             }
@@ -5474,7 +6588,7 @@ const docTemplate = `{
                 "sites": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CookedSite"
+                        "$ref": "#/definitions/entity.SiteDTO"
                     }
                 }
             }
@@ -5552,6 +6666,49 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseUserActivity": {
+            "type": "object",
+            "required": [
+                "by_day",
+                "count",
+                "first_date",
+                "pending",
+                "recent",
+                "votes"
+            ],
+            "properties": {
+                "by_day": {
+                    "description": "每日发言数（近 N 天，仅含有发言的日期）",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.UserActivityDay"
+                    }
+                },
+                "count": {
+                    "description": "评论总数",
+                    "type": "integer"
+                },
+                "first_date": {
+                    "description": "首次发言日期",
+                    "type": "string"
+                },
+                "pending": {
+                    "description": "待审核数量",
+                    "type": "integer"
+                },
+                "recent": {
+                    "description": "最近发言",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CommentDTO"
+                    }
+                },
+                "votes": {
+                    "description": "收到的赞同总数",
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseUserCreate": {
             "type": "object",
             "required": [
@@ -5559,6 +6716,7 @@ const docTemplate = `{
                 "badge_name",
                 "comment_count",
                 "email",
+                "has_password",
                 "id",
                 "is_admin",
                 "is_in_conf",
@@ -5581,10 +6739,16 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "has_password": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "is_admin": {
+                    "type": "boolean"
+                },
+                "is_ai_assistant": {
                     "type": "boolean"
                 },
                 "is_in_conf": {
@@ -5607,6 +6771,31 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseUserIdentities": {
+            "type": "object",
+            "required": [
+                "identities"
+            ],
+            "properties": {
+                "identities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.CookedUserIdentity"
+                    }
+                }
+            }
+        },
+        "handler.ResponseUserIdentityBindURL": {
+            "type": "object",
+            "required": [
+                "path"
+            ],
+            "properties": {
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.ResponseUserInfo": {
             "type": "object",
             "required": [
@@ -5622,14 +6811,14 @@ const docTemplate = `{
                 "notifies": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CookedNotify"
+                        "$ref": "#/definitions/entity.NotifyDTO"
                     }
                 },
                 "notifies_count": {
                     "type": "integer"
                 },
                 "user": {
-                    "$ref": "#/definitions/entity.CookedUser"
+                    "$ref": "#/definitions/entity.UserDTO"
                 }
             }
         },
@@ -5640,7 +6829,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/entity.CookedUser"
+                    "$ref": "#/definitions/entity.UserDTO"
                 }
             }
         },
@@ -5655,7 +6844,22 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/entity.CookedUser"
+                    "$ref": "#/definitions/entity.UserDTO"
+                }
+            }
+        },
+        "handler.ResponseUserPasswordUpdate": {
+            "type": "object",
+            "required": [
+                "token",
+                "user"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/entity.UserDTO"
                 }
             }
         },
@@ -5681,6 +6885,7 @@ const docTemplate = `{
                 "badge_name",
                 "comment_count",
                 "email",
+                "has_password",
                 "id",
                 "is_admin",
                 "is_in_conf",
@@ -5703,10 +6908,16 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "has_password": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "is_admin": {
+                    "type": "boolean"
+                },
+                "is_ai_assistant": {
                     "type": "boolean"
                 },
                 "is_in_conf": {
@@ -5748,6 +6959,338 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "up": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.SecurityActionCount": {
+            "type": "object",
+            "required": [
+                "action",
+                "count"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.SecurityAutoBanConfig": {
+            "type": "object",
+            "required": [
+                "duration",
+                "enabled",
+                "threshold",
+                "window"
+            ],
+            "properties": {
+                "duration": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "threshold": {
+                    "type": "integer"
+                },
+                "window": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.SecurityCapJSConfig": {
+            "type": "object",
+            "required": [
+                "api_endpoint",
+                "key_id",
+                "secret_key"
+            ],
+            "properties": {
+                "api_endpoint": {
+                    "type": "string"
+                },
+                "key_id": {
+                    "type": "string"
+                },
+                "secret_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityCaptchaConfig": {
+            "type": "object",
+            "required": [
+                "action_limit",
+                "action_reset",
+                "always",
+                "capjs",
+                "captcha_type",
+                "enabled",
+                "geetest",
+                "hcaptcha",
+                "recaptcha",
+                "turnstile"
+            ],
+            "properties": {
+                "action_limit": {
+                    "type": "integer"
+                },
+                "action_reset": {
+                    "type": "integer"
+                },
+                "always": {
+                    "type": "boolean"
+                },
+                "capjs": {
+                    "$ref": "#/definitions/handler.SecurityCapJSConfig"
+                },
+                "captcha_type": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "geetest": {
+                    "$ref": "#/definitions/handler.SecurityGeetestConfig"
+                },
+                "hcaptcha": {
+                    "$ref": "#/definitions/handler.SecurityProviderConfig"
+                },
+                "recaptcha": {
+                    "$ref": "#/definitions/handler.SecurityProviderConfig"
+                },
+                "turnstile": {
+                    "$ref": "#/definitions/handler.SecurityProviderConfig"
+                }
+            }
+        },
+        "handler.SecurityConfigData": {
+            "type": "object",
+            "required": [
+                "action",
+                "auto_ban",
+                "blacklist",
+                "enabled",
+                "event_retention_days",
+                "exclude_paths",
+                "rate_limit",
+                "whitelist"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "auto_ban": {
+                    "$ref": "#/definitions/handler.SecurityAutoBanConfig"
+                },
+                "blacklist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "event_retention_days": {
+                    "type": "integer"
+                },
+                "exclude_paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rate_limit": {
+                    "$ref": "#/definitions/handler.SecurityRateLimitConfig"
+                },
+                "whitelist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handler.SecurityDayCount": {
+            "type": "object",
+            "required": [
+                "count",
+                "date"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityGeetestConfig": {
+            "type": "object",
+            "required": [
+                "captcha_id",
+                "captcha_key"
+            ],
+            "properties": {
+                "captcha_id": {
+                    "type": "string"
+                },
+                "captcha_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityIPCount": {
+            "type": "object",
+            "required": [
+                "count",
+                "ip",
+                "ip_region"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "ip_region": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityKindCount": {
+            "type": "object",
+            "required": [
+                "count",
+                "kind"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "kind": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityPathCount": {
+            "type": "object",
+            "required": [
+                "count",
+                "path"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityProviderConfig": {
+            "type": "object",
+            "required": [
+                "secret_key",
+                "site_key"
+            ],
+            "properties": {
+                "secret_key": {
+                    "type": "string"
+                },
+                "site_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SecurityRateLimitConfig": {
+            "type": "object",
+            "required": [
+                "global",
+                "ip"
+            ],
+            "properties": {
+                "global": {
+                    "$ref": "#/definitions/config.SecurityQuotaConf"
+                },
+                "ip": {
+                    "$ref": "#/definitions/config.SecurityQuotaConf"
+                }
+            }
+        },
+        "handler.SecurityRuntimeData": {
+            "type": "object",
+            "required": [
+                "action_groups",
+                "active_bans",
+                "captcha_ready",
+                "global",
+                "tracked_ips",
+                "tracked_violators"
+            ],
+            "properties": {
+                "action_groups": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "active_bans": {
+                    "type": "integer"
+                },
+                "captcha_ready": {
+                    "description": "验证码动作是否可用（依赖 captcha 启用）",
+                    "type": "boolean"
+                },
+                "global": {
+                    "$ref": "#/definitions/security.Snapshot"
+                },
+                "tracked_ips": {
+                    "type": "integer"
+                },
+                "tracked_violators": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.UserActivityDay": {
+            "type": "object",
+            "required": [
+                "count",
+                "date"
+            ],
+            "properties": {
+                "count": {
+                    "description": "当天发表数",
+                    "type": "integer"
+                },
+                "date": {
+                    "description": "YYYY-MM-DD",
+                    "type": "string"
+                }
+            }
+        },
+        "security.Snapshot": {
+            "type": "object",
+            "required": [
+                "day",
+                "hour",
+                "minute"
+            ],
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "hour": {
+                    "type": "integer"
+                },
+                "minute": {
                     "type": "integer"
                 }
             }

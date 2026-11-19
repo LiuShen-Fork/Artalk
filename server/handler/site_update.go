@@ -18,7 +18,7 @@ type ParamsSiteUpdate struct {
 }
 
 type ResponseSiteUpdate struct {
-	entity.CookedSite
+	entity.SiteDTO
 }
 
 // @Id           UpdateSite
@@ -79,6 +79,9 @@ func SiteUpdate(app *core.App, router fiber.Router) {
 				app.Dao().UpdateComment(&comment)
 			}
 			for _, page := range pages {
+				app.Dao().CacheAction(func(cache *dao.DaoCache) {
+					cache.PageCacheDel(&page)
+				})
 				page.SiteName = p.Name
 				app.Dao().UpdatePage(&page)
 			}
@@ -94,7 +97,7 @@ func SiteUpdate(app *core.App, router fiber.Router) {
 		}
 
 		return common.RespData(c, ResponseSiteUpdate{
-			CookedSite: app.Dao().CookSite(&site),
+			SiteDTO: app.Dao().BuildSiteDTO(&site),
 		})
 	}))
 }

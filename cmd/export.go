@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 
@@ -42,7 +41,7 @@ func NewExportCommand(app *ArtalkCmd) *cobra.Command {
 				stat, err := os.Stat(filename)
 				if err == nil {
 					if stat.IsDir() {
-						filename = path.Join(filename, "backup-"+time.Now().Format("20060102-150405")+".artrans")
+						filename = filepath.Join(filename, "backup-"+time.Now().Format("20060102-150405")+".artrans")
 					}
 				}
 
@@ -60,7 +59,11 @@ func NewExportCommand(app *ArtalkCmd) *cobra.Command {
 				// >
 				_, err2 := f.WriteString(jsonStr)
 				if err2 != nil {
+					f.Close()
 					log.Fatal(err2)
+				}
+				if err := f.Close(); err != nil {
+					log.Fatal(err)
 				}
 
 				log.Info(i18n.T("Export complete") + ": " + filename)

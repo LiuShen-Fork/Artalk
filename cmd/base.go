@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"path/filepath"
 	"syscall"
 
@@ -215,7 +214,7 @@ func initDataDir(workDir string) (string, error) {
 	// Create new data directory if not exists
 	if workDir == "" {
 		// default data path is `~/.local/share/artalk`
-		workDir = path.Join(xdg.DataHome, "artalk")
+		workDir = filepath.Join(xdg.DataHome, "artalk")
 		if err := utils.EnsureDir(workDir); err != nil {
 			return "", fmt.Errorf("data directory creation error: %v", err)
 		}
@@ -242,7 +241,7 @@ func getConfig(cfgFile string) (*config.Config, error) {
 	// Generate new config file if not exists
 	if cfgFile == "" {
 		// default config path is `~/.config/artalk/artalk.yml`
-		cfgFile = path.Join(xdg.ConfigHome, "artalk", config.CONF_DEFAULT_FILENAMES[0])
+		cfgFile = filepath.Join(xdg.ConfigHome, "artalk", config.CONF_DEFAULT_FILENAMES[0])
 		core.Gen("config", cfgFile, false)
 	}
 

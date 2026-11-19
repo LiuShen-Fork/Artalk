@@ -106,7 +106,7 @@ func cookSecurityEvent(app *core.App, event entity.SecurityEvent) entity.CookedS
 // @Tags         Security
 // @Security     ApiKeyAuth
 // @Produce      json
-// @Success      200  {object}  common.ResponseSuccess
+// @Success      200  {object}  common.JSONResult
 // @Router       /security/events/{id} [delete]
 func SecurityEventDelete(app *core.App, router fiber.Router) {
 	router.Delete("/security/events/:id", common.AdminGuard(app, func(c *fiber.Ctx) error {
@@ -133,7 +133,7 @@ func SecurityEventDelete(app *core.App, router fiber.Router) {
 // @Tags         Security
 // @Security     ApiKeyAuth
 // @Produce      json
-// @Success      200  {object}  common.ResponseSuccess
+// @Success      200  {object}  common.JSONResult
 // @Router       /security/events [delete]
 func SecurityEventClear(app *core.App, router fiber.Router) {
 	router.Delete("/security/events", common.AdminGuard(app, func(c *fiber.Ctx) error {

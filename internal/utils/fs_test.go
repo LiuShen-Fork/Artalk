@@ -28,8 +28,11 @@ func TestEnsureDir(t *testing.T) {
 func TestCheckFileExist(t *testing.T) {
 	// Test existing file
 	existingFile := "test_file_exist.txt"
-	_, createErr := os.Create(existingFile)
+	f, createErr := os.Create(existingFile)
 	assert.NoError(t, createErr, "Error creating test file")
+	if createErr == nil {
+		assert.NoError(t, f.Close())
+	}
 	defer os.Remove(existingFile)
 
 	exists := CheckFileExist(existingFile)

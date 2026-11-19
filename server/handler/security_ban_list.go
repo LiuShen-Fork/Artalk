@@ -147,7 +147,7 @@ func SecurityBanCreate(app *core.App, router fiber.Router) {
 // @Tags         Security
 // @Security     ApiKeyAuth
 // @Produce      json
-// @Success      200  {object}  common.ResponseSuccess
+// @Success      200  {object}  common.JSONResult
 // @Router       /security/bans/{id} [delete]
 func SecurityBanDelete(app *core.App, router fiber.Router) {
 	router.Delete("/security/bans/:id", common.AdminGuard(app, func(c *fiber.Ctx) error {

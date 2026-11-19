@@ -49,7 +49,68 @@ definitions:
   common.Map:
     additionalProperties: true
     type: object
-  entity.CookedComment:
+  config.SecurityQuotaConf:
+    properties:
+      day:
+        description: 每天允许次数
+        type: integer
+      hour:
+        description: 每小时允许次数
+        type: integer
+      minute:
+        description: 每分钟允许次数
+        type: integer
+    required:
+    - day
+    - hour
+    - minute
+    type: object
+  entity.AdminUserDTO:
+    properties:
+      badge_color:
+        type: string
+      badge_name:
+        type: string
+      comment_count:
+        type: integer
+      email:
+        type: string
+      has_password:
+        type: boolean
+      id:
+        type: integer
+      is_admin:
+        type: boolean
+      is_ai_assistant:
+        type: boolean
+      is_in_conf:
+        type: boolean
+      last_ip:
+        type: string
+      last_ua:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      receive_email:
+        type: boolean
+    required:
+    - badge_color
+    - badge_name
+    - comment_count
+    - email
+    - has_password
+    - id
+    - is_admin
+    - is_in_conf
+    - last_ip
+    - last_ua
+    - link
+    - name
+    - receive_email
+    type: object
+  entity.CommentDTO:
     properties:
       badge_color:
         type: string
@@ -126,7 +187,102 @@ definitions:
     - vote_down
     - vote_up
     type: object
-  entity.CookedNotify:
+  entity.CookedIPBan:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      expire_at:
+        type: string
+      hit_count:
+        type: integer
+      id:
+        type: integer
+      ip:
+        type: string
+      ip_region:
+        type: string
+      is_cidr:
+        type: boolean
+      last_hit_at:
+        type: string
+      note:
+        type: string
+      reason:
+        type: string
+      source:
+        type: string
+    required:
+    - active
+    - created_at
+    - created_by
+    - expire_at
+    - hit_count
+    - id
+    - ip
+    - ip_region
+    - is_cidr
+    - last_hit_at
+    - note
+    - reason
+    - source
+    type: object
+  entity.CookedSecurityEvent:
+    properties:
+      action:
+        type: string
+      blocked:
+        type: boolean
+      date:
+        type: string
+      detail:
+        type: string
+      id:
+        type: integer
+      ip:
+        type: string
+      ip_region:
+        type: string
+      kind:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      scope:
+        type: string
+      site_name:
+        type: string
+      ua:
+        type: string
+      user_id:
+        type: integer
+      user_name:
+        type: string
+      window:
+        type: string
+    required:
+    - action
+    - blocked
+    - date
+    - detail
+    - id
+    - ip
+    - ip_region
+    - kind
+    - method
+    - path
+    - scope
+    - site_name
+    - ua
+    - user_id
+    - user_name
+    - window
+    type: object
+  entity.NotifyDTO:
     properties:
       comment_id:
         type: integer
@@ -148,7 +304,7 @@ definitions:
     - read_link
     - user_id
     type: object
-  entity.CookedPage:
+  entity.PageDTO:
     properties:
       admin_only:
         type: boolean
@@ -182,7 +338,7 @@ definitions:
     - vote_down
     - vote_up
     type: object
-  entity.CookedSite:
+  entity.SiteDTO:
     properties:
       first_url:
         type: string
@@ -203,7 +359,7 @@ definitions:
     - urls
     - urls_raw
     type: object
-  entity.CookedUser:
+  entity.UserDTO:
     properties:
       badge_color:
         type: string
@@ -211,6 +367,8 @@ definitions:
         type: string
       email:
         type: string
+      has_password:
+        type: boolean
       id:
         type: integer
       is_admin:
@@ -227,51 +385,28 @@ definitions:
     - badge_color
     - badge_name
     - email
+    - has_password
     - id
     - is_admin
     - link
     - name
     - receive_email
     type: object
-  entity.CookedUserForAdmin:
+  handler.CookedUserIdentity:
     properties:
-      badge_color:
+      confirmed_at:
         type: string
-      badge_name:
-        type: string
-      comment_count:
-        type: integer
-      email:
+      created_at:
         type: string
       id:
         type: integer
-      is_admin:
-        type: boolean
-      is_in_conf:
-        type: boolean
-      last_ip:
+      provider:
         type: string
-      last_ua:
-        type: string
-      link:
-        type: string
-      name:
-        type: string
-      receive_email:
-        type: boolean
     required:
-    - badge_color
-    - badge_name
-    - comment_count
-    - email
+    - confirmed_at
+    - created_at
     - id
-    - is_admin
-    - is_in_conf
-    - last_ip
-    - last_ua
-    - link
-    - name
-    - receive_email
+    - provider
     type: object
   handler.Map:
     additionalProperties: true
@@ -375,6 +510,19 @@ definitions:
     - rid
     - site_name
     type: object
+  handler.ParamsConsoleSave:
+    properties:
+      css:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      js:
+        type: string
+      name:
+        type: string
+    type: object
   handler.ParamsEmailSend:
     properties:
       body:
@@ -442,6 +590,70 @@ definitions:
     - key
     - site_name
     - title
+    type: object
+  handler.ParamsSecurityBanCreate:
+    properties:
+      duration:
+        description: 秒；<= 0 表示永久
+        type: integer
+      ip:
+        type: string
+      note:
+        type: string
+      reason:
+        type: string
+    required:
+    - ip
+    type: object
+  handler.ParamsSecurityCaptcha:
+    properties:
+      action_limit:
+        type: integer
+      action_reset:
+        type: integer
+      always:
+        type: boolean
+      capjs:
+        $ref: '#/definitions/handler.SecurityCapJSConfig'
+      captcha_type:
+        type: string
+      enabled:
+        type: boolean
+      geetest:
+        $ref: '#/definitions/handler.SecurityGeetestConfig'
+      hcaptcha:
+        $ref: '#/definitions/handler.SecurityProviderConfig'
+      recaptcha:
+        $ref: '#/definitions/handler.SecurityProviderConfig'
+      turnstile:
+        $ref: '#/definitions/handler.SecurityProviderConfig'
+    type: object
+  handler.ParamsSecurityConfigSave:
+    properties:
+      action:
+        type: string
+      auto_ban:
+        $ref: '#/definitions/handler.SecurityAutoBanConfig'
+      blacklist:
+        items:
+          type: string
+        type: array
+      captcha:
+        $ref: '#/definitions/handler.ParamsSecurityCaptcha'
+      enabled:
+        type: boolean
+      event_retention_days:
+        type: integer
+      exclude_paths:
+        items:
+          type: string
+        type: array
+      rate_limit:
+        $ref: '#/definitions/handler.SecurityRateLimitConfig'
+      whitelist:
+        items:
+          type: string
+        type: array
     type: object
   handler.ParamsSettingApply:
     properties:
@@ -647,13 +859,24 @@ definitions:
     - email
     - name
     type: object
+  handler.RequestUserPasswordUpdate:
+    properties:
+      code:
+        type: string
+      current_password:
+        type: string
+      new_password:
+        type: string
+    required:
+    - new_password
+    type: object
   handler.ResponseAdminUserList:
     properties:
       count:
         type: integer
       users:
         items:
-          $ref: '#/definitions/entity.CookedUserForAdmin'
+          $ref: '#/definitions/entity.AdminUserDTO'
         type: array
     required:
     - count
@@ -723,6 +946,8 @@ definitions:
         type: integer
       ip_region:
         type: string
+      is_ai_assistant:
+        type: boolean
       is_allow_reply:
         type: boolean
       is_collapsed:
@@ -784,11 +1009,11 @@ definitions:
     properties:
       comment:
         allOf:
-        - $ref: '#/definitions/entity.CookedComment'
+        - $ref: '#/definitions/entity.CommentDTO'
         description: The comment detail
       reply_comment:
         allOf:
-        - $ref: '#/definitions/entity.CookedComment'
+        - $ref: '#/definitions/entity.CommentDTO'
         description: The reply comment if exists (like reply)
     required:
     - comment
@@ -798,16 +1023,16 @@ definitions:
     properties:
       ai_comments:
         items:
-          $ref: '#/definitions/entity.CookedComment'
+          $ref: '#/definitions/entity.CommentDTO'
         type: array
       comments:
         items:
-          $ref: '#/definitions/entity.CookedComment'
+          $ref: '#/definitions/entity.CommentDTO'
         type: array
       count:
         type: integer
       page:
-        $ref: '#/definitions/entity.CookedPage'
+        $ref: '#/definitions/entity.PageDTO'
       roots_count:
         type: integer
     required:
@@ -833,6 +1058,8 @@ definitions:
         type: integer
       ip_region:
         type: string
+      is_ai_assistant:
+        type: boolean
       is_allow_reply:
         type: boolean
       is_collapsed:
@@ -916,13 +1143,32 @@ definitions:
     - is_trusted
     - origin
     type: object
+  handler.ResponseConsole:
+    properties:
+      css:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      js:
+        type: string
+      name:
+        type: string
+    required:
+    - css
+    - description
+    - icon
+    - js
+    - name
+    type: object
   handler.ResponseNotifyList:
     properties:
       count:
         type: integer
       notifies:
         items:
-          $ref: '#/definitions/entity.CookedNotify'
+          $ref: '#/definitions/entity.NotifyDTO'
         type: array
     required:
     - count
@@ -988,7 +1234,7 @@ definitions:
         type: integer
       pages:
         items:
-          $ref: '#/definitions/entity.CookedPage'
+          $ref: '#/definitions/entity.PageDTO'
         type: array
     required:
     - count
@@ -1034,6 +1280,81 @@ definitions:
     - url
     - vote_down
     - vote_up
+    type: object
+  handler.ResponseSecurityBanList:
+    properties:
+      bans:
+        items:
+          $ref: '#/definitions/entity.CookedIPBan'
+        type: array
+      count:
+        type: integer
+    required:
+    - bans
+    - count
+    type: object
+  handler.ResponseSecurityConfig:
+    properties:
+      captcha:
+        $ref: '#/definitions/handler.SecurityCaptchaConfig'
+      runtime:
+        $ref: '#/definitions/handler.SecurityRuntimeData'
+      security:
+        $ref: '#/definitions/handler.SecurityConfigData'
+    required:
+    - captcha
+    - runtime
+    - security
+    type: object
+  handler.ResponseSecurityEventList:
+    properties:
+      count:
+        type: integer
+      events:
+        items:
+          $ref: '#/definitions/entity.CookedSecurityEvent'
+        type: array
+    required:
+    - count
+    - events
+    type: object
+  handler.ResponseSecurityReport:
+    properties:
+      blocked:
+        type: integer
+      by_action:
+        items:
+          $ref: '#/definitions/handler.SecurityActionCount'
+        type: array
+      by_day:
+        items:
+          $ref: '#/definitions/handler.SecurityDayCount'
+        type: array
+      by_kind:
+        items:
+          $ref: '#/definitions/handler.SecurityKindCount'
+        type: array
+      range_days:
+        type: integer
+      top_ips:
+        items:
+          $ref: '#/definitions/handler.SecurityIPCount'
+        type: array
+      top_paths:
+        items:
+          $ref: '#/definitions/handler.SecurityPathCount'
+        type: array
+      total:
+        type: integer
+    required:
+    - blocked
+    - by_action
+    - by_day
+    - by_kind
+    - range_days
+    - top_ips
+    - top_paths
+    - total
     type: object
   handler.ResponseSettingGet:
     properties:
@@ -1081,7 +1402,7 @@ definitions:
         type: integer
       sites:
         items:
-          $ref: '#/definitions/entity.CookedSite'
+          $ref: '#/definitions/entity.SiteDTO'
         type: array
     required:
     - count
@@ -1137,6 +1458,38 @@ definitions:
     - file_type
     - public_url
     type: object
+  handler.ResponseUserActivity:
+    properties:
+      by_day:
+        description: 每日发言数（近 N 天，仅含有发言的日期）
+        items:
+          $ref: '#/definitions/handler.UserActivityDay'
+        type: array
+      count:
+        description: 评论总数
+        type: integer
+      first_date:
+        description: 首次发言日期
+        type: string
+      pending:
+        description: 待审核数量
+        type: integer
+      recent:
+        description: 最近发言
+        items:
+          $ref: '#/definitions/entity.CommentDTO'
+        type: array
+      votes:
+        description: 收到的赞同总数
+        type: integer
+    required:
+    - by_day
+    - count
+    - first_date
+    - pending
+    - recent
+    - votes
+    type: object
   handler.ResponseUserCreate:
     properties:
       badge_color:
@@ -1147,9 +1500,13 @@ definitions:
         type: integer
       email:
         type: string
+      has_password:
+        type: boolean
       id:
         type: integer
       is_admin:
+        type: boolean
+      is_ai_assistant:
         type: boolean
       is_in_conf:
         type: boolean
@@ -1168,6 +1525,7 @@ definitions:
     - badge_name
     - comment_count
     - email
+    - has_password
     - id
     - is_admin
     - is_in_conf
@@ -1177,18 +1535,34 @@ definitions:
     - name
     - receive_email
     type: object
+  handler.ResponseUserIdentities:
+    properties:
+      identities:
+        items:
+          $ref: '#/definitions/handler.CookedUserIdentity'
+        type: array
+    required:
+    - identities
+    type: object
+  handler.ResponseUserIdentityBindURL:
+    properties:
+      path:
+        type: string
+    required:
+    - path
+    type: object
   handler.ResponseUserInfo:
     properties:
       is_login:
         type: boolean
       notifies:
         items:
-          $ref: '#/definitions/entity.CookedNotify'
+          $ref: '#/definitions/entity.NotifyDTO'
         type: array
       notifies_count:
         type: integer
       user:
-        $ref: '#/definitions/entity.CookedUser'
+        $ref: '#/definitions/entity.UserDTO'
     required:
     - is_login
     - notifies
@@ -1198,7 +1572,7 @@ definitions:
   handler.ResponseUserInfoUpdate:
     properties:
       user:
-        $ref: '#/definitions/entity.CookedUser'
+        $ref: '#/definitions/entity.UserDTO'
     required:
     - user
     type: object
@@ -1207,7 +1581,17 @@ definitions:
       token:
         type: string
       user:
-        $ref: '#/definitions/entity.CookedUser'
+        $ref: '#/definitions/entity.UserDTO'
+    required:
+    - token
+    - user
+    type: object
+  handler.ResponseUserPasswordUpdate:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/entity.UserDTO'
     required:
     - token
     - user
@@ -1232,9 +1616,13 @@ definitions:
         type: integer
       email:
         type: string
+      has_password:
+        type: boolean
       id:
         type: integer
       is_admin:
+        type: boolean
+      is_ai_assistant:
         type: boolean
       is_in_conf:
         type: boolean
@@ -1253,6 +1641,7 @@ definitions:
     - badge_name
     - comment_count
     - email
+    - has_password
     - id
     - is_admin
     - is_in_conf
@@ -1277,6 +1666,236 @@ definitions:
     - is_down
     - is_up
     - up
+    type: object
+  handler.SecurityActionCount:
+    properties:
+      action:
+        type: string
+      count:
+        type: integer
+    required:
+    - action
+    - count
+    type: object
+  handler.SecurityAutoBanConfig:
+    properties:
+      duration:
+        type: integer
+      enabled:
+        type: boolean
+      threshold:
+        type: integer
+      window:
+        type: integer
+    required:
+    - duration
+    - enabled
+    - threshold
+    - window
+    type: object
+  handler.SecurityCapJSConfig:
+    properties:
+      api_endpoint:
+        type: string
+      key_id:
+        type: string
+      secret_key:
+        type: string
+    required:
+    - api_endpoint
+    - key_id
+    - secret_key
+    type: object
+  handler.SecurityCaptchaConfig:
+    properties:
+      action_limit:
+        type: integer
+      action_reset:
+        type: integer
+      always:
+        type: boolean
+      capjs:
+        $ref: '#/definitions/handler.SecurityCapJSConfig'
+      captcha_type:
+        type: string
+      enabled:
+        type: boolean
+      geetest:
+        $ref: '#/definitions/handler.SecurityGeetestConfig'
+      hcaptcha:
+        $ref: '#/definitions/handler.SecurityProviderConfig'
+      recaptcha:
+        $ref: '#/definitions/handler.SecurityProviderConfig'
+      turnstile:
+        $ref: '#/definitions/handler.SecurityProviderConfig'
+    required:
+    - action_limit
+    - action_reset
+    - always
+    - capjs
+    - captcha_type
+    - enabled
+    - geetest
+    - hcaptcha
+    - recaptcha
+    - turnstile
+    type: object
+  handler.SecurityConfigData:
+    properties:
+      action:
+        type: string
+      auto_ban:
+        $ref: '#/definitions/handler.SecurityAutoBanConfig'
+      blacklist:
+        items:
+          type: string
+        type: array
+      enabled:
+        type: boolean
+      event_retention_days:
+        type: integer
+      exclude_paths:
+        items:
+          type: string
+        type: array
+      rate_limit:
+        $ref: '#/definitions/handler.SecurityRateLimitConfig'
+      whitelist:
+        items:
+          type: string
+        type: array
+    required:
+    - action
+    - auto_ban
+    - blacklist
+    - enabled
+    - event_retention_days
+    - exclude_paths
+    - rate_limit
+    - whitelist
+    type: object
+  handler.SecurityDayCount:
+    properties:
+      count:
+        type: integer
+      date:
+        type: string
+    required:
+    - count
+    - date
+    type: object
+  handler.SecurityGeetestConfig:
+    properties:
+      captcha_id:
+        type: string
+      captcha_key:
+        type: string
+    required:
+    - captcha_id
+    - captcha_key
+    type: object
+  handler.SecurityIPCount:
+    properties:
+      count:
+        type: integer
+      ip:
+        type: string
+      ip_region:
+        type: string
+    required:
+    - count
+    - ip
+    - ip_region
+    type: object
+  handler.SecurityKindCount:
+    properties:
+      count:
+        type: integer
+      kind:
+        type: string
+    required:
+    - count
+    - kind
+    type: object
+  handler.SecurityPathCount:
+    properties:
+      count:
+        type: integer
+      path:
+        type: string
+    required:
+    - count
+    - path
+    type: object
+  handler.SecurityProviderConfig:
+    properties:
+      secret_key:
+        type: string
+      site_key:
+        type: string
+    required:
+    - secret_key
+    - site_key
+    type: object
+  handler.SecurityRateLimitConfig:
+    properties:
+      global:
+        $ref: '#/definitions/config.SecurityQuotaConf'
+      ip:
+        $ref: '#/definitions/config.SecurityQuotaConf'
+    required:
+    - global
+    - ip
+    type: object
+  handler.SecurityRuntimeData:
+    properties:
+      action_groups:
+        items:
+          type: string
+        type: array
+      active_bans:
+        type: integer
+      captcha_ready:
+        description: 验证码动作是否可用（依赖 captcha 启用）
+        type: boolean
+      global:
+        $ref: '#/definitions/security.Snapshot'
+      tracked_ips:
+        type: integer
+      tracked_violators:
+        type: integer
+    required:
+    - action_groups
+    - active_bans
+    - captcha_ready
+    - global
+    - tracked_ips
+    - tracked_violators
+    type: object
+  handler.UserActivityDay:
+    properties:
+      count:
+        description: 当天发表数
+        type: integer
+      date:
+        description: YYYY-MM-DD
+        type: string
+    required:
+    - count
+    - date
+    type: object
+  security.Snapshot:
+    properties:
+      day:
+        type: integer
+      hour:
+        type: integer
+      minute:
+        type: integer
+    required:
+    - day
+    - hour
+    - minute
     type: object
 info:
   contact:
@@ -1690,10 +2309,6 @@ paths:
         in: query
         name: search
         type: string
-      - description: Return AI assistant comments separately
-        in: query
-        name: split_ai
-        type: boolean
       - description: The site name of your content scope
         in: query
         name: site_name
@@ -1706,6 +2321,10 @@ paths:
         in: query
         name: sort_by
         type: string
+      - description: Return AI assistant comments separately
+        in: query
+        name: split_ai
+        type: boolean
       - description: Message center show type
         enum:
         - all
@@ -2431,6 +3050,181 @@ paths:
       summary: Increase Page Views (PV)
       tags:
       - Page
+  /security/bans:
+    get:
+      operationId: SecurityBanList
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseSecurityBanList'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取 IP 封禁列表
+      tags:
+      - Security
+    post:
+      consumes:
+      - application/json
+      operationId: SecurityBanCreate
+      parameters:
+      - description: 封禁信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ParamsSecurityBanCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.CookedIPBan'
+      security:
+      - ApiKeyAuth: []
+      summary: 封禁 IP 或网段
+      tags:
+      - Security
+  /security/bans/{id}:
+    delete:
+      operationId: SecurityBanDelete
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.JSONResult'
+      security:
+      - ApiKeyAuth: []
+      summary: 解除 IP 封禁
+      tags:
+      - Security
+  /security/config:
+    get:
+      operationId: SecurityConfigGet
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseSecurityConfig'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取安全防护配置
+      tags:
+      - Security
+    put:
+      consumes:
+      - application/json
+      operationId: SecurityConfigSave
+      parameters:
+      - description: 配置
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ParamsSecurityConfigSave'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseSecurityConfig'
+      security:
+      - ApiKeyAuth: []
+      summary: 保存安全防护配置
+      tags:
+      - Security
+  /security/events:
+    delete:
+      operationId: SecurityEventClear
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.JSONResult'
+      security:
+      - ApiKeyAuth: []
+      summary: 清空安全事件记录
+      tags:
+      - Security
+    get:
+      operationId: SecurityEventList
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseSecurityEventList'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取安全事件记录
+      tags:
+      - Security
+  /security/events/{id}:
+    delete:
+      operationId: SecurityEventDelete
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.JSONResult'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除安全事件记录
+      tags:
+      - Security
+  /security/report:
+    get:
+      operationId: SecurityReport
+      parameters:
+      - description: 统计最近 N 天 (默认 7)
+        in: query
+        name: days
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseSecurityReport'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取安全事件统计报表
+      tags:
+      - Security
+  /security/stats:
+    get:
+      operationId: SecurityStatsGet
+      parameters:
+      - description: 附加查询某个 IP 的状态
+        in: query
+        name: ip
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.JSONResult'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取实时安全统计
+      tags:
+      - Security
   /send_email:
     post:
       consumes:
@@ -2568,6 +3362,42 @@ paths:
       summary: Get Settings Template
       tags:
       - System
+  /sidebar/console:
+    get:
+      operationId: ConsoleGet
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseConsole'
+      summary: 获取控制台站点信息与自定义样式脚本
+      tags:
+      - Console
+    put:
+      consumes:
+      - application/json
+      operationId: ConsoleSave
+      parameters:
+      - description: 站点信息与自定义代码
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ParamsConsoleSave'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseConsole'
+      security:
+      - ApiKeyAuth: []
+      summary: 保存控制台站点信息与自定义样式脚本
+      tags:
+      - Console
   /sites:
     get:
       description: Get a list of sites by some conditions
@@ -3145,6 +3975,177 @@ paths:
                   type: string
               type: object
       summary: Get Access Token
+      tags:
+      - Auth
+  /user/activity:
+    get:
+      operationId: UserActivity
+      parameters:
+      - description: 活跃度统计的天数
+        in: query
+        name: days
+        type: integer
+      - description: 最近发言的条数
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseUserActivity'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户的发言统计与最近发言
+      tags:
+      - User
+  /user/identities:
+    get:
+      description: List the OAuth identities linked to the current account
+      operationId: GetUserIdentities
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseUserIdentities'
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: List linked login identities
+      tags:
+      - User
+  /user/identities/:provider/bind:
+    post:
+      description: Returns a short-lived OAuth URL that links the provider account
+        to the current user
+      operationId: BeginUserIdentityBind
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseUserIdentityBindURL'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Start an OAuth identity binding
+      tags:
+      - User
+  /user/identities/{id}:
+    delete:
+      description: Unlink one OAuth identity from the current account. The last
+      operationId: RemoveUserIdentity
+      parameters:
+      - description: The identity ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Unlink a login identity
+      tags:
+      - User
+  /user/password:
+    post:
+      description: Requires the current password, or an email verification code
+      operationId: UpdatePassword
+      parameters:
+      - description: The password data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RequestUserPasswordUpdate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseUserPasswordUpdate'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Change the current user's password
       tags:
       - Auth
   /user/status:
