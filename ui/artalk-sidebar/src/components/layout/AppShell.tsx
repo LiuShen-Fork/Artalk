@@ -1,6 +1,6 @@
 import { Button, Drawer } from '@heroui/react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { ChevronDown, Moon, MoreHorizontal, Sun } from 'lucide-react'
+import { ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import {
   NAV_ITEMS,
@@ -15,12 +15,11 @@ import { AccountMenu } from '@/components/layout/AccountMenu'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { useConfirm } from '@/components/ui/confirm'
 import { isEmbedded } from '@/lib/boot'
-import { hoverTitle } from '@/lib/hover-title'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
-import { theme, useDarkMode } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 function TabButton({
@@ -122,7 +121,6 @@ function MoreSheet({
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, site, view } = useSession()
   const isAdmin = !!user?.is_admin
-  const dark = useDarkMode()
   const navigate = useNavigate()
   const confirm = useConfirm()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -205,21 +203,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           )}
 
-          <div className="flex shrink-0 items-center gap-0.5">
-            <Button
-              isIconOnly
-              size="sm"
-              variant="ghost"
-              aria-label={dark ? t('lightTheme') : t('darkTheme')}
-              {...hoverTitle(dark ? t('lightTheme') : t('darkTheme'))}
-              onPress={() => theme.toggle()}
-            >
-              {dark ? (
-                <Sun className="size-4" aria-hidden />
-              ) : (
-                <Moon className="size-4" aria-hidden />
-              )}
-            </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            <ThemeToggle />
             <AccountMenu
               name={user?.name ?? ''}
               email={user?.email ?? ''}

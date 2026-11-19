@@ -62,7 +62,7 @@ export function Pager({
           size="sm"
           variant="ghost"
           isIconOnly
-          className="hidden sm:inline-flex"
+          className="hidden size-9 sm:inline-flex"
           isDisabled={disabled || page <= 1}
           aria-label={t('pagerFirst')}
           {...hoverTitle(t('pagerFirst'))}
@@ -74,6 +74,7 @@ export function Pager({
           size="sm"
           variant="ghost"
           isIconOnly
+          className="size-9"
           isDisabled={disabled || page <= 1}
           aria-label={t('back')}
           {...hoverTitle(t('back'))}
@@ -93,7 +94,7 @@ export function Pager({
                 key={item}
                 size="sm"
                 variant={item === page ? 'primary' : 'ghost'}
-                className="min-w-8 px-0 tabular-nums"
+                className="h-9 min-w-9 px-0 tabular-nums"
                 isDisabled={disabled}
                 aria-current={item === page ? 'page' : undefined}
                 aria-label={t('pagerGoTo', { page: item })}
@@ -112,6 +113,7 @@ export function Pager({
           size="sm"
           variant="ghost"
           isIconOnly
+          className="size-9"
           isDisabled={disabled || page >= pages}
           aria-label={t('nextStep')}
           {...hoverTitle(t('nextStep'))}
@@ -123,7 +125,7 @@ export function Pager({
           size="sm"
           variant="ghost"
           isIconOnly
-          className="hidden sm:inline-flex"
+          className="hidden size-9 sm:inline-flex"
           isDisabled={disabled || page >= pages}
           aria-label={t('pagerLast')}
           {...hoverTitle(t('pagerLast'))}

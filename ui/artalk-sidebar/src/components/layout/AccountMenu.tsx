@@ -32,8 +32,11 @@ export function AccountMenu({
     <Dropdown>
       <Dropdown.Trigger
         className={cn(
-          'h-9 items-center justify-center gap-1.5 rounded-control bg-transparent px-1 data-[hovered]:bg-surface-secondary',
-          showText ? 'min-w-0 xl:flex-1 xl:justify-start' : 'w-9',
+          'h-9 items-center justify-center gap-1.5 rounded-control bg-transparent data-[hovered]:bg-surface-secondary',
+          // The rail keeps a square row like every other nav entry (the avatar
+          // is 32px, so horizontal padding would push it past 36); the wide bar
+          // turns the same trigger into a full-width profile row.
+          showText ? 'w-9 min-w-0 px-0 xl:w-full xl:flex-1 xl:justify-start xl:px-1' : 'w-9 px-0',
         )}
         aria-label={t('account')}
         {...hoverTitle(t('account'))}
@@ -43,8 +46,11 @@ export function AccountMenu({
             under the avatar at small widths. */}
         <span className="flex min-w-0 flex-nowrap items-center gap-2 whitespace-nowrap">
           <UserAvatar name={name} src={avatarUrl(email)} size="sm" />
+          {/* items-stretch, not items-start: a squeezed flex row would let a
+              shrink-to-fit column keep its 132px max-width and paint its
+              ellipsis under the caret. */}
           {showText ? (
-            <span className="hidden min-w-0 flex-col items-start leading-tight xl:flex">
+            <span className="hidden min-w-0 flex-col pr-1.5 text-left leading-tight xl:flex">
               <span className="max-w-[132px] truncate text-[12.5px] font-medium">
                 {name || t('unknownUser')}
               </span>

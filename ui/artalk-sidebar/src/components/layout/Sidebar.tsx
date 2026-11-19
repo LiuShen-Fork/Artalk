@@ -1,14 +1,12 @@
-import { Button } from '@heroui/react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { ChevronDown, Globe2, LayoutGrid, Moon, Sun, UserRound } from 'lucide-react'
+import { ChevronDown, Globe2, LayoutGrid, UserRound } from 'lucide-react'
 import { navGroupsFor, labelKeyFor, type ViewMode } from '@/app/nav'
 import { AccountMenu } from '@/components/layout/AccountMenu'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { useBrandName } from '@/lib/console'
-import { hoverTitle } from '@/lib/hover-title'
 import { t } from '@/lib/i18n'
 import { session, useSession } from '@/lib/session'
-import { theme, useDarkMode } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 type Icon = typeof LayoutGrid
@@ -63,7 +61,7 @@ export function ModeSwitch({
     <div
       role="tablist"
       aria-label={t('viewAdmin')}
-      className="mx-auto flex w-fit gap-1 rounded-control bg-segment-track p-0.5 xl:mx-0 xl:grid xl:w-full xl:grid-cols-2 xl:gap-1 xl:p-1"
+      className="mx-auto flex w-fit gap-1 rounded-control bg-segment-track p-0.5 xl:mx-0 xl:grid xl:w-full xl:grid-cols-2 xl:gap-1"
     >
       {options.map(({ id, label, icon: Icon }) => {
         const active = view === id
@@ -147,7 +145,6 @@ export function Sidebar({
 }) {
   const { user, site, view } = useSession()
   const isAdmin = !!user?.is_admin
-  const dark = useDarkMode()
   const brandName = useBrandName()
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -223,21 +220,6 @@ export function Sidebar({
 
       <div className="shrink-0 border-t border-border px-2.5 py-2.5 xl:px-3">
         <div className="flex flex-col items-center gap-1.5 xl:flex-row xl:gap-1">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="ghost"
-            className="text-muted"
-            aria-label={dark ? t('lightTheme') : t('darkTheme')}
-            {...hoverTitle(dark ? t('lightTheme') : t('darkTheme'))}
-            onPress={() => theme.toggle()}
-          >
-            {dark ? (
-              <Sun className="size-4" aria-hidden />
-            ) : (
-              <Moon className="size-4" aria-hidden />
-            )}
-          </Button>
           <AccountMenu
             name={user?.name ?? ''}
             email={user?.email ?? ''}
@@ -247,6 +229,7 @@ export function Sidebar({
             onAccount={() => void navigate({ to: '/account' })}
             onLogout={onLogout}
           />
+          <ThemeToggle />
         </div>
       </div>
     </aside>
