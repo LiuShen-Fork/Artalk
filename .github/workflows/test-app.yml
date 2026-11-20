@@ -118,6 +118,11 @@ jobs:
             artifact: macos
             coverage: false
 
+    # Forks usually have no Codecov token. Leave it empty there and skip the
+    # upload instead of logging "Invalid token" behind a green step.
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -170,7 +175,7 @@ jobs:
           name: Go-Test-Results-${{ matrix.artifact }}
           path: ${{ env.REPORT_DIR }}
 
-      - if: ${{ matrix.coverage && !cancelled() }}
+      - if: ${{ matrix.coverage && !cancelled() && env.CODECOV_TOKEN != '' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@2320916714171c258d01dbd81040d64d798c6f8e # v7.1.1
         with:
@@ -178,4 +183,4 @@ jobs:
           # `file` was replaced by `files`; the old name was silently ignored and
           # the upload failed with "No coverage reports found".
           files: ${{ env.REPORT_DIR }}/coverage.out
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
