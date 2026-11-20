@@ -11,25 +11,15 @@ import (
 	"github.com/artalkjs/artalk/v2/internal/dao"
 	db_logger "github.com/artalkjs/artalk/v2/internal/db/logger"
 	"github.com/artalkjs/artalk/v2/internal/pkged"
-	"github.com/artalkjs/artalk/v2/internal/utils"
 	"github.com/go-testfixtures/testfixtures/v3"
 	"github.com/libtnb/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
 
-var dbFile *os.File
-
-func init() {
-	var err error
-	dbFile, err = os.CreateTemp("", "atk_test_db")
-	if err != nil {
-		panic(err)
-	}
-}
-
 type TestApp struct {
 	*core.App
+	dbDir string
 }
 
 func (t *TestApp) Cleanup() error {
@@ -37,8 +27,11 @@ func (t *TestApp) Cleanup() error {
 		return err
 	}
 
-	defer os.Remove(dbFile.Name())
-
+	// Every app owns its own directory, so removing it cannot race with a test
+	// that is already opening the next database.
+	if t.dbDir != "" {
+		return os.RemoveAll(t.dbDir)
+	}
 	return nil
 }
 
@@ -56,11 +49,17 @@ func NewTestApp() (*TestApp, error) {
 	dirFS := os.DirFS("./")
 	pkged.SetFS(dirFS)
 
-	// prepare db folder
-	utils.EnsureDir(filepath.Dir(dbFile.Name()))
+	// Each app gets its own database directory. A single shared temp file made
+	// consecutive tests depend on the previous test's cleanup (leftover -wal /
+	// -shm files, close-ordering) and turned rare races into silent aborts.
+	dbDir, err := os.MkdirTemp("", "atk_test_db")
+	if err != nil {
+		return nil, err
+	}
+	cleanupDir := func() { _ = os.RemoveAll(dbDir) }
 
 	// open a sqlite db
-	dbInstance, err := gorm.Open(sqlite.Open(dbFile.Name()), &gorm.Config{
+	dbInstance, err := gorm.Open(sqlite.Open(filepath.Join(dbDir, "atk_test.db")), &gorm.Config{
 		Logger: db_logger.New(),
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix: "atk_", // Test table prefix, fixture filenames should match this
@@ -68,6 +67,7 @@ func NewTestApp() (*TestApp, error) {
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
+		cleanupDir()
 		return nil, err
 	}
 
@@ -77,6 +77,7 @@ func NewTestApp() (*TestApp, error) {
 	// get pure sql.DB instance
 	sqlDB, err := dbInstance.DB()
 	if err != nil {
+		cleanupDir()
 		return nil, err
 	}
 
@@ -87,17 +88,20 @@ func NewTestApp() (*TestApp, error) {
 		testfixtures.Directory("./test/fixtures"), // The directory containing the YAML files
 	)
 	if err != nil {
+		cleanupDir()
 		return nil, err
 	}
 
 	// load fixtures data
 	if err := fixtures.Load(); err != nil {
+		cleanupDir()
 		return nil, err
 	}
 
 	// create config instance
 	conf, err := config.NewFromFile("./test/testdata/model_test_conf.yml")
 	if err != nil {
+		cleanupDir()
 		return nil, err
 	}
 
@@ -109,12 +113,14 @@ func NewTestApp() (*TestApp, error) {
 
 	// bootstrap
 	if err := app.Bootstrap(); err != nil {
+		cleanupDir()
 		return nil, err
 	}
 
 	// create test app instance
 	t := &TestApp{
-		App: app,
+		App:   app,
+		dbDir: dbDir,
 	}
 
 	return t, nil
