@@ -49,9 +49,10 @@ func NewTestApp() (*TestApp, error) {
 	dirFS := os.DirFS("./")
 	pkged.SetFS(dirFS)
 
-	// Each app gets its own database directory. A single shared temp file made
-	// consecutive tests depend on the previous test's cleanup (leftover -wal /
-	// -shm files, close-ordering) and turned rare races into silent aborts.
+	// Each app gets its own database directory. A single shared temp file meant
+	// every test recreated the previous test's path right after Cleanup removed
+	// it, so a failure to close or to drop the -wal/-shm sidecars leaked into the
+	// next database.
 	dbDir, err := os.MkdirTemp("", "atk_test_db")
 	if err != nil {
 		return nil, err
