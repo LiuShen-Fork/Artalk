@@ -172,8 +172,10 @@ jobs:
 
       - if: ${{ matrix.coverage && !cancelled() }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@2320916714171c258d01dbd81040d64d798c6f8e # v7.1.1
         with:
           flags: go
-          file: ${{ env.REPORT_DIR }}/coverage.out
+          # `file` was replaced by `files`; the old name was silently ignored and
+          # the upload failed with "No coverage reports found".
+          files: ${{ env.REPORT_DIR }}/coverage.out
           token: ${{ secrets.CODECOV_TOKEN }}
