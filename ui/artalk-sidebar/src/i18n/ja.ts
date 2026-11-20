@@ -5,6 +5,8 @@ export const ja: MessageSchema = {
   nav: 'ナビゲーション',
   darkTheme: 'ダークテーマ',
   lightTheme: 'ライトテーマ',
+  themeDark: 'ダーク',
+  themeLight: 'ライト',
   language: '言語',
   msgCenter: '通知センター',
   noContent: 'データがありません',

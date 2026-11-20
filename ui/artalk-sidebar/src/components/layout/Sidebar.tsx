@@ -221,9 +221,9 @@ export function Sidebar({
 
       <div className="shrink-0 border-t border-border px-2.5 py-2.5 xl:px-3">
         <div className="flex flex-col items-center gap-1.5">
-          {/* Utility icons sit above the profile row, which keeps the full
-              sidebar width for the name and the caret. */}
-          <div className="flex flex-col items-center gap-1.5 xl:w-full xl:flex-row xl:gap-1 xl:px-1">
+          {/* Utility buttons sit above the profile row: two halves of the same
+              width, each carrying the icon and the text. */}
+          <div className="flex flex-col items-center gap-1.5 xl:w-full xl:flex-row xl:gap-1">
             <LanguageMenu />
             <ThemeToggle />
           </div>

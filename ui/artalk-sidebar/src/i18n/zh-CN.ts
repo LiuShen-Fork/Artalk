@@ -5,6 +5,8 @@ export const zhCN: MessageSchema = {
   nav: '导航',
   darkTheme: '深色主题',
   lightTheme: '浅色主题',
+  themeDark: '深色',
+  themeLight: '浅色',
   language: '语言',
   msgCenter: '通知中心',
   noContent: '无内容',

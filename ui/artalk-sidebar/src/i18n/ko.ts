@@ -5,6 +5,8 @@ export const ko: MessageSchema = {
   nav: '탐색',
   darkTheme: '다크 테마',
   lightTheme: '라이트 테마',
+  themeDark: '다크',
+  themeLight: '라이트',
   language: '언어',
   msgCenter: '알림 센터',
   noContent: '내용 없음',

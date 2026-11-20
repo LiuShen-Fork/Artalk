@@ -25,18 +25,20 @@ export const LANGUAGES = [
  */
 export function LanguageMenu({ className }: { className?: string }) {
   const locale = useLocale()
+  const current = LANGUAGES.find((item) => item.value === locale)?.label ?? t('language')
 
   return (
     <Dropdown>
       <Dropdown.Trigger
         className={cn(
-          'grid size-9 shrink-0 place-items-center rounded-control text-muted transition-colors data-[hovered]:bg-surface-secondary data-[hovered]:text-foreground',
+          'flex size-9 shrink-0 items-center justify-center rounded-control text-muted transition-colors data-[hovered]:bg-surface-secondary data-[hovered]:text-foreground xl:h-9 xl:w-auto xl:min-w-0 xl:flex-1 xl:gap-1.5 xl:px-2',
           className,
         )}
         aria-label={t('language')}
         {...hoverTitle(t('language'))}
       >
-        <Languages className="size-[18px]" aria-hidden />
+        <Languages className="size-[18px] shrink-0" aria-hidden />
+        <span className="hidden truncate text-[12px] xl:inline">{current}</span>
       </Dropdown.Trigger>
       <Dropdown.Popover placement="top end">
         <Dropdown.Menu

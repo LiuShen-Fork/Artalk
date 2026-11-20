@@ -5,6 +5,8 @@ export const ru: MessageSchema = {
   nav: 'Навигация',
   darkTheme: 'Тёмная тема',
   lightTheme: 'Светлая тема',
+  themeDark: 'Тёмная',
+  themeLight: 'Светлая',
   language: 'Язык',
   msgCenter: 'Центр уведомлений',
   noContent: 'Нет контента',
