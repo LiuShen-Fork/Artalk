@@ -8,7 +8,9 @@ import (
 
 type AuthIdentity struct {
 	gorm.Model
-	Provider string `gorm:"uniqueIndex:idx_auth_identity_provider_remote_uid,priority:1;uniqueIndex:idx_auth_identity_provider_user,priority:1"` // local, email, oauth, github
+	// size is required: MySQL and SQL Server reject a TEXT column in an index,
+	// and GORM maps a bare string to longtext / nvarchar(max).
+	Provider string `gorm:"size:255;uniqueIndex:idx_auth_identity_provider_remote_uid,priority:1;uniqueIndex:idx_auth_identity_provider_user,priority:1"` // local, email, oauth, github
 	// A remote identity may only ever be attached to one Artalk account, and an
 	// account may only have one identity per provider. The database enforces both
 	// invariants so two concurrent binds cannot claim the same account.
