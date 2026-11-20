@@ -36,7 +36,7 @@ export function AccountMenu({
           // The rail keeps a square row like every other nav entry (the avatar
           // is 32px, so horizontal padding would push it past 36); the wide bar
           // turns the same trigger into a full-width profile row.
-          showText ? 'w-9 min-w-0 px-0 xl:w-full xl:flex-1 xl:justify-start xl:px-1' : 'w-9 px-0',
+          showText ? 'w-9 min-w-0 px-0 xl:w-full xl:justify-start xl:px-1' : 'w-9 px-0',
         )}
         aria-label={t('account')}
         {...hoverTitle(t('account'))}

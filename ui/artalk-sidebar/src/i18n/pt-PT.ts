@@ -5,6 +5,7 @@ export const ptPT: MessageSchema = {
   nav: 'Navegação',
   darkTheme: 'Tema escuro',
   lightTheme: 'Tema claro',
+  language: 'Idioma',
   msgCenter: 'Centro de notificações',
   noContent: 'Sem conteúdo',
   searchHint: 'Pesquisar por palavra-chave...',

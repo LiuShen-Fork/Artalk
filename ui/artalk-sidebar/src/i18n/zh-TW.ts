@@ -5,6 +5,7 @@ export const zhTW: MessageSchema = {
   nav: '導覽',
   darkTheme: '深色主題',
   lightTheme: '淺色主題',
+  language: '語言',
   msgCenter: '訊息中心',
   noContent: '無內容',
   searchHint: '關鍵字搜尋...',

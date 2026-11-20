@@ -47,9 +47,13 @@ let LocaleDict: I18n = findLocaleSet(LocaleConf) // en by default
 
 /**
  * Set system locale
+ *
+ * `force` re-resolves the dictionary even when the language did not change,
+ * which is what a locale that arrived as an external plugin needs: the first
+ * call happens before the plugin is on the page and falls back to English.
  */
-export function setLocale(locale: I18n | string) {
-  if (locale === LocaleConf) return
+export function setLocale(locale: I18n | string, force = false) {
+  if (!force && locale === LocaleConf) return
   LocaleConf = locale
   LocaleDict = typeof locale === 'string' ? findLocaleSet(locale) : locale
 }

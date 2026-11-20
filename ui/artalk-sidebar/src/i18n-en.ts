@@ -3,6 +3,7 @@ export const en = {
   nav: 'Navigation',
   darkTheme: 'Dark theme',
   lightTheme: 'Light theme',
+  language: 'Language',
   msgCenter: 'Messages',
   noContent: 'No Content',
   searchHint: 'Search by keywords...',

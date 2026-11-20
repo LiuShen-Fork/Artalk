@@ -95,6 +95,10 @@ export async function mount(localConf: ConfigPartial, ctx: Context) {
   // Initialize built-in/local plugins first, followed by network plugins.
   loadPlugins(GlobalPlugins)
   loadPlugins(networkPlugins)
+
+  // A locale that ships as a network plugin (ja, ko, fr, …) was resolved above
+  // before its dictionary existed, so resolve it again now that it is loaded.
+  setLocale(ctx.getConf().locale, true)
   if (ctx.isDestroyed()) return
 
   instance.mounted = true

@@ -15,3 +15,6 @@ export default Artalk
 export const init = Artalk.init
 export const use = Artalk.use
 export const loadCountWidget = Artalk.loadCountWidget
+
+// Lets an embedding UI (the admin console) drive the widget's language.
+export { setLocale } from './i18n'

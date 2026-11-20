@@ -15,6 +15,7 @@ import { AccountMenu } from '@/components/layout/AccountMenu'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { ModeSwitch, Sidebar } from '@/components/layout/Sidebar'
 import { SiteSwitcher } from '@/components/layout/SiteSwitcher'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { useConfirm } from '@/components/ui/confirm'
 import { isEmbedded } from '@/lib/boot'
@@ -204,6 +205,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
 
           <div className="flex shrink-0 items-center gap-1">
+            <LanguageMenu />
             <ThemeToggle />
             <AccountMenu
               name={user?.name ?? ''}

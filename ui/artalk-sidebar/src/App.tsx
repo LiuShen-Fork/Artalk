@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { Toast } from '@heroui/react'
 import { ConfirmProvider } from '@/components/ui/ConfirmProvider'
-import { useLocaleVersion } from '@/lib/i18n'
+import { useLocale } from '@/lib/i18n'
 import { router } from '@/router'
 
 const queryClient = new QueryClient({
@@ -16,13 +16,15 @@ const queryClient = new QueryClient({
 })
 
 export function App() {
-  useLocaleVersion()
+  const locale = useLocale()
 
   return (
     <QueryClientProvider client={queryClient}>
       <ConfirmProvider>
         <Toast.Provider />
-        <RouterProvider router={router} />
+        {/* Route components are memoized on their id: a remount is the one reliable
+          way to redraw every page in the new language. */}
+        <RouterProvider key={locale} router={router} />
       </ConfirmProvider>
     </QueryClientProvider>
   )

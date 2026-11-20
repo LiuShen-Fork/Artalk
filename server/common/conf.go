@@ -2,7 +2,6 @@ package common
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/artalkjs/artalk/v2/internal/config"
@@ -61,8 +60,10 @@ func GetApiPublicConfDataMap(app *core.App, c *fiber.Ctx) ConfData {
 		pluginURLs = append(pluginURLs, "dist/plugins/artalk-plugin-auth.js")
 	}
 
-	if !slices.Contains([]string{"en", "zh-CN", ""}, app.Conf().Locale) {
-		pluginURLs = append(pluginURLs, fmt.Sprintf("dist/i18n/%s.js", app.Conf().Locale))
+	if urls := localePluginURLs(app.Conf().Locale); len(urls) > 0 {
+		for _, url := range urls {
+			pluginURLs = append(pluginURLs, url)
+		}
 	}
 
 	frontendConf["pluginURLs"] = handlePluginURLs(app,
@@ -74,6 +75,27 @@ func GetApiPublicConfDataMap(app *core.App, c *fiber.Ctx) ConfData {
 		FrontendConf: frontendConf,
 		Version:      GetApiVersionDataMap(),
 	}
+}
+
+// externalLocales are the languages the widget does not bundle; each one is a
+// plugin script under dist/i18n.
+var externalLocales = []string{"zh-TW", "ja", "ko", "fr", "pt-PT", "ru", "tr"}
+
+// localePluginURLs are the widget bundles a locale needs. English is bundled,
+// zh-CN is the server default; "auto" is resolved by the browser when the
+// widget boots, so every external bundle has to be reachable for it.
+func localePluginURLs(locale string) []string {
+	switch locale {
+	case "", "en", "zh-CN":
+		return nil
+	case "auto":
+		urls := make([]string, 0, len(externalLocales))
+		for _, l := range externalLocales {
+			urls = append(urls, fmt.Sprintf("dist/i18n/%s.js", l))
+		}
+		return urls
+	}
+	return []string{fmt.Sprintf("dist/i18n/%s.js", locale)}
 }
 
 func handlePluginURLs(app *core.App, urls []string) []string {

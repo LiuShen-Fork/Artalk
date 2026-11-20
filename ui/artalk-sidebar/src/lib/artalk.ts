@@ -1,4 +1,4 @@
-import Artalk from 'artalk'
+import Artalk, { setLocale as setWidgetLocale } from 'artalk'
 import md5 from 'crypto-js/md5'
 import sha256 from 'crypto-js/sha256'
 import { bootParams } from './boot'
@@ -64,6 +64,44 @@ export function getArtalk(): Artalk {
 
 export function getArtalkOrNull(): Artalk | null {
   return instance
+}
+
+// The widget bundles English and zh-CN only; the other languages are plugin
+// scripts under dist/i18n that register themselves on load.
+const BUILT_IN_LOCALES = new Set(['en', 'en-US', 'zh-CN'])
+const localeScripts = new Map<string, Promise<void>>()
+
+function loadLocaleScript(locale: string): Promise<void> {
+  const src = new URL(`../dist/i18n/${locale}.js`, document.baseURI).href
+  let task = localeScripts.get(src)
+  if (!task) {
+    task = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = src
+      script.onload = () => resolve()
+      script.onerror = () => {
+        localeScripts.delete(src)
+        reject(new Error(`Failed to load ${src}`))
+      }
+      document.head.append(script)
+    })
+    localeScripts.set(src, task)
+  }
+  return task
+}
+
+/**
+ * Point the widget (the comment list the console embeds) at the console's
+ * language, loading the locale plugin first when the language is not built in.
+ * The pages re-mount on a language switch and re-render the list, so this only
+ * has to fix the dictionary before that happens.
+ */
+export async function applyWidgetLocale(locale: string): Promise<void> {
+  if (!instance) return
+  if (!BUILT_IN_LOCALES.has(locale)) {
+    await loadLocaleScript(locale).catch(() => undefined)
+  }
+  setWidgetLocale(locale, true)
 }
 
 /**

@@ -75,6 +75,13 @@ export function OptionItem({ node }: { node: OptionNode }) {
     )
   }
 
+  // A value outside the list (e.g. `auto` for the locale) would otherwise
+  // leave the trigger blank.
+  const selectOptions =
+    node.selector && value != null && value !== '' && !node.selector.includes(String(value))
+      ? [String(value), ...node.selector]
+      : (node.selector ?? [])
+
   return (
     <div className="space-y-1.5 py-2">
       {label}
@@ -96,7 +103,7 @@ export function OptionItem({ node }: { node: OptionNode }) {
           </HeroSelect.Trigger>
           <HeroSelect.Popover>
             <ListBox>
-              {node.selector.map((option) => (
+              {selectOptions.map((option) => (
                 <ListBox.Item key={option} id={option} textValue={option}>
                   {option}
                 </ListBox.Item>

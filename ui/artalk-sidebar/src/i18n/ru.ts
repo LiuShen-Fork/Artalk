@@ -5,6 +5,7 @@ export const ru: MessageSchema = {
   nav: 'Навигация',
   darkTheme: 'Тёмная тема',
   lightTheme: 'Светлая тема',
+  language: 'Язык',
   msgCenter: 'Центр уведомлений',
   noContent: 'Нет контента',
   searchHint: 'Поиск по ключевым словам...',

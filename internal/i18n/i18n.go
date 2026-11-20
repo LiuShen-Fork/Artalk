@@ -11,7 +11,10 @@ import (
 var Locales map[string]string
 
 func Load(locale string, localeProvider func(locale string) ([]byte, error)) {
-	if locale == "" { // default lang
+	// "auto" only means something to the browser (the widget and the console
+	// resolve it themselves); server-side text such as emails falls back to the
+	// default language.
+	if locale == "" || locale == "auto" { // default lang
 		locale = "zh-CN"
 	}
 

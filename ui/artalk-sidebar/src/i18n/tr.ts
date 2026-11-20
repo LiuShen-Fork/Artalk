@@ -5,6 +5,7 @@ export const tr: MessageSchema = {
   nav: 'Gezinti',
   darkTheme: 'Koyu tema',
   lightTheme: 'Açık tema',
+  language: 'Dil',
   msgCenter: 'Mesajlar',
   noContent: 'İçerik Yok',
   searchHint: 'Anahtar kelimelerle ara...',

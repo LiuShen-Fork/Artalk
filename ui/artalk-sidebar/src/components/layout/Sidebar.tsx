@@ -2,6 +2,7 @@ import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { ChevronDown, Globe2, LayoutGrid, UserRound } from 'lucide-react'
 import { navGroupsFor, labelKeyFor, type ViewMode } from '@/app/nav'
 import { AccountMenu } from '@/components/layout/AccountMenu'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { BrandMark } from '@/components/ui/BrandMark'
 import { useBrandName } from '@/lib/console'
@@ -219,7 +220,13 @@ export function Sidebar({
       </nav>
 
       <div className="shrink-0 border-t border-border px-2.5 py-2.5 xl:px-3">
-        <div className="flex flex-col items-center gap-1.5 xl:flex-row xl:gap-1">
+        <div className="flex flex-col items-center gap-1.5">
+          {/* Utility icons sit above the profile row, which keeps the full
+              sidebar width for the name and the caret. */}
+          <div className="flex flex-col items-center gap-1.5 xl:w-full xl:flex-row xl:gap-1 xl:px-1">
+            <LanguageMenu />
+            <ThemeToggle />
+          </div>
           <AccountMenu
             name={user?.name ?? ''}
             email={user?.email ?? ''}
@@ -229,7 +236,6 @@ export function Sidebar({
             onAccount={() => void navigate({ to: '/account' })}
             onLogout={onLogout}
           />
-          <ThemeToggle />
         </div>
       </div>
     </aside>

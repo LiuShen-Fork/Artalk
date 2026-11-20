@@ -82,6 +82,15 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, map[string]string{"hello": "Hello"}, Locales)
 	})
 
+	t.Run("AutoLocale", func(t *testing.T) {
+		// The browser resolves "auto"; server-side text uses the default.
+		Load("auto", func(locale string) ([]byte, error) {
+			assert.Equal(t, "zh-CN", locale)
+			return []byte("hello: 你好"), nil
+		})
+		assert.Equal(t, map[string]string{"hello": "你好"}, Locales)
+	})
+
 	t.Run("ValidLocale", func(t *testing.T) {
 		Load("zh-CN", func(locale string) ([]byte, error) {
 			assert.Equal(t, locale, "zh-CN")

@@ -5,6 +5,7 @@ export const fr: MessageSchema = {
   nav: 'Navigation',
   darkTheme: 'Thème sombre',
   lightTheme: 'Thème clair',
+  language: 'Langue',
   msgCenter: 'Centre de notifications',
   noContent: 'Aucun contenu',
   searchHint: 'Recherche par mot-clé...',
