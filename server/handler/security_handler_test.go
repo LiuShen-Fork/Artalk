@@ -258,7 +258,8 @@ func TestSecurityEventListAndReport(t *testing.T) {
 	assert.Equal(t, "rate_limit", report.ByKind[0].Kind)
 	assert.Equal(t, int64(2), report.ByKind[0].Count)
 	require.Len(t, report.ByDay, 1)
-	assert.Equal(t, time.Now().Format("2006-01-02"), report.ByDay[0].Date)
+	// 报表按配置时区的自然日归组，而不是服务器进程的 TZ
+	assert.Equal(t, events[0].CreatedAt.In(time.Local).Format("2006-01-02"), report.ByDay[0].Date)
 	assert.Equal(t, int64(3), report.ByDay[0].Count)
 	require.NotEmpty(t, report.TopIPs)
 	assert.Equal(t, "203.0.113.1", report.TopIPs[0].IP)

@@ -29,11 +29,11 @@ type UserActivityDay struct {
 }
 
 type ResponseUserActivity struct {
-	Count     int64                  `json:"count"`      // 评论总数
-	Pending   int64                  `json:"pending"`    // 待审核数量
-	Votes     int64                  `json:"votes"`      // 收到的赞同总数
-	FirstDate string                 `json:"first_date"` // 首次发言日期
-	ByDay     []UserActivityDay      `json:"by_day"`     // 每日发言数（近 N 天，仅含有发言的日期）
+	Count     int64               `json:"count"`      // 评论总数
+	Pending   int64               `json:"pending"`    // 待审核数量
+	Votes     int64               `json:"votes"`      // 收到的赞同总数
+	FirstDate string              `json:"first_date"` // 首次发言日期
+	ByDay     []UserActivityDay   `json:"by_day"`     // 每日发言数（近 N 天，仅含有发言的日期）
 	Recent    []entity.CommentDTO `json:"recent"`     // 最近发言
 }
 
@@ -89,15 +89,15 @@ func UserActivity(app *core.App, router fiber.Router) {
 			result.FirstDate = first.CreatedAt.Format("2006-01-02")
 		}
 
-		// 热力图：按天聚合（数据库各异的日期表达式统一在 dayGroupExpr 里处理）
+		// 热力图：按配置时区的自然日聚合
 		since := time.Now().AddDate(0, 0, -(days - 1))
 		since = time.Date(since.Year(), since.Month(), since.Day(), 0, 0, 0, 0, since.Location())
-		base().
-			Select(dayGroupExpr(db) + " as date, count(*) as count").
-			Where("created_at >= ?", since).
-			Group(dayGroupExpr(db)).Order("date ASC").Scan(&result.ByDay)
-		for i := range result.ByDay {
-			result.ByDay[i].Date = normalizeDayString(result.ByDay[i].Date)
+		activityDays, err := countByLocalDay(base(), since)
+		if err != nil {
+			return common.RespError(c, fiber.StatusInternalServerError, "Failed to count comment activity: "+err.Error())
+		}
+		for _, day := range activityDays {
+			result.ByDay = append(result.ByDay, UserActivityDay{Date: day.Date, Count: day.Count})
 		}
 
 		// 最近发言

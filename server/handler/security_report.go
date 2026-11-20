@@ -98,12 +98,12 @@ func SecurityReport(app *core.App, router fiber.Router) {
 			Group("action").Order("count DESC").Scan(&byAction)
 
 		byDay := []SecurityDayCount{}
-		db.Model(&entity.SecurityEvent{}).
-			Select(dayGroupExpr(db)+" as date, count(*) as count").
-			Where("created_at >= ?", since).
-			Group(dayGroupExpr(db)).Order("date ASC").Scan(&byDay)
-		for i := range byDay {
-			byDay[i].Date = normalizeDayString(byDay[i].Date)
+		dayCounts, err := countByLocalDay(db.Model(&entity.SecurityEvent{}), since)
+		if err != nil {
+			return common.RespError(c, fiber.StatusInternalServerError, "Failed to count security events by day: "+err.Error())
+		}
+		for _, day := range dayCounts {
+			byDay = append(byDay, SecurityDayCount{Date: day.Date, Count: day.Count})
 		}
 
 		topIPs := []SecurityIPCount{}
@@ -136,4 +136,3 @@ func SecurityReport(app *core.App, router fiber.Router) {
 		})
 	}))
 }
-
