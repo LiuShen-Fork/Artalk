@@ -37,4 +37,4 @@ cp ./ui/artalk/dist/{Artalk.css,Artalk.js} ${DIST_DIR}
 cp ./ui/artalk/dist/{ArtalkLite.css,ArtalkLite.js} ${DIST_DIR}
 cp ./ui/artalk/dist/i18n/*.js ${I18N_DIR}
 cp -r ./ui/artalk-sidebar/dist/* ${SIDEBAR_DIR}
-cp ./ui/plugin-*/dist/*.js ${PLUGIN_DIR}
+cp ./ui/plugin-*/dist/artalk-plugin-*.js ${PLUGIN_DIR}
