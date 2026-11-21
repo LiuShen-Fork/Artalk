@@ -49,10 +49,18 @@ export interface ConfigSecurityQuotaConf {
 export interface EntityAdminUserDTO {
   badge_color: string
   badge_name: string
+  /** CommentCount counts the comments owned by this user row. */
   comment_count: number
   email: string
   has_password: boolean
   id: number
+  /**
+   * IdentityProviders names the linked third-party identities ("github",
+   * "generic", ...). Together with HasPassword it separates a registered
+   * account from the profile row that anonymous commenting leaves behind:
+   * a guest has neither a password nor an identity.
+   */
+  identity_providers: string[]
   is_admin: boolean
   is_ai_assistant?: boolean
   is_in_conf: boolean
@@ -704,10 +712,18 @@ export interface HandlerResponseUserActivity {
 export interface HandlerResponseUserCreate {
   badge_color: string
   badge_name: string
+  /** CommentCount counts the comments owned by this user row. */
   comment_count: number
   email: string
   has_password: boolean
   id: number
+  /**
+   * IdentityProviders names the linked third-party identities ("github",
+   * "generic", ...). Together with HasPassword it separates a registered
+   * account from the profile row that anonymous commenting leaves behind:
+   * a guest has neither a password nor an identity.
+   */
+  identity_providers: string[]
   is_admin: boolean
   is_ai_assistant?: boolean
   is_in_conf: boolean
@@ -755,10 +771,18 @@ export interface HandlerResponseUserStatus {
 export interface HandlerResponseUserUpdate {
   badge_color: string
   badge_name: string
+  /** CommentCount counts the comments owned by this user row. */
   comment_count: number
   email: string
   has_password: boolean
   id: number
+  /**
+   * IdentityProviders names the linked third-party identities ("github",
+   * "generic", ...). Together with HasPassword it separates a registered
+   * account from the profile row that anonymous commenting leaves behind:
+   * a guest has neither a password nor an identity.
+   */
+  identity_providers: string[]
   is_admin: boolean
   is_ai_assistant?: boolean
   is_in_conf: boolean

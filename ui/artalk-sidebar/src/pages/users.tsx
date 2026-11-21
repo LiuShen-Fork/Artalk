@@ -10,6 +10,7 @@ import { Segmented } from '@/components/ui/Segmented'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useConfirm } from '@/components/ui/confirm'
+import { accountStatus } from '@/lib/account-status'
 import { errorMessage } from '@/lib/api'
 import { getArtalk } from '@/lib/artalk'
 import { usePageSize } from '@/lib/use-page-size'
@@ -19,9 +20,15 @@ import { debounce, formatNumber } from '@/lib/utils'
 
 type UserType = 'all' | 'admin'
 
+/** The admin list carries two fields the public `UserData` type does not. */
+type AdminUserRow = ArtalkType.UserDataForAdmin & {
+  has_password?: boolean
+  identity_providers?: string[]
+}
+
 interface UsersResponse {
   count: number
-  users: ArtalkType.UserDataForAdmin[]
+  users: AdminUserRow[]
 }
 
 export function UsersPage() {
@@ -152,6 +159,11 @@ export function UsersPage() {
                     {!user.badge_name && user.is_admin ? (
                       <Chip size="sm" variant="soft" color="accent">
                         {t('admin')}
+                      </Chip>
+                    ) : null}
+                    {accountStatus(user).isGuest ? (
+                      <Chip size="sm" variant="soft" title={t('guestAccountTitle')}>
+                        {t('guest')}
                       </Chip>
                     ) : null}
                     {user.is_in_conf ? (

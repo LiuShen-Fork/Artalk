@@ -320,6 +320,7 @@ export const zhCN: MessageSchema = {
   navConsole: '站点配置',
   navTransfer: '数据迁移',
   navAccount: '我的账户',
+  guest: '游客',
   guestAccountTitle: '访客身份',
   guestAccountDesc:
     '你正以访客身份浏览：登录后即可管理个人资料、密码与第三方绑定，换台设备也能找回自己的评论。',

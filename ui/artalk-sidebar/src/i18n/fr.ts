@@ -338,6 +338,7 @@ export const fr: MessageSchema = {
   navConsole: 'Config. du site',
   navTransfer: 'Transfert',
   navAccount: 'Mon compte',
+  guest: 'Invité',
   guestAccountTitle: 'Identité de visiteur',
   guestAccountDesc:
     'Vous commentez en tant que visiteur. Connectez-vous pour gérer votre profil, votre mot de passe et vos comptes liés, et retrouver vos commentaires sur tous vos appareils.',

@@ -329,6 +329,7 @@ export const en = {
   navConsole: 'Site config',
   navTransfer: 'Transfer',
   navAccount: 'My account',
+  guest: 'Guest',
   guestAccountTitle: 'Visitor identity',
   guestAccountDesc:
     'You are commenting as a visitor. Sign in to manage your profile, password and linked accounts, and to keep your comments across devices.',

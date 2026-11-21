@@ -328,6 +328,7 @@ export const ja: MessageSchema = {
   navConsole: 'サイト設定',
   navTransfer: 'データ移行',
   navAccount: 'マイアカウント',
+  guest: 'ゲスト',
   guestAccountTitle: 'ゲストの身元',
   guestAccountDesc:
     'ゲストとして利用中です。ログインすると、プロフィール・パスワード・外部アカウント連携を管理でき、別の端末でも自分のコメントを確認できます。',

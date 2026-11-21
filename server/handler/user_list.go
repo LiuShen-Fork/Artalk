@@ -70,9 +70,7 @@ func UserList(app *core.App, router fiber.Router) {
 		q.Find(&users)
 
 		var userDTOs []entity.AdminUserDTO
-		for _, u := range users {
-			userDTOs = append(userDTOs, app.Dao().BuildAdminUserDTO(&u))
-		}
+		userDTOs = app.Dao().BuildAdminUserDTOs(users)
 
 		return common.RespData(c, ResponseAdminUserList{
 			Users: userDTOs,

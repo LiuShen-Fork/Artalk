@@ -333,6 +333,7 @@ export const ptPT: MessageSchema = {
   navConsole: 'Config. do site',
   navTransfer: 'Transferência',
   navAccount: 'A minha conta',
+  guest: 'Visitante',
   guestAccountTitle: 'Identidade de visitante',
   guestAccountDesc:
     'Está a comentar como visitante. Inicie sessão para gerir o seu perfil, palavra-passe e contas associadas, e manter os seus comentários entre dispositivos.',

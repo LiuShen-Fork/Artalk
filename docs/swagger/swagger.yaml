@@ -72,6 +72,7 @@ definitions:
       badge_name:
         type: string
       comment_count:
+        description: CommentCount counts the comments owned by this user row.
         type: integer
       email:
         type: string
@@ -79,6 +80,15 @@ definitions:
         type: boolean
       id:
         type: integer
+      identity_providers:
+        description: |-
+          IdentityProviders names the linked third-party identities ("github",
+          "generic", ...). Together with HasPassword it separates a registered
+          account from the profile row that anonymous commenting leaves behind:
+          a guest has neither a password nor an identity.
+        items:
+          type: string
+        type: array
       is_admin:
         type: boolean
       is_ai_assistant:
@@ -102,6 +112,7 @@ definitions:
     - email
     - has_password
     - id
+    - identity_providers
     - is_admin
     - is_in_conf
     - last_ip
@@ -1497,6 +1508,7 @@ definitions:
       badge_name:
         type: string
       comment_count:
+        description: CommentCount counts the comments owned by this user row.
         type: integer
       email:
         type: string
@@ -1504,6 +1516,15 @@ definitions:
         type: boolean
       id:
         type: integer
+      identity_providers:
+        description: |-
+          IdentityProviders names the linked third-party identities ("github",
+          "generic", ...). Together with HasPassword it separates a registered
+          account from the profile row that anonymous commenting leaves behind:
+          a guest has neither a password nor an identity.
+        items:
+          type: string
+        type: array
       is_admin:
         type: boolean
       is_ai_assistant:
@@ -1527,6 +1548,7 @@ definitions:
     - email
     - has_password
     - id
+    - identity_providers
     - is_admin
     - is_in_conf
     - last_ip
@@ -1613,6 +1635,7 @@ definitions:
       badge_name:
         type: string
       comment_count:
+        description: CommentCount counts the comments owned by this user row.
         type: integer
       email:
         type: string
@@ -1620,6 +1643,15 @@ definitions:
         type: boolean
       id:
         type: integer
+      identity_providers:
+        description: |-
+          IdentityProviders names the linked third-party identities ("github",
+          "generic", ...). Together with HasPassword it separates a registered
+          account from the profile row that anonymous commenting leaves behind:
+          a guest has neither a password nor an identity.
+        items:
+          type: string
+        type: array
       is_admin:
         type: boolean
       is_ai_assistant:
@@ -1643,6 +1675,7 @@ definitions:
     - email
     - has_password
     - id
+    - identity_providers
     - is_admin
     - is_in_conf
     - last_ip

@@ -4700,6 +4700,7 @@ const docTemplate = `{
                 "email",
                 "has_password",
                 "id",
+                "identity_providers",
                 "is_admin",
                 "is_in_conf",
                 "last_ip",
@@ -4716,6 +4717,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "comment_count": {
+                    "description": "CommentCount counts the comments owned by this user row.",
                     "type": "integer"
                 },
                 "email": {
@@ -4726,6 +4728,13 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "identity_providers": {
+                    "description": "IdentityProviders names the linked third-party identities (\"github\",\n\"generic\", ...). Together with HasPassword it separates a registered\naccount from the profile row that anonymous commenting leaves behind:\na guest has neither a password nor an identity.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "is_admin": {
                     "type": "boolean"
@@ -6718,6 +6727,7 @@ const docTemplate = `{
                 "email",
                 "has_password",
                 "id",
+                "identity_providers",
                 "is_admin",
                 "is_in_conf",
                 "last_ip",
@@ -6734,6 +6744,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "comment_count": {
+                    "description": "CommentCount counts the comments owned by this user row.",
                     "type": "integer"
                 },
                 "email": {
@@ -6744,6 +6755,13 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "identity_providers": {
+                    "description": "IdentityProviders names the linked third-party identities (\"github\",\n\"generic\", ...). Together with HasPassword it separates a registered\naccount from the profile row that anonymous commenting leaves behind:\na guest has neither a password nor an identity.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "is_admin": {
                     "type": "boolean"
@@ -6887,6 +6905,7 @@ const docTemplate = `{
                 "email",
                 "has_password",
                 "id",
+                "identity_providers",
                 "is_admin",
                 "is_in_conf",
                 "last_ip",
@@ -6903,6 +6922,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "comment_count": {
+                    "description": "CommentCount counts the comments owned by this user row.",
                     "type": "integer"
                 },
                 "email": {
@@ -6913,6 +6933,13 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "identity_providers": {
+                    "description": "IdentityProviders names the linked third-party identities (\"github\",\n\"generic\", ...). Together with HasPassword it separates a registered\naccount from the profile row that anonymous commenting leaves behind:\na guest has neither a password nor an identity.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "is_admin": {
                     "type": "boolean"

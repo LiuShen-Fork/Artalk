@@ -5,6 +5,7 @@ import (
 	"github.com/artalkjs/artalk/v2/internal/dao"
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/internal/i18n"
+	"github.com/artalkjs/artalk/v2/internal/log"
 	"github.com/artalkjs/artalk/v2/internal/utils"
 	"github.com/artalkjs/artalk/v2/server/common"
 	"github.com/gofiber/fiber/v2"
@@ -78,7 +79,10 @@ func UserUpdate(app *core.App, router fiber.Router) {
 		user.Name = p.Name
 		user.Email = p.Email
 		if p.Password != "" {
-			user.SetPasswordEncrypt(p.Password)
+			if err := user.SetPasswordEncrypt(p.Password); err != nil {
+				log.Errorln(err)
+				return common.RespError(c, 500, i18n.T("Password update failed"))
+			}
 		}
 		user.Link = p.Link
 		user.IsAdmin = p.IsAdmin

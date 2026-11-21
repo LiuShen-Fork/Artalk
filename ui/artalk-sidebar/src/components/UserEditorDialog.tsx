@@ -1,6 +1,7 @@
 import { Button, Input, Label, Modal, Spinner, Switch, TextField, toast } from '@heroui/react'
 import { useState } from 'react'
 import { Shuffle } from 'lucide-react'
+import { accountStatus } from '@/lib/account-status'
 import { t } from '@/lib/i18n'
 import { hoverTitle } from '@/lib/hover-title'
 import { getArtalk } from '@/lib/artalk'
@@ -16,6 +17,9 @@ export interface EditableUser {
   badge_color: string
   is_admin: boolean
   receive_email: boolean
+  has_password?: boolean
+  identity_providers?: string[]
+  is_in_conf?: boolean
   comment_count?: number
   last_ip?: string
   last_ua?: string
@@ -65,6 +69,7 @@ function UserForm({
   onSaved: () => void
 }) {
   const isCreate = !user
+  const account = accountStatus(user ?? {})
   const [form, setForm] = useState({
     name: user?.name ?? '',
     email: user?.email ?? '',
@@ -131,6 +136,18 @@ function UserForm({
           <div className="min-w-0">
             <span className="text-muted">{t('securityLastIp')}</span>
             <p className="mt-0.5 truncate font-mono text-[12px]">{user.last_ip || '—'}</p>
+          </div>
+          <div className="min-w-0">
+            <span className="text-muted">{t('password')}</span>
+            <p className="mt-0.5 text-[12px]">
+              {account.hasPassword ? t('passwordSet') : t('passwordUnset')}
+            </p>
+          </div>
+          <div className="min-w-0">
+            <span className="text-muted">{t('bindingsSection')}</span>
+            <p className="mt-0.5 truncate text-[12px]">
+              {account.providers.join(' · ') || t('notBound')}
+            </p>
           </div>
           <div className="col-span-2 min-w-0">
             <span className="text-muted">{t('securityLastUA')}</span>
@@ -232,7 +249,7 @@ function UserForm({
         <TextField>
           <Label className="text-[12px] text-muted">{t('password')}</Label>
           <Input
-            type="text"
+            type="password"
             value={form.password}
             onChange={(event) => set('password', event.target.value)}
             autoComplete="new-password"

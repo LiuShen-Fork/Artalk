@@ -194,17 +194,64 @@ func (dao *Dao) BuildUserDTO(u *entity.User) entity.UserDTO {
 }
 
 func (dao *Dao) BuildAdminUserDTO(u *entity.User) entity.AdminUserDTO {
-	userDTO := dao.BuildUserDTO(u)
-	var commentCount int64
-	dao.DB().Model(&entity.Comment{}).Where("user_id = ?", u.ID).Count(&commentCount)
+	return dao.BuildAdminUserDTOs([]entity.User{*u})[0]
+}
 
-	return entity.AdminUserDTO{
-		UserDTO:      userDTO,
-		LastIP:       u.LastIP,
-		LastUA:       u.LastUA,
-		IsInConf:     u.IsInConf,
-		CommentCount: commentCount,
+// BuildAdminUserDTOs builds the admin view for a page of users with two queries
+// in total (comment counts and linked providers) instead of one per user.
+func (dao *Dao) BuildAdminUserDTOs(users []entity.User) []entity.AdminUserDTO {
+	if len(users) == 0 {
+		return []entity.AdminUserDTO{}
 	}
+
+	ids := make([]uint, 0, len(users))
+	for i := range users {
+		ids = append(ids, users[i].ID)
+	}
+
+	commentCounts := make(map[uint]int64, len(ids))
+	var countRows []struct {
+		UserID       uint  `gorm:"column:user_id"`
+		CommentCount int64 `gorm:"column:comment_count"`
+	}
+	dao.DB().Model(&entity.Comment{}).
+		Select("user_id, COUNT(*) AS comment_count").
+		Where("user_id IN ?", ids).
+		Group("user_id").Scan(&countRows)
+	for _, row := range countRows {
+		commentCounts[row.UserID] = row.CommentCount
+	}
+
+	providers := make(map[uint][]string, len(ids))
+	var identityRows []struct {
+		UserID   uint   `gorm:"column:user_id"`
+		Provider string `gorm:"column:provider"`
+	}
+	dao.DB().Model(&entity.AuthIdentity{}).
+		Select("user_id, provider").
+		Where("user_id IN ?", ids).
+		Order("provider ASC").Scan(&identityRows)
+	for _, row := range identityRows {
+		providers[row.UserID] = append(providers[row.UserID], row.Provider)
+	}
+
+	dtos := make([]entity.AdminUserDTO, 0, len(users))
+	for i := range users {
+		u := &users[i]
+		identityProviders := providers[u.ID]
+		if identityProviders == nil {
+			identityProviders = []string{}
+		}
+		dtos = append(dtos, entity.AdminUserDTO{
+			UserDTO:           dao.BuildUserDTO(u),
+			LastIP:            u.LastIP,
+			LastUA:            u.LastUA,
+			IsInConf:          u.IsInConf,
+			CommentCount:      commentCounts[u.ID],
+			IdentityProviders: identityProviders,
+		})
+	}
+	return dtos
 }
 
 // ===============

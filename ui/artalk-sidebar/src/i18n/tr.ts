@@ -333,6 +333,7 @@ export const tr: MessageSchema = {
   navConsole: 'Site yapılandırması',
   navTransfer: 'Veri aktarımı',
   navAccount: 'Hesabım',
+  guest: 'Misafir',
   guestAccountTitle: 'Ziyaretçi kimliği',
   guestAccountDesc:
     'Ziyaretçi olarak yorum yapıyorsunuz. Profilinizi, şifrenizi ve bağlı hesaplarınızı yönetmek ve yorumlarınızı diğer cihazlarda da görmek için giriş yapın.',
