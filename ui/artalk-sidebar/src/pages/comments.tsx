@@ -1,4 +1,4 @@
-import { Input, Spinner } from '@heroui/react'
+import { Input } from '@heroui/react'
 import { Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Pager } from '@/components/ui/Pager'
@@ -45,8 +45,11 @@ export function CommentsPage() {
   const wrapRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState('all')
+  // `searchText` is what the input shows (updated on every keystroke);
+  // `search` is the term the list has been reloaded with (debounced).
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [searchText, setSearchText] = useState('')
+  const [fetching, setFetching] = useState(false)
   const [pageSize, setPageSize] = usePageSize('comments', 20)
   const [paging, setPaging] = useState({ total: 0, page: 1 })
 
@@ -56,9 +59,16 @@ export function CommentsPage() {
 
   // The widget's config callbacks run outside React, so the latest filter
   // values are mirrored into a ref that the fetch modifier reads on demand.
+  // A changed search term reloads the list only after the ref was refreshed,
+  // so the first request already carries it.
   const filter = useRef({ site, tab, search, manage })
+  const appliedSearch = useRef('')
   useEffect(() => {
     filter.current = { site, tab, search, manage }
+    if (appliedSearch.current === search) return
+    appliedSearch.current = search
+    if (!listRef.current?.hasChildNodes()) return
+    getArtalk().reload()
   }, [site, tab, search, manage])
 
   useEffect(() => {
@@ -80,11 +90,11 @@ export function CommentsPage() {
           page: Math.floor(last.params.offset / last.params.limit) + 1,
         })
       }
-      setLoading(false)
+      setFetching(false)
     }
-    const onFetch = () => setLoading(true)
-    const onFetched = () => setLoading(false)
-    const onFailed = () => setLoading(false)
+    const onFetch = () => setFetching(true)
+    const onFetched = () => setFetching(false)
+    const onFailed = () => setFetching(false)
 
     ctx.on('comment-rendered', onCommentRendered)
     ctx.on('list-loaded', onLoaded)
@@ -161,8 +171,9 @@ export function CommentsPage() {
 
   const runSearch = useRef(
     debounce((value: string) => {
+      // Only the reload is debounced; the input itself stays controlled by
+      // `searchText` so typing never blocks on a request.
       setSearch(value)
-      getArtalk().reload()
     }, 400),
   ).current
 
@@ -183,7 +194,7 @@ export function CommentsPage() {
       page={paging.page}
       pageSize={pageSize}
       total={paging.total}
-      disabled={loading}
+      disabled={fetching}
       onChange={goTo}
       onPageSizeChange={setPageSize}
     />
@@ -203,8 +214,12 @@ export function CommentsPage() {
             aria-hidden
           />
           <Input
-            value={search}
-            onChange={(event) => runSearch(event.target.value)}
+            value={searchText}
+            onChange={(event) => {
+              // Keep the field responsive: only the list reload is debounced.
+              setSearchText(event.target.value)
+              runSearch(event.target.value)
+            }}
             placeholder={t('searchHint')}
             aria-label={t('searchHint')}
             fullWidth
@@ -220,12 +235,9 @@ export function CommentsPage() {
       </div>
 
       <div className="space-y-3">
+        {/* The loading layer comes from the widget itself; adding a second
+            spinner here only doubled it. */}
         <div ref={wrapRef} className="relative min-h-40">
-          {loading ? (
-            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-2">
-              <Spinner size="sm" />
-            </div>
-          ) : null}
           <div ref={listRef} className="atk-comments" />
         </div>
 
