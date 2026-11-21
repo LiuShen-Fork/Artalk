@@ -44,13 +44,15 @@ func NoPending(allowUserID ...uint) func(db liteDB) liteDB {
 
 // Filter by search keywords
 func SearchScope(dao *dao.Dao, keywords string) func(d liteDB) liteDB {
-	var userIds []uint
-	dao.DB().Model(&entity.User{}).Where(
-		"LOWER(name) = LOWER(?) OR LOWER(email) = LOWER(?)", keywords, keywords,
-	).Pluck("id", &userIds)
+	// Match fragments: the console search box accepts part of a commenter's
+	// name or email, not only the exact value.
+	pattern := "%" + keywords + "%"
 
 	return func(d liteDB) liteDB {
+		// Subquery instead of loading every matching user id up front.
+		userIds := dao.DB().Model(&entity.User{}).Select("id").
+			Where("LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?)", pattern, pattern)
 		return d.Where("user_id IN (?) OR content LIKE ? OR page_key = ? OR ip = ? OR ua = ?",
-			userIds, "%"+keywords+"%", keywords, keywords, keywords)
+			userIds, pattern, keywords, keywords, keywords)
 	}
 }

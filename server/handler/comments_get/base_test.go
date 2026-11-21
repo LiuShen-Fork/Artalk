@@ -80,6 +80,25 @@ func TestGetQueryScopes(t *testing.T) {
 			},
 		},
 		{
+			name: "Search by commenter name fragment",
+			opts: QueryOptions{
+				User:  adminUser,
+				Scope: ScopeSite,
+				SitePayload: SitePayload{
+					Type: SiteAll,
+				},
+				// "user" is a fragment of both `userA` and `userB`; the name
+				// match used to require the exact value.
+				Search: "user",
+			},
+			want: func(comments []entity.Comment) {
+				assert.Greater(t, len(comments), 0)
+				for _, c := range comments {
+					assert.Contains(t, []uint{1001, 1002}, c.UserID)
+				}
+			},
+		},
+		{
 			name: "Show Pending comments if admin",
 			opts: QueryOptions{
 				User:  adminUser,
