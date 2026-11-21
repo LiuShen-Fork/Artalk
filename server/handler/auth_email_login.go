@@ -40,14 +40,7 @@ func AuthEmailLogin(app *core.App, router fiber.Router) {
 
 		p.Email = strings.ToLower(strings.TrimSpace(p.Email))
 
-		findUser := func(email string) (user entity.User) {
-			users := app.Dao().FindUsersByEmail(email)
-			if len(users) == 0 {
-				return entity.User{}
-			}
-			// Select first user, if there are multiple users with same email
-			return users[0]
-		}
+		users := app.Dao().FindUsersByEmail(p.Email)
 
 		var user entity.User
 		if p.Code != "" {
@@ -56,13 +49,18 @@ func AuthEmailLogin(app *core.App, router fiber.Router) {
 				return resp
 			}
 
-			user = findUser(p.Email)
+			user = preferredEmailAccount(app, users)
 		} else if p.Password != "" {
-			// Login by password
-			user = findUser(p.Email)
-
-			// Check password
-			if !user.CheckPassword(p.Password) {
+			// Login by password. Several rows may share one email (a guest
+			// profile plus a registered account), so check all of them instead
+			// of trusting the first row to hold the password.
+			for _, candidate := range users {
+				if candidate.CheckPassword(p.Password) {
+					user = candidate
+					break
+				}
+			}
+			if user.IsEmpty() {
 				return common.RespError(c, 401, i18n.T("Password is incorrect"))
 			}
 		} else {

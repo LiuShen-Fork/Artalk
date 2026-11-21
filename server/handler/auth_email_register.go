@@ -67,7 +67,9 @@ func AuthEmailRegister(app *core.App, router fiber.Router) {
 			if len(users) == 0 {
 				return common.RespError(c, 400, "User not found")
 			}
-			p.Name = users[0].Name
+			// Reset the account that can actually sign in when a guest profile
+			// shares the email, not the oldest row.
+			p.Name = preferredEmailAccount(app, users).Name
 		}
 
 		// Check email verify code
