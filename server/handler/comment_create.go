@@ -157,15 +157,18 @@ func CommentCreate(app *core.App, router fiber.Router) {
 		// This runs before persistence and notification so rejected comments are never published.
 		if !isAdmin {
 			if antiSpamService, err := core.AppService[*core.AntiSpamService](app); err == nil {
-				blocked, keyword := antiSpamService.CheckIntercept(&core.AntiSpamCheckPayload{
+				blocked, _ := antiSpamService.CheckIntercept(&core.AntiSpamCheckPayload{
 					Comment:      &comment,
 					ReqReferer:   referer,
 					ReqIP:        ip,
 					ReqUserAgent: ua,
 				})
 				if blocked {
+					// Never name the matched keyword: the sender would learn
+					// exactly which word to obfuscate next time. Admins can see
+					// it in the moderation log.
 					return common.RespError(c, fiber.StatusBadRequest,
-						i18n.T("Comment blocked by keyword", Map{"keyword": keyword}))
+						i18n.T("This request was blocked by security rules"))
 				}
 			} else {
 				log.Error("[AntiSpamService] err: ", err)
@@ -234,7 +237,12 @@ func isAllowComment(app *core.App, c *fiber.Ctx, name string, email string, page
 		// knows a user's name and email could comment as that user.
 		existing := app.Dao().FindUser(name, email)
 		if !existing.IsEmpty() && userHasLoginCredentials(app, existing) {
-			return false, common.RespError(c, 401, i18n.T("Login required"), Map{"need_auth_login": true})
+			// Say why instead of a bare "Login required": the person may have
+			// registered earlier and forgotten, or simply reused an address
+			// that belongs to an account.
+			return false, common.RespError(c, 401,
+				i18n.T("This email belongs to a registered account. Sign in to verify it, or comment with an email that is not registered."),
+				Map{"need_auth_login": true})
 		}
 	}
 

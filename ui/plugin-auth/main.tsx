@@ -26,9 +26,13 @@ export const ArtalkAuthPlugin: ArtalkPlugin = (ctx) => {
     $t: (key, args) => ctx.$t(key, args),
   }
 
-  apiHandlers.add('need_auth_login', () => {
-    openAuthDialog()
-    throw new Error('Login required')
+  apiHandlers.add('need_auth_login', (data) => {
+    // Keep the server's explanation. It knows whether the email already
+    // belongs to an account, and "Login required" alone leaves the person
+    // guessing why their comment was rejected.
+    const message = (data as { msg?: string } | null)?.msg
+    openAuthDialog(message)
+    throw new Error(message || ctx.$t('signIn'))
   })
 
   let anonymous = false
@@ -59,9 +63,9 @@ export const ArtalkAuthPlugin: ArtalkPlugin = (ctx) => {
     refreshBtn()
   }
 
-  const openAuthDialog = () => {
+  const openAuthDialog = (notice?: string) => {
     createLayer(authCtx).show((layer) => (
-      <DialogMain ctx={authCtx} onClose={() => layer.destroy()} onSkip={onSkip} />
+      <DialogMain ctx={authCtx} notice={notice} onClose={() => layer.destroy()} onSkip={onSkip} />
     ))
   }
 

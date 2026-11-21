@@ -67,6 +67,18 @@
     overflow-y: auto;
   }
 
+  // Why the dialog opened (e.g. the email already belongs to an account)
+  .atk-auth-notice {
+    margin: 12px 20px 0;
+    padding: 10px 12px;
+    border: 1px solid var(--at-color-border);
+    border-radius: 10px;
+    background: var(--at-color-bg-grey);
+    color: var(--at-color-font);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
   // Methods Page
   .atk-methods-page .atk-methods {
     padding: 12px 20px 20px 20px;

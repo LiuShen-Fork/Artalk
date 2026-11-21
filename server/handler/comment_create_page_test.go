@@ -3,6 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -66,7 +67,7 @@ func TestAnonymousCannotPostAsAccountWithLoginCredentials(t *testing.T) {
 	require.NoError(t, account.SetPasswordEncrypt("secret-123"))
 	require.NoError(t, app.Dao().UpdateUser(&account))
 
-	post := func(key, token string) int {
+	post := func(key, token string) (int, string) {
 		body, err := json.Marshal(handler.ParamsCommentCreate{
 			Name: account.Name, Email: account.Email, Content: "Test",
 			SiteName: "Site A", PageKey: key,
@@ -81,24 +82,29 @@ func TestAnonymousCannotPostAsAccountWithLoginCredentials(t *testing.T) {
 		resp, err := router.Test(req)
 		require.NoError(t, err)
 		defer resp.Body.Close()
-		return resp.StatusCode
+		raw, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		return resp.StatusCode, string(raw)
 	}
 
 	anonymousKey := "/anonymous-impersonation"
-	require.Equal(t, 401, post(anonymousKey, ""))
+	status, body := post(anonymousKey, "")
+	require.Equal(t, 401, status)
+	require.Contains(t, body, "registered account", "the reason must be explained")
 	require.True(t, app.Dao().FindPage(anonymousKey, "Site A").IsEmpty())
 
 	token, err := common.LoginGetUserToken(account, app.Conf().AppKey, 3600)
 	require.NoError(t, err)
-	require.Equal(t, 200, post("/authenticated-account", token))
+	status, _ = post("/authenticated-account", token)
+	require.Equal(t, 200, status)
 
 	// A display name that has never registered still works anonymously.
-	body, err := json.Marshal(handler.ParamsCommentCreate{
+	visitorBody, err := json.Marshal(handler.ParamsCommentCreate{
 		Name: "Visitor", Email: "visitor-new@example.com", Content: "Test",
 		SiteName: "Site A", PageKey: "/anonymous-visitor",
 	})
 	require.NoError(t, err)
-	req := httptest.NewRequest("POST", "/comments", bytes.NewReader(body))
+	req := httptest.NewRequest("POST", "/comments", bytes.NewReader(visitorBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := router.Test(req)
 	require.NoError(t, err)

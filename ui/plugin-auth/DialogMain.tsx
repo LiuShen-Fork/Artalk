@@ -12,6 +12,8 @@ interface DialogMainProps {
   ctx: AuthContext
   onClose: () => void
   onSkip: () => void
+  /** Why the dialog opened, when the server sent an explanation. */
+  notice?: string
 }
 
 export const DialogMain = (props: DialogMainProps) => {
@@ -91,7 +93,12 @@ export const DialogMain = (props: DialogMainProps) => {
 
   return (
     <Dialog showBackBtn={showBackBtn} onBack={backHome} onClose={onClose} title={title}>
-      {() => pages[page()]()}
+      {() => (
+        <>
+          {props.notice ? <div class="atk-auth-notice">{props.notice}</div> : null}
+          {pages[page()]()}
+        </>
+      )}
     </Dialog>
   )
 }
